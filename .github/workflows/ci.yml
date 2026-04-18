@@ -2,7 +2,7 @@ name: ShopCart CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "main","bao/backend" ]
 
 jobs:
   backend-tests:
@@ -21,7 +21,7 @@ jobs:
       - name: Chạy Backend Tests
         run: |
           cd backend
-          ./mvnw clean test
+          mvn clean test
 
   frontend-tests:
     name: Frontend Unit Tests
