@@ -1,0 +1,19 @@
+spring:
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/shopcart_db}
+    username: ${DB_USERNAME:postgres}
+    password: ${DB_PASSWORD:postgres_password}
+    driver-class-name: ${DB_DRIVER:org.postgresql.Driver}
+  
+  jpa:
+    hibernate:
+      # update: Tự động tạo/cập nhật bảng dựa trên Entity. Rất tiện khi code mới.
+      ddl-auto: update 
+    show-sql: true # In ra console các câu query SQL để dễ debug
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+server:
+  port: ${SERVER_PORT:8080} # Port chạy API backend

@@ -1,0 +1,43 @@
+name: ShopCart CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  backend-tests:
+    name: Backend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Java 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: Chạy Backend Tests
+        run: |
+          cd backend
+          chmod +x mvnw
+          ./mvnw clean test
+
+  frontend-tests:
+    name: Frontend Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Lấy mã nguồn
+        uses: actions/checkout@v4
+
+      - name: Cài đặt Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Cài đặt thư viện và Chạy Frontend Tests
+        run: |
+          cd frontend
+          npm install
+          npm run test
