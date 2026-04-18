@@ -21,7 +21,7 @@ jobs:
       - name: Chạy Backend Tests
         run: |
           cd backend
-          ./mvnw clean test
+          mvn clean test
 
   frontend-tests:
     name: Frontend Unit Tests
