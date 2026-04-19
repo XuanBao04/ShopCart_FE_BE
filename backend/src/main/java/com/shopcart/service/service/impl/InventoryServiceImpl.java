@@ -21,7 +21,7 @@ public class InventoryServiceImpl implements IInventoryService {
     public Integer getStock(String productId) {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
-        return inventory.quantity;
+        return inventory.getQuantity();
     }
 
     @Override
@@ -29,12 +29,12 @@ public class InventoryServiceImpl implements IInventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
-        int newQuantity = inventory.quantity + quantity;
+        int newQuantity = inventory.getQuantity() + quantity;
         if (newQuantity < 0) {
             throw new BusinessLogicException("Insufficient stock for product: " + productId);
         }
         
-        inventory.quantity = newQuantity;
+        inventory.setQuantity(newQuantity);
         inventoryRepository.save(inventory);
     }
 
@@ -43,11 +43,11 @@ public class InventoryServiceImpl implements IInventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
-        if (inventory.quantity < quantity) {
+        if (inventory.getQuantity() < quantity) {
             throw new BusinessLogicException("Insufficient stock to reserve for product: " + productId);
         }
         
-        inventory.quantity = inventory.quantity - quantity;
+        inventory.setQuantity(inventory.getQuantity() - quantity);
         inventoryRepository.save(inventory);
     }
 
@@ -56,13 +56,13 @@ public class InventoryServiceImpl implements IInventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
-        inventory.quantity = inventory.quantity + quantity;
+        inventory.setQuantity(inventory.getQuantity() + quantity);
         inventoryRepository.save(inventory);
     }
 
     @Override
     public boolean hasEnoughStock(String productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findByProductId(productId).orElse(null);
-        return inventory != null && inventory.quantity >= quantity;
+        return inventory != null && inventory.getQuantity() >= quantity;
     }
 }

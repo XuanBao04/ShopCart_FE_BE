@@ -32,21 +32,22 @@ public class CartServiceImpl implements ICartService {
     @Override
     public CartResponse addToCart(String userId, CartItemRequest request) {
         // Validate product exists
-        productService.getProductById(request.productId);
+        productService.getProductById(request.getProductId());
         
         CartItem cartItem = cartRepository
-                .findByUserIdAndProductId(userId, request.productId)
+                .findByUserIdAndProductId(userId, request.getProductId())
                 .orElse(null);
         
         if (cartItem != null) {
             // Update existing item
-            cartItem.quantity = cartItem.quantity + request.quantity;
+            cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
         } else {
             // Create new item
-            cartItem = new CartItem();
-            cartItem.userId = userId;
-            cartItem.productId = request.productId;
-            cartItem.quantity = request.quantity;
+            cartItem = CartItem.builder()
+                    .userId(userId)
+                    .productId(request.getProductId())
+                    .quantity(request.getQuantity())
+                    .build();
         }
         
         cartRepository.save(cartItem);
@@ -59,7 +60,7 @@ public class CartServiceImpl implements ICartService {
         CartItem cartItem = cartRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartItemId));
         
-        if (!cartItem.userId.equals(userId)) {
+        if (!cartItem.getUserId().equals(userId)) {
             throw new ResourceNotFoundException("Cart item not found for user: " + userId);
         }
         
@@ -73,11 +74,11 @@ public class CartServiceImpl implements ICartService {
         CartItem cartItem = cartRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException("Cart item not found with id: " + cartItemId));
         
-        if (!cartItem.userId.equals(userId)) {
+        if (!cartItem.getUserId().equals(userId)) {
             throw new ResourceNotFoundException("Cart item not found for user: " + userId);
         }
         
-        cartItem.quantity = quantity;
+        cartItem.setQuantity(quantity);
         cartRepository.save(cartItem);
         List<CartItem> items = cartRepository.findByUserId(userId);
         return cartMapper.toCartResponse(userId, items);

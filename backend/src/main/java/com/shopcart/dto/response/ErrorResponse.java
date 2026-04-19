@@ -1,21 +1,19 @@
 package com.shopcart.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class ErrorResponse {
-    public LocalDateTime timestamp;
-    public Integer status;
-    public String error;
-    public String message;
-    public String path;
-    
-    public ErrorResponse() {}
-    
-    public ErrorResponse(LocalDateTime timestamp, Integer status, String error, String message, String path) {
-        this.timestamp = timestamp;
-        this.status = status;
-        this.error = error;
-        this.message = message;
-        this.path = path;
-    }
+    private LocalDateTime timestamp;
+    private Integer status;
+    private String error;
+    private String message;
+    private String path;
 }

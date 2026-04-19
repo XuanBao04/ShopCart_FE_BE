@@ -17,34 +17,39 @@ public class OrderMapper {
             return null;
         }
 
-        List<OrderItemResponse> itemResponses = order.orderItems != null
-                ? order.orderItems.stream()
+        List<OrderItemResponse> itemResponses = order.getOrderItems() != null
+                ? order.getOrderItems().stream()
                     .map(this::toOrderItemResponse)
                     .collect(Collectors.toList())
                 : java.util.Collections.emptyList();
 
-        return new OrderResponse(
-                order.id,
-                order.userId,
-                itemResponses,
-                order.status != null ? order.status.toString() : null,
-                order.createdDate,
-                order.lastModifiedDate
-        );
+        return OrderResponse.builder()
+                .id(order.getId())
+                .userId(order.getUserId())
+                .items(itemResponses)
+                .status(order.getStatus() != null ? order.getStatus().toString() : null)
+                .createdDate(order.getCreatedDate())
+                .lastModifiedDate(order.getLastModifiedDate())
+                .build();
     }
 
    
     public OrderItemResponse toOrderItemResponse(OrderItem item) {
-        return new OrderItemResponse(item.id, item.productId, item.quantity, item.price);
+        return OrderItemResponse.builder()
+                .id(item.getId())
+                .productId(item.getProductId())
+                .quantity(item.getQuantity())
+                .price(item.getPrice())
+                .build();
     }
 
    
     public OrderItem toEntity(OrderItemResponse response) {
-        OrderItem item = new OrderItem();
-        item.id = response.id;
-        item.productId = response.productId;
-        item.quantity = response.quantity;
-        item.price = response.price;
-        return item;
+        return OrderItem.builder()
+                .id(response.getId())
+                .productId(response.getProductId())
+                .quantity(response.getQuantity())
+                .price(response.getPrice())
+                .build();
     }
 }

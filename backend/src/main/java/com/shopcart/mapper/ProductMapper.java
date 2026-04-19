@@ -13,13 +13,13 @@ public class ProductMapper {
             return null;
         }
 
-        return new ProductResponse(
-                product.id,
-                product.name,
-                product.description,
-                product.price,
-                product.status != null ? product.status.toString() : null
-        );
+        return ProductResponse.builder()
+                .id(product.getId())
+                .name(product.getName())
+                .description(product.getDescription())
+                .price(product.getPrice())
+                .status(product.getStatus() != null ? product.getStatus().toString() : null)
+                .build();
     }
 
    

@@ -2,34 +2,32 @@ package com.shopcart.entity;
 
 import com.shopcart.entity.enums.ProductStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "products")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Product{
     @Id
     @Column(name = "product_id",length = 50)
-    public String id;
+    private String id;
     
     @Column(nullable= false)
-    public String name;
+    private String name;
     
     @Column(nullable = false)
-    public Long price;
+    private Long price;
     
     @Column(columnDefinition = "TEXT")
-    public String description;
+    private String description;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    public ProductStatus status;
-    
-    public Product() {}
-    
-    public Product(String id, String name, Long price, String description, ProductStatus status) {
-        this.id = id;
-        this.name = name;
-        this.price = price;
-        this.description = description;
-        this.status = status;
-    }
+    private ProductStatus status;
 }

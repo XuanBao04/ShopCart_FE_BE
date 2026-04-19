@@ -1,32 +1,32 @@
 package com.shopcart.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "order_items")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
-    public Order order;
+    private Order order;
 
     @Column(name = "product_id", nullable = false)
-    public String productId;
+    private String productId;
 
     @Column(nullable = false)
-    public Integer quantity;
+    private Integer quantity;
 
     @Column(nullable = false)
-    public Long price;
-    
-    public OrderItem() {}
-    
-    public OrderItem(String productId, Integer quantity, Long price) {
-        this.productId = productId;
-        this.quantity = quantity;
-        this.price = price;
-    }
+    private Long price;
 }

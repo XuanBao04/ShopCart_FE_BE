@@ -1,24 +1,25 @@
 package com.shopcart.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "inventories")
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class Inventory {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    public Long id;
+    private Long id;
 
     @Column(name = "product_id", unique = true, nullable = false)
-    public String productId;
+    private String productId;
 
     @Column(nullable = false)
-    public Integer quantity;
-    
-    public Inventory() {}
-    
-    public Inventory(String productId, Integer quantity) {
-        this.productId = productId;
-        this.quantity = quantity;
-    }
+    private Integer quantity;
 }

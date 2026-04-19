@@ -1,19 +1,18 @@
 package com.shopcart.dto.response;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 import java.util.List;
 
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
 public class CartResponse {
-    public String userId;
-    public List<CartItemResponse> items;
-    public Integer totalItems;
-    public Long totalPrice;
-    
-    public CartResponse() {}
-    
-    public CartResponse(String userId, List<CartItemResponse> items, Integer totalItems, Long totalPrice) {
-        this.userId = userId;
-        this.items = items;
-        this.totalItems = totalItems;
-        this.totalPrice = totalPrice;
-    }
+    private String userId;
+    private List<CartItemResponse> items;
+    private Integer totalItems;
+    private Long totalPrice;
 }
