@@ -1,13 +1,15 @@
 package com.shopcart.dto.response;
 
-import lombok.*;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class CartItemResponse {
-    private Long id;
-    private String productId;
-    private Integer quantity;
+    public Long id;
+    public String productId;
+    public Integer quantity;
+    
+    public CartItemResponse() {}
+    
+    public CartItemResponse(Long id, String productId, Integer quantity) {
+        this.id = id;
+        this.productId = productId;
+        this.quantity = quantity;
+    }
 }

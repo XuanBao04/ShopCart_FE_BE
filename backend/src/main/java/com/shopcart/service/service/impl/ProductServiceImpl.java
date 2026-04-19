@@ -33,7 +33,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public List<Product> searchProductsByName(String keyword) {
         return productRepository.findAll().stream()
-                .filter(p -> p.getName().toLowerCase().contains(keyword.toLowerCase()))
+                .filter(p -> p.name.toLowerCase().contains(keyword.toLowerCase()))
                 .toList();
     }
 
@@ -47,5 +47,11 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public boolean isProductAvailable(String productId) {
         return inventoryService.hasEnoughStock(productId, 1);
+    }
+
+    @Override
+    public Product getProductWithInventory(String productId) {
+        // TODO: Implement logic
+        return getProductById(productId);
     }
 }

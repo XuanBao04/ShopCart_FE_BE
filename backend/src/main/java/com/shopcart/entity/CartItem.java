@@ -1,25 +1,28 @@
 package com.shopcart.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 @Entity
 @Table(name = "cart_items")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class CartItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    public Long id;
 
     @Column(name = "user_id", nullable = false)
-    private String userId; 
+    public String userId; 
 
     @Column(name = "product_id", nullable = false)
-    private String productId;
+    public String productId;
 
     @Column(nullable = false)
-    private Integer quantity; 
+    public Integer quantity;
+    
+    public CartItem() {}
+    
+    public CartItem(String userId, String productId, Integer quantity) {
+        this.userId = userId;
+        this.productId = productId;
+        this.quantity = quantity;
+    }
 }

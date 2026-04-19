@@ -1,13 +1,15 @@
 package com.shopcart.dto.request;
 
-import lombok.*;
 import java.util.List;
 
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class OrderRequest {
-    private String userId;
-    private List<OrderItemRequest> orderItems;
+    public String userId;
+    public List<OrderItemRequest> orderItems;
+    
+    public OrderRequest() {}
+    
+    public OrderRequest(String userId, List<OrderItemRequest> orderItems) {
+        this.userId = userId;
+        this.orderItems = orderItems;
+    }
 }

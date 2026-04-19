@@ -23,32 +23,23 @@ public class CartMapper {
                 .collect(Collectors.toList());
 
         Long totalPrice = items.stream()
-                .mapToLong(item -> item.getQuantity())
+                .mapToLong(item -> item.quantity)
                 .sum();
 
-        return CartResponse.builder()
-                .userId(userId)
-                .items(itemResponses)
-                .totalItems(items.size())
-                .totalPrice(totalPrice)
-                .build();
+        return new CartResponse(userId, itemResponses, items.size(), totalPrice);
     }
 
     
     public CartItemResponse toCartItemResponse(CartItem item) {
-        return CartItemResponse.builder()
-                .id(item.getId())
-                .productId(item.getProductId())
-                .quantity(item.getQuantity())
-                .build();
+        return new CartItemResponse(item.id, item.productId, item.quantity);
     }
 
   
     public CartItem toEntity(CartItemResponse response) {
-        return CartItem.builder()
-                .id(response.getId())
-                .productId(response.getProductId())
-                .quantity(response.getQuantity())
-                .build();
+        CartItem cartItem = new CartItem();
+        cartItem.id = response.id;
+        cartItem.productId = response.productId;
+        cartItem.quantity = response.quantity;
+        return cartItem;
     }
 }

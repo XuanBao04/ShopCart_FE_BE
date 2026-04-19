@@ -37,15 +37,15 @@ public class OrderServiceImpl implements IOrderService {
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
         // Validate request
-        if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+        if (request.orderItems == null || request.orderItems.isEmpty()) {
             throw new BusinessLogicException("Order must contain at least one item");
         }
         
         // Check stock for all items
-        for (OrderItemRequest item : request.getOrderItems()) {
-            productService.getProductById(item.getProductId());
-            if (!inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())) {
-                throw new BusinessLogicException("Insufficient stock for product: " + item.getProductId());
+        for (OrderItemRequest item : request.orderItems) {
+            productService.getProductById(item.productId);
+            if (!inventoryService.hasEnoughStock(item.productId, item.quantity)) {
+                throw new BusinessLogicException("Insufficient stock for product: " + item.productId);
             }
         }
         
@@ -53,31 +53,22 @@ public class OrderServiceImpl implements IOrderService {
         String orderId = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
         
-        long totalPrice = request.getOrderItems().stream()
-                .mapToLong(item -> item.getPrice() * item.getQuantity())
+        long totalPrice = request.orderItems.stream()
+                .mapToLong(item -> item.price * item.quantity)
                 .sum();
         
-        Order order = Order.builder()
-                .id(orderId)
-                .userId(request.getUserId())
-                .totalPrice(totalPrice)
-                .status(OrderStatus.PENDING)
-                .createdDate(now)
-                .lastModifiedDate(now)
-                .orderItems(new ArrayList<>())
-                .build();
+        Order order = new Order(orderId, request.userId, totalPrice, OrderStatus.PENDING);
+        order.createdDate = now;
+        order.lastModifiedDate = now;
+        order.orderItems = new ArrayList<>();
         
         // Create order items and reserve stock
-        for (OrderItemRequest itemRequest : request.getOrderItems()) {
-            OrderItem orderItem = OrderItem.builder()
-                    .order(order)
-                    .productId(itemRequest.getProductId())
-                    .quantity(itemRequest.getQuantity())
-                    .price(itemRequest.getPrice())
-                    .build();
+        for (OrderItemRequest itemRequest : request.orderItems) {
+            OrderItem orderItem = new OrderItem(itemRequest.productId, itemRequest.quantity, itemRequest.price);
+            orderItem.order = order;
             
-            order.getOrderItems().add(orderItem);
-            inventoryService.reserveStock(itemRequest.getProductId(), itemRequest.getQuantity());
+            order.orderItems.add(orderItem);
+            inventoryService.reserveStock(itemRequest.productId, itemRequest.quantity);
         }
         
         Order savedOrder = orderRepository.save(order);
@@ -94,7 +85,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public List<OrderResponse> getUserOrders(String userId) {
         List<Order> orders = orderRepository.findAll().stream()
-                .filter(o -> o.getUserId().equals(userId))
+                .filter(o -> o.userId.equals(userId))
                 .toList();
         return orders.stream()
                 .map(orderMapper::toOrderResponse)
@@ -107,17 +98,17 @@ public class OrderServiceImpl implements IOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         
-        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
-            throw new BusinessLogicException("Cannot cancel order with status: " + order.getStatus());
+        if (order.status == OrderStatus.DELIVERED || order.status == OrderStatus.CANCELLED) {
+            throw new BusinessLogicException("Cannot cancel order with status: " + order.status);
         }
         
         // Release reserved stock
-        for (OrderItem item : order.getOrderItems()) {
-            inventoryService.releaseStock(item.getProductId(), item.getQuantity());
+        for (OrderItem item : order.orderItems) {
+            inventoryService.releaseStock(item.productId, item.quantity);
         }
         
-        order.setStatus(OrderStatus.CANCELLED);
-        order.setLastModifiedDate(LocalDateTime.now());
+        order.status = OrderStatus.CANCELLED;
+        order.lastModifiedDate = LocalDateTime.now();
         Order updatedOrder = orderRepository.save(order);
         return orderMapper.toOrderResponse(updatedOrder);
     }
@@ -128,8 +119,8 @@ public class OrderServiceImpl implements IOrderService {
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
         
         try {
-            order.setStatus(OrderStatus.valueOf(status));
-            order.setLastModifiedDate(LocalDateTime.now());
+            order.status = OrderStatus.valueOf(status);
+            order.lastModifiedDate = LocalDateTime.now();
             Order updatedOrder = orderRepository.save(order);
             return orderMapper.toOrderResponse(updatedOrder);
         } catch (IllegalArgumentException e) {

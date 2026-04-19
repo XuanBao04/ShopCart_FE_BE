@@ -2,45 +2,48 @@ package com.shopcart.entity;
 
 import com.shopcart.entity.enums.OrderStatus;
 import jakarta.persistence.*;
-import lombok.*;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "orders")
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Order {
     @Id
     @Column(name = "order_id", length = 50)
-    private String id; 
+    public String id; 
 
     @Column(name = "user_id", nullable = false)
-    private String userId;
+    public String userId;
 
     @Column(name = "total_price", nullable = false)
-    private Long totalPrice; 
+    public Long totalPrice; 
 
     @Column(name = "shipping_fee")
-    private Long shippingFee;
+    public Long shippingFee;
 
     @Column(name = "coupon_code", length = 50)
-    private String couponCode;
+    public String couponCode;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private OrderStatus status; 
+    public OrderStatus status; 
 
     @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    public LocalDateTime createdDate;
 
     @Column(name = "last_modified_date")
-    private LocalDateTime lastModifiedDate;
+    public LocalDateTime lastModifiedDate;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    @Builder.Default
-    private List<OrderItem> orderItems = new ArrayList<>();
+    public List<OrderItem> orderItems = new ArrayList<>();
+    
+    public Order() {}
+    
+    public Order(String id, String userId, Long totalPrice, OrderStatus status) {
+        this.id = id;
+        this.userId = userId;
+        this.totalPrice = totalPrice;
+        this.status = status;
+    }
 }

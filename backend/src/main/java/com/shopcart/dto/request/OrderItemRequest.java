@@ -1,13 +1,15 @@
 package com.shopcart.dto.request;
 
-import lombok.*;
-
-@Data
-@AllArgsConstructor
-@NoArgsConstructor
-@Builder
 public class OrderItemRequest {
-    private String productId;
-    private Integer quantity;
-    private Long price;
+    public String productId;
+    public Integer quantity;
+    public Long price;
+    
+    public OrderItemRequest() {}
+    
+    public OrderItemRequest(String productId, Integer quantity, Long price) {
+        this.productId = productId;
+        this.quantity = quantity;
+        this.price = price;
+    }
 }
