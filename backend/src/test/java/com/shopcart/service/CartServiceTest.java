@@ -9,7 +9,7 @@ import com.shopcart.entity.enums.ProductStatus;
 import com.shopcart.exception.ResourceNotFoundException;
 import com.shopcart.mapper.CartMapper;
 import com.shopcart.repository.CartRepository;
-import com.shopcart.service.service.impl.CartServiceImpl;
+import com.shopcart.service.impl.CartServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;

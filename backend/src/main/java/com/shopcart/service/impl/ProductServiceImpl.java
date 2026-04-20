@@ -1,4 +1,4 @@
-package com.shopcart.service.service.impl;
+package com.shopcart.service.impl;
 
 import com.shopcart.entity.Product;
 import com.shopcart.exception.ResourceNotFoundException;

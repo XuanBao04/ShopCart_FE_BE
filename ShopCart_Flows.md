@@ -1,686 +1,82 @@
-# ShopCart - Business Flows Documentation
+# [cite_start]Bài Tập Lớn: Kiểm Thử Phần Mềm - Dự án SHOPCART (Version 1.1) [cite: 3, 4, 5, 6]
 
-Chi tiết mô tả các luồng xử lý chính của hệ thống ShopCart E-commerce.
-
----
-
-## 📋 Mục Lục
-
-1. [Luồng Giỏ Hàng (Cart Flow)](#luồng-giỏ-hàng-cart-flow)
-2. [Luồng Thanh Toán (Checkout Flow)](#luồng-thanh-toán-checkout-flow)
-3. [Luồng Xử lý Đơn Hàng (Order Processing Flow)](#luồng-xử-lý-đơn-hàng-order-processing-flow)
+[cite_start]**Trường:** Đại học Sài Gòn - Khoa Công Nghệ Thông Tin [cite: 1]
+[cite_start]**Môn học:** Kiểm Thử Phần Mềm (Niên khóa: 2025 - 2026) [cite: 10, 11]
+[cite_start]**Giảng viên hướng dẫn:** Từ Lãng Phiêu [cite: 7, 8]
 
 ---
 
-## 🛒 Luồng Giỏ Hàng (Cart Flow)
+## [cite_start]1. Giới thiệu Dự án [cite: 13]
 
-Giai đoạn người dùng chọn sản phẩm và thêm vào giỏ. Điểm mấu chốt là kiểm tra tồn kho liên tục.
+[cite_start]ShopCart là một ứng dụng web thương mại điện tử được xây dựng để phục vụ việc thực hành kiểm thử phần mềm ở cả Frontend và Backend[cite: 16]. Các nghiệp vụ cốt lõi bao gồm:
+* [cite_start]**Giỏ hàng (Cart):** Thêm, xóa sản phẩm, cập nhật số lượng[cite: 17].
+* [cite_start]**Tính giá (Pricing):** Tính tổng tiền, áp dụng mã giảm giá, phí vận chuyển[cite: 18].
+* [cite_start]**Tồn kho (Inventory):** Kiểm tra số lượng, cảnh báo/khóa thao tác khi hết hàng[cite: 19, 20].
+* [cite_start]**Mua hàng (Checkout):** Xác nhận đơn, trừ tồn kho, tạo mã đơn[cite: 21].
 
-### 📊 Sơ đồ Sequence
-
-```
-Frontend                 Controller              CartService           Repository
-   |                          |                       |                    |
-   |---POST /api/cart/add---->|                       |                    |
-   |   CartItemRequest        |                       |                    |
-   |                          |---validate input----->|                    |
-   |                          |                       |                    |
-   |                          |---check product-------|--query ProductRepo-|
-   |                          |                       |                    |
-   |                          |---check stock---------|--query Inventory---|
-   |                          |                       |                    |
-   |                          |---addToCart/update----|--save CartItem-----|
-   |                          |                       |                    |
-   |<--CartResponse-----------|<---return response----|                    |
-   |   (success, totalPrice)  |                       |                    |
-   |                          |                       |                    |
-```
-
-### 🔄 Chi tiết từng bước
-
-#### **Bước 1: Khởi tạo Yêu Cầu**
-
-**Frontend (React):**
-```javascript
-// Người dùng nhấn "Thêm vào giỏ hàng"
-const addToCart = async (productId, quantity) => {
-  const response = await axios.post('/api/cart/add', {
-    productId: 'laptop-dell-001',
-    quantity: 2
-  });
-  // Cập nhật Cart Badge
-  updateCartBadge(response.data.totalItems);
-};
-```
-
-**Request:**
-```json
-POST /api/cart/{userId}/add
-Content-Type: application/json
-
-{
-  "productId": "laptop-dell-001",
-  "quantity": 2
-}
-```
+### [cite_start]Công nghệ sử dụng [cite: 26]
+* [cite_start]**Frontend:** React 19.x, Vite, Axios, TailwindCSS[cite: 29, 33, 34, 35]. [cite_start]Kiểm thử với Vitest, React Testing Library, và Playwright[cite: 30, 31, 32].
+* [cite_start]**Backend:** Spring Boot 3.5.x/4.x, Java 21, Spring Data JPA, Spring Security, H2/PostgreSQL[cite: 40, 41, 46, 47, 48]. [cite_start]Kiểm thử với JUnit 5 và Mockito[cite: 42, 43].
+* [cite_start]**Phương pháp:** Khuyến khích Test-Driven Development (TDD)[cite: 25].
 
 ---
 
-#### **Bước 2: Xác Thực (Validation)**
+## [cite_start]2. Yêu Cầu Bài Tập Lớn [cite: 89]
 
-**CartController:**
-```java
-@PostMapping("/{userId}/add")
-public ResponseEntity<CartResponse> addToCart(
-    @PathVariable String userId,
-    @RequestBody @Valid CartItemRequest request) {
-    
-    // Spring Boot tự động validate:
-    // - quantity > 0
-    // - productId không rỗng
-    // - Nếu lỗi → 400 Bad Request
-    
-    return ResponseEntity.status(HttpStatus.CREATED)
-        .body(cartService.addToCart(userId, request));
-}
-```
+[cite_start]Dự án yêu cầu thực hiện 6 nội dung kiểm thử chính, tổng điểm 10.0[cite: 1442].
 
-**Xác thực:**
-- ✅ `productId` không null/rỗng
-- ✅ `quantity` > 0
-- ✅ `userId` hợp lệ
+### [cite_start]Câu 1: Phân tích và Thiết kế Test Cases (0.5 điểm) [cite: 89]
+* [cite_start]**Giỏ hàng (Cart):** Phân tích validation rules (số lượng, ID sản phẩm, tồn kho) và thiết kế 5 test cases chi tiết (Happy path, Negative, Boundary, Edge cases)[cite: 90, 94, 100, 106, 112].
+* [cite_start]**Mua hàng (Purchase):** Phân tích validation rules (tổng giá, mã giảm giá, địa chỉ) và thiết kế 5 test cases chi tiết[cite: 119, 123, 128, 137, 145].
 
-**Nếu lỗi:**
-```json
-{
-  "status": 400,
-  "error": "Invalid Input",
-  "message": "Quantity must be greater than 0"
-}
-```
+### [cite_start]Câu 2: Unit Testing và TDD (2.0 điểm) [cite: 150]
+* **Frontend (Vitest):**
+    * [cite_start]Viết unit tests cho `validateCartItem()` và `calculateCartTotal()`[cite: 154, 159].
+    * [cite_start]Viết unit tests cho `calculateOrderPrice()` và `checkInventoryAvailability()`[cite: 263, 269].
+    * [cite_start]Mục tiêu coverage > 90%[cite: 164, 270].
+* **Backend (JUnit 5 + Mockito):**
+    * [cite_start]Test `CartService`: `addToCart()`, `removeFromCart()`, `updateQuantity()`[cite: 180, 188].
+    * [cite_start]Test `OrderService`: CRUD operations, `calculateOrderTotal()`, `checkStockBeforeOrder()`[cite: 314].
+    * [cite_start]Mục tiêu coverage >= 85%[cite: 189, 322].
 
----
+### [cite_start]Câu 3: Integration Testing (2.0 điểm) [cite: 423]
+* **Frontend Component Integration:**
+    * [cite_start]Sử dụng Vitest + React Testing Library để test `CartComponent` (rendering, interactions, API calls)[cite: 425, 429, 430].
+    * [cite_start]Test `CheckoutSummary`, `PriceCalculator`, `InventoryWarning`[cite: 542].
+* **Backend API Integration:**
+    * [cite_start]Sử dụng `MockMvc` để test các endpoint như `POST /api/cart/add` và `POST /api/orders`[cite: 465, 467, 589, 590].
 
-#### **Bước 3: Xử lý Nghiệp Vụ (CartService)**
+### [cite_start]Câu 4: Mock Testing (2.0 điểm) [cite: 671]
+* [cite_start]**Frontend Mocking:** Dùng `vi.mock()` để mock `cartService`, `orderService`, và `inventoryService` trong lúc test các component[cite: 674, 676, 813, 815].
+* [cite_start]**Backend Mocking:** Dùng `@MockBean` để mock các Service layer khi test Controller, và mock các Repository layer khi test Service[cite: 749, 877, 878].
 
-**Kiểm tra sản phẩm:**
-```java
-// Gọi ProductRepository
-Product product = productRepository.findById(productId)
-    .orElseThrow(() -> new ResourceNotFoundException(
-        "Product not found with id: " + productId
-    ));
+### [cite_start]Câu 5: Automation Testing & CI/CD (2.0 điểm) [cite: 943]
+* [cite_start]**E2E Testing (Playwright):** * Thiết lập Playwright với 3 browsers: Chromium, Firefox, WebKit[cite: 948].
+    * [cite_start]Áp dụng Page Object Model (POM) cho các trang Cart và Checkout[cite: 949, 1103].
+    * [cite_start]Viết E2E tests hoàn chỉnh cho Add-to-cart flow và Checkout flow[cite: 953, 1199].
+* [cite_start]**CI/CD (GitHub Actions):** Xây dựng workflow tự động chạy Backend tests, Frontend tests, Playwright tests và lưu lại Test Reports khi push code[cite: 1015, 1253, 1254].
 
-// Kiểm tra trạng thái
-if (product.getStatus() != ProductStatus.ACTIVE) {
-    throw new BusinessLogicException(
-        "Product is not available for purchase"
-    );
-}
-```
-
-**Kiểm tra tồn kho:**
-```java
-// Gọi InventoryRepository
-Inventory inventory = inventoryRepository
-    .findByProductId(productId)
-    .orElseThrow(() -> new ResourceNotFoundException(
-        "Inventory not found"
-    ));
-
-if (inventory.getQuantity() < quantity) {
-    throw new BusinessLogicException(
-        "Insufficient stock. Available: " + 
-        inventory.getQuantity() + 
-        ", Requested: " + quantity
-    );
-}
-```
-
-**Xử lý Cart Item:**
-```java
-// Kiểm tra xem item đã tồn tại trong giỏ chưa
-Optional<CartItem> existingItem = 
-    cartRepository.findByUserIdAndProductId(userId, productId);
-
-CartItem cartItem;
-if (existingItem.isPresent()) {
-    // Cộng dồn số lượng
-    cartItem = existingItem.get();
-    cartItem.setQuantity(cartItem.getQuantity() + quantity);
-} else {
-    // Tạo mới
-    cartItem = CartItem.builder()
-        .userId(userId)
-        .productId(productId)
-        .quantity(quantity)
-        .build();
-}
-
-cartRepository.save(cartItem);
-```
+### [cite_start]Câu 6: Advanced Testing (1.5 điểm) [cite: 1421]
+* [cite_start]**Performance Testing:** Dùng k6 hoặc JMeter thiết kế kịch bản tải, đo lường response time, throughput, error rate cho API và đề xuất tối ưu[cite: 1423, 1425, 1426, 1427].
+* **Security Testing:** Thiết kế và thực thi test cases cho các lỗ hổng như SQL Injection, XSS, IDOR, CSRF. [cite_start]Đưa ra biện pháp khắc phục[cite: 1431, 1432, 1434].
 
 ---
 
-#### **Bước 4: Lưu & Phản Hồi**
+## [cite_start]3. Tiêu Chí Đánh Giá [cite: 1439]
 
-**CartService trả về CartResponse:**
-```java
-List<CartItem> cartItems = cartRepository.findByUserId(userId);
-CartResponse response = cartMapper.toCartResponse(userId, cartItems);
-```
-
-**Response:**
-```json
-{
-  "userId": "user123",
-  "items": [
-    {
-      "id": 1,
-      "productId": "laptop-dell-001",
-      "quantity": 2
-    }
-  ],
-  "totalItems": 1,
-  "totalPrice": 59980
-}
-```
-
-**Frontend cập nhật UI:**
-```javascript
-// Hiển thị thông báo thành công
-showToast("Thêm sản phẩm vào giỏ thành công!");
-
-// Cập nhật Cart Badge
-updateCartBadge(response.totalItems);
-
-// Cập nhật giỏ hàng trên giao diện
-setCartItems(response.items);
-```
+* [cite_start]**Code Quality (30%):** Clean code, cấu trúc AAA (Arrange - Act - Assert), test coverage >= 80%, toàn bộ test pass[cite: 1444, 1445, 1446, 1448, 1449].
+* [cite_start]**Completeness (30%):** Hoàn thành đủ 6 câu hỏi bắt buộc, CI/CD pipeline chạy thành công (màu xanh), Playwright test chạy trên tối thiểu 2 trình duyệt[cite: 1455, 1456, 1458, 1459].
+* [cite_start]**Documentation (20%):** Test cases đúng template, có screenshots minh chứng, kèm các báo cáo HTML/JaCoCo và file README hoàn chỉnh[cite: 1450, 1451, 1452, 1453, 1454].
+* [cite_start]**Best Practices (20%):** Áp dụng chuẩn TDD (Red-Green-Refactor), chiến lược Mock hợp lý, sử dụng Page Object Model chuẩn chỉ[cite: 1463, 1464, 1466, 1468].
 
 ---
 
-## 💰 Luồng Thanh Toán (Checkout Flow)
-
-Khi người dùng vào trang Giỏ hàng và quyết định mua hàng.
-
-### 📊 Sơ đồ Sequence
-
-```
-Frontend              CheckoutComponent          Backend Services
-   |                        |                           |
-   |--Display Cart Items----|                           |
-   |  + Calculate Subtotal  |                           |
-   |  + Apply Discount Code |                           |
-   |  + Calculate Shipping  |                           |
-   |                        |                           |
-   |<--Display Pricing------|                           |
-   |                        |                           |
-   |--User enters address---|                           |
-   |  and confirms order    |                           |
-   |                        |                           |
-   |--POST /api/orders------|--Validate stock again-----|
-   |  OrderRequest          |                           |
-   |                        |--Check each item---------|
-   |                        |                           |
-   |<--OrderResponse--------|<--201 Created            |
-   |  (OrderId, Total)      |                           |
-   |                        |                           |
-   |--Redirect to-----------|                           |
-   | Order Confirmation     |                           |
-   |                        |                           |
-```
-
-### 🔄 Chi tiết từng bước
-
-#### **Bước 1: Tính Toán Giá (Pricing)**
-
-**Frontend Component:**
-```javascript
-const CheckoutPage = () => {
-  const [cart, setCart] = useState(null);
-  const [couponCode, setCouponCode] = useState('');
-  
-  useEffect(() => {
-    // Lấy giỏ hàng
-    const cartResponse = await cartService.getCart(userId);
-    
-    // Tính toán
-    const subtotal = cartResponse.items.reduce(
-      (sum, item) => sum + (item.price * item.quantity),
-      0
-    );
-    
-    // Áp dụng coupon
-    const discount = applyCoupon(couponCode, subtotal);
-    
-    // Tính shipping
-    const shipping = subtotal > 50 ? 0 : 9.99;
-    
-    // Tổng tiền
-    const total = subtotal - discount + shipping;
-    
-    setCart({
-      subtotal,
-      discount,
-      shipping,
-      total
-    });
-  }, [couponCode]);
-};
-```
-
-**Hiển thị:**
-```
-Subtotal:        59,980 VND
-Discount (10%):  -5,998 VND
-Shipping Fee:     9,990 VND
-─────────────────────────
-Total:           63,972 VND
-```
-
----
-
-#### **Bước 2: Gửi Yêu Cầu Đặt Hàng**
-
-**Frontend:**
-```javascript
-const submitOrder = async () => {
-  const orderRequest = {
-    userId: 'user123',
-    orderItems: [
-      {
-        productId: 'laptop-dell-001',
-        quantity: 2,
-        price: 29990
-      }
-    ],
-    couponCode: 'SAVE10',
-    shippingFee: 9990
-  };
-  
-  const response = await orderService.createOrder(orderRequest);
-  // Chuyển hướng đến trang xác nhận
-  navigate(`/order/${response.id}`);
-};
-```
-
-**Request:**
-```json
-POST /api/orders
-Content-Type: application/json
-
-{
-  "userId": "user123",
-  "orderItems": [
-    {
-      "productId": "laptop-dell-001",
-      "quantity": 2,
-      "price": 29990
-    }
-  ],
-  "couponCode": "SAVE10",
-  "shippingFee": 9990
-}
-```
-
----
-
-## 📦 Luồng Xử lý Đơn Hàng (Order Processing Flow)
-
-Luồng phức tạp nhất, đòi hỏi tính toàn vẹn dữ liệu cao (Transaction).
-
-### 📊 Sơ đồ Sequence
-
-```
-Frontend          Controller      OrderService       Repositories      Database
-   |                 |                  |                 |               |
-   |--POST /orders-->|                  |                 |               |
-   |                 |--validate input->|                 |               |
-   |                 |                  |                 |               |
-   |                 |--check stock-----|--query Inventory|--check each---|
-   |                 |   again          |                 |  product qty  |
-   |                 |                  |                 |               |
-   |                 |<--all OK---------|                 |               |
-   |                 |                  |                 |               |
-   |                 |--create Order----|--save Order-----|--INSERT----->|
-   |                 |                  |                 |               |
-   |                 |--create OrderItems|save Items------|--INSERT----->|
-   |                 |                  |                 |               |
-   |                 |--decrease Stock--|--update Inventory|--UPDATE----->|
-   |                 |                  |                 |               |
-   |                 |--clear CartItems-|--delete cart----|--DELETE----->|
-   |                 |                  |                 |               |
-   |<--201 Created---|<--OrderResponse--|                 |               |
-   |  OrderId        |                  |                 |               |
-   |                 |                  |                 |               |
-```
-
-### 🔄 Chi tiết từng bước
-
-#### **Bước 1: Chốt Tồn Kho Cuối Cùng**
-
-**OrderService:**
-```java
-@Transactional
-public OrderResponse createOrder(OrderRequest request) {
-    // Validate request
-    validateOrderRequest(request);
-    
-    // 🔴 CRITICAL: Check stock one more time
-    // (Vì có thể người khác mua trong lúc user checkout)
-    for (OrderItemRequest item : request.getOrderItems()) {
-        if (!inventoryService.hasEnoughStock(
-            item.getProductId(), 
-            item.getQuantity())) {
-            
-            throw new BusinessLogicException(
-                "Product " + item.getProductId() + 
-                " is no longer available in requested quantity"
-            );
-        }
-    }
-    
-    // Tiếp tục tạo đơn hàng...
-}
-```
-
-**Xác thực:**
-- ✅ Toàn bộ sản phẩm vẫn còn đủ tồn kho
-- ✅ Sản phẩm vẫn ACTIVE
-- ✅ User có quyền đặt hàng
-- ✅ Thông tin giao hàng đầy đủ
-
----
-
-#### **Bước 2: Tạo Đơn Hàng**
-
-**Tính toán tổng tiền:**
-```java
-// Tính subtotal
-Long subtotal = request.getOrderItems().stream()
-    .mapToLong(item -> item.getPrice() * item.getQuantity())
-    .sum();
-
-// Áp dụng discount
-Long discount = applyCouponDiscount(request.getCouponCode(), subtotal);
-
-// Tính phí vận chuyển
-Long shippingFee = request.getShippingFee() != null ? 
-    request.getShippingFee() : 0;
-
-// Tổng tiền
-Long totalPrice = subtotal - discount + shippingFee;
-```
-
-**Tạo Order:**
-```java
-Order order = Order.builder()
-    .userId(request.getUserId())
-    .status("PENDING")      // Trạng thái ban đầu
-    .totalPrice(totalPrice)
-    .discount(discount)
-    .shippingFee(shippingFee)
-    .couponCode(request.getCouponCode())
-    .createdDate(LocalDateTime.now())
-    .build();
-
-// Tạo OrderItems
-List<OrderItem> orderItems = request.getOrderItems()
-    .stream()
-    .map(item -> OrderItem.builder()
-        .order(order)
-        .productId(item.getProductId())
-        .quantity(item.getQuantity())
-        .price(item.getPrice())
-        .build())
-    .collect(Collectors.toList());
-
-order.setOrderItems(orderItems);
-
-// Lưu xuống database
-Order savedOrder = orderRepository.save(order);
-```
-
----
-
-#### **Bước 3: Trừ Tồn Kho**
-
-**InventoryService:**
-```java
-@Transactional
-public void decreaseStock(String productId, Integer quantity) {
-    Inventory inventory = inventoryRepository
-        .findByProductId(productId)
-        .orElseThrow(() -> new ResourceNotFoundException(
-            "Inventory not found for product: " + productId
-        ));
-    
-    Integer newStock = inventory.getQuantity() - quantity;
-    
-    if (newStock < 0) {
-        throw new BusinessLogicException(
-            "Cannot decrease stock below 0"
-        );
-    }
-    
-    inventory.setQuantity(newStock);
-    inventoryRepository.save(inventory);
-    
-    log.info("Stock decreased for product {} from {} to {}", 
-        productId, inventory.getQuantity(), newStock);
-}
-```
-
-**Giảm tồn kho cho mỗi sản phẩm:**
-```java
-for (OrderItem item : order.getOrderItems()) {
-    inventoryService.decreaseStock(
-        item.getProductId(), 
-        item.getQuantity()
-    );
-}
-```
-
----
-
-#### **Bước 4: Dọn Dẹp & Phản Hồi**
-
-**Xóa CartItems:**
-```java
-// Xóa tất cả item trong giỏ sau khi đặt hàng
-cartRepository.deleteByUserId(request.getUserId());
-
-log.info("Cart cleared for user: {}", request.getUserId());
-```
-
-**Trả về OrderResponse:**
-```java
-OrderResponse response = orderMapper.toOrderResponse(savedOrder);
-```
-
-**Response:**
-```json
-{
-  "id": "ORD-2024-001",
-  "userId": "user123",
-  "items": [
-    {
-      "id": 1,
-      "productId": "laptop-dell-001",
-      "quantity": 2,
-      "price": 29990
-    }
-  ],
-  "status": "PENDING",
-  "totalPrice": 63972,
-  "discount": 5998,
-  "shippingFee": 9990,
-  "createdDate": "2024-04-18T10:30:00"
-}
-```
-
----
-
-#### **Bước 5: Cập Nhật Giao Diện**
-
-**Frontend:**
-```javascript
-const submitOrder = async (orderRequest) => {
-  try {
-    const response = await orderService.createOrder(orderRequest);
-    
-    // Hiển thị thông báo thành công
-    showToast("Đặt hàng thành công!", "success");
-    
-    // Xóa cache giỏ hàng
-    clearCartCache();
-    
-    // Chuyển hướng
-    setTimeout(() => {
-      navigate(`/order-confirmation/${response.id}`);
-    }, 1500);
-    
-  } catch (error) {
-    // Hiển thị lỗi
-    if (error.response?.status === 422) {
-      showToast(error.response.data.message, "error");
-    } else {
-      showToast("Lỗi khi đặt hàng. Vui lòng thử lại!", "error");
-    }
-  }
-};
-```
-
-**Order Confirmation Page:**
-```javascript
-const OrderConfirmation = ({ orderId }) => {
-  const [order, setOrder] = useState(null);
-  
-  useEffect(() => {
-    orderService.getOrderById(orderId)
-      .then(order => {
-        setOrder(order);
-        
-        // Gửi email confirmation
-        emailService.sendOrderConfirmation(order);
-        
-        // Trigger SMS (optional)
-        smsService.sendOrderNotification(order);
-      });
-  }, [orderId]);
-  
-  return (
-    <div className="confirmation-container">
-      <h1>✅ Đặt hàng thành công!</h1>
-      <p>Mã đơn hàng: {order?.id}</p>
-      <p>Tổng tiền: {formatPrice(order?.totalPrice)}</p>
-      <p>Trạng thái: {order?.status}</p>
-      <button onClick={() => navigate('/orders')}>
-        Xem đơn hàng của bạn
-      </button>
-    </div>
-  );
-};
-```
-
----
-
-## 🔐 Xử lý Lỗi & Exception Cases
-
-### Cart Flow
-
-| Lỗi | Status | Response |
-|-----|--------|----------|
-| Invalid Input | 400 | `InvalidInputException` |
-| Product Not Found | 404 | `ResourceNotFoundException` |
-| Product Not Active | 422 | `BusinessLogicException` |
-| Insufficient Stock | 422 | `BusinessLogicException` |
-| User Not Found | 404 | `ResourceNotFoundException` |
-
-### Order Flow
-
-| Lỗi | Status | Response |
-|-----|--------|----------|
-| Invalid Order Request | 400 | `InvalidInputException` |
-| Stock Changed During Checkout | 422 | `BusinessLogicException` |
-| Payment Failed | 402 | `PaymentException` |
-| Order Not Found | 404 | `ResourceNotFoundException` |
-
----
-
-## 🔄 Transaction Boundaries
-
-### 🔴 CRITICAL Operations (Needs @Transactional)
-
-1. **addToCart** - Modify CartItem
-2. **createOrder** - Create Order, OrderItems, Update Inventory, Clear Cart
-3. **decreaseStock** - Update Inventory
-4. **cancelOrder** - Update Order status, Release Inventory
-
-### ✅ Read-only Operations (readOnly=true)
-
-1. **getCart** - Read CartItems
-2. **getOrderById** - Read Order
-3. **getUserOrders** - Read Orders
-4. **getStock** - Read Inventory
-
----
-
-## 📊 Database Transaction Isolation
-
-```
-Isolation Level: READ_COMMITTED (Default)
-
-Order Processing Transaction:
-╔════════════════════════════════════════╗
-║ BEGIN TRANSACTION                      ║
-├────────────────────────────────────────┤
-║ 1. Insert Order                        ║
-║ 2. Insert OrderItems                   ║
-║ 3. Update Inventory (Decrease)         ║
-║ 4. Delete CartItems                    ║
-├────────────────────────────────────────┤
-║ COMMIT (nếu thành công)                ║
-║ ROLLBACK (nếu lỗi ở bất kỳ bước nào)  ║
-╚════════════════════════════════════════╝
-
-Nếu lỗi ở bước 3: toàn bộ transaction rollback
-→ Order không được tạo
-→ Inventory không thay đổi
-→ CartItems vẫn còn
-```
-
----
-
-## 🧪 Test Cases cần viết
-
-### CartService Tests
-- [ ] `addToCart_withValidInput_shouldAddItem`
-- [ ] `addToCart_withInsufficientStock_shouldThrowException`
-- [ ] `addToCart_whenProductNotActive_shouldThrowException`
-- [ ] `addToCart_whenItemExists_shouldUpdateQuantity`
-- [ ] `removeFromCart_shouldRemoveItem`
-- [ ] `updateQuantity_withZero_shouldDeleteItem`
-
-### OrderService Tests
-- [ ] `createOrder_withValidInput_shouldCreateOrder`
-- [ ] `createOrder_shouldCheckStockAgain`
-- [ ] `createOrder_shouldDecreaseInventory`
-- [ ] `createOrder_shouldClearCart`
-- [ ] `createOrder_withStockChangeAtCheckout_shouldThrow`
-- [ ] `cancelOrder_shouldReleaseStock`
-
-### InventoryService Tests
-- [ ] `decreaseStock_shouldUpdateQuantity`
-- [ ] `decreaseStock_withInsufficientStock_shouldThrow`
-- [ ] `releaseStock_shouldIncreaseQuantity`
-- [ ] `hasEnoughStock_shouldReturnCorrectValue`
-
----
-
-## 📚 Tài Liệu Tham Khảo
-
-- [Spring @Transactional](https://spring.io/guides/gs/managing-transactions/)
-- [Database Transactions](https://en.wikipedia.org/wiki/Database_transaction)
-- [E-commerce Best Practices](https://www.shopify.com/blog/)
+## [cite_start]4. Hướng Dẫn Nộp Bài [cite: 1472]
+
+* [cite_start]**Source Code:** Đẩy lên Public Git repository (GitHub/GitLab) với lịch sử commit rõ ràng (Conventional Commits)[cite: 1476, 1478]. [cite_start]File `README.md` phải hướng dẫn chi tiết cách cài đặt và chạy test[cite: 1479].
+* **Báo cáo:**
+    * [cite_start]Định dạng: File PDF tối đa 20 trang[cite: 1483].
+    * [cite_start]Tên file: `Test_Report_YourName.pdf`[cite: 1484].
+    * [cite_start]**Lưu ý:** Nộp bài CÁ NHÂN (không chấp nhận báo cáo chung)[cite: 1486, 1487].
+* [cite_start]**Deadline:** 23h59, ngày **10/05/2026** (Không chấp nhận nộp trễ)[cite: 1497, 1498].
+* [cite_start]**Demo (Tùy chọn):** Quay video 10-15 phút demo quá trình chạy unit test, E2E test, CI/CD pipeline và hỏi đáp với giảng viên[cite: 1502, 1503, 1504, 1505, 1506, 1507].
