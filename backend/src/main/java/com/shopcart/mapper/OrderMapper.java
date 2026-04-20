@@ -27,6 +27,8 @@ public class OrderMapper {
                 .id(order.getId())
                 .userId(order.getUserId())
                 .items(itemResponses)
+                .shippingFee(order.getShippingFee())
+                .totalPrice(order.getTotalPrice())
                 .status(order.getStatus() != null ? order.getStatus().toString() : null)
                 .createdDate(order.getCreatedDate())
                 .lastModifiedDate(order.getLastModifiedDate())

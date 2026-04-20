@@ -53,14 +53,22 @@ public class OrderServiceImpl implements IOrderService {
         String orderId = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
         
-        long totalPrice = request.getOrderItems().stream()
+        // Calculate subtotal from items
+        long subtotal = request.getOrderItems().stream()
                 .mapToLong(item -> item.getPrice() * item.getQuantity())
                 .sum();
+        
+        // Fixed shipping fee (29,900 VND)
+        long shippingFee = 29900L;
+        
+        // Calculate total: subtotal + shipping
+        long totalPrice = subtotal + shippingFee;
         
         Order order = Order.builder()
                 .id(orderId)
                 .userId(request.getUserId())
                 .totalPrice(totalPrice)
+                .shippingFee(shippingFee)
                 .status(OrderStatus.PENDING)
                 .createdDate(now)
                 .lastModifiedDate(now)

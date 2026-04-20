@@ -15,6 +15,8 @@ public class OrderResponse {
     private String id;
     private String userId;
     private List<OrderItemResponse> items;
+    private Long shippingFee;
+    private Long totalPrice;
     private String status;
     private LocalDateTime createdDate;
     private LocalDateTime lastModifiedDate;
