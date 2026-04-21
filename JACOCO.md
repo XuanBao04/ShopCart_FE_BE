@@ -1,6 +1,6 @@
 # 🔍 HOW TO RUN JACOCO COVERAGE REPORT
 
-## 📋 QUICK START (2 commands)
+## QUICK START (2 commands)
 
 ```bash
 # 1. Run tests + generate JaCoCo report
@@ -15,7 +15,7 @@ xdg-open target/site/jacoco/index.html
 
 ---
 
-## 📊 DETAILED STEPS
+##  DETAILED STEPS
 
 ### **Step 1: Navigate to backend folder**
 ```bash
@@ -79,7 +79,7 @@ grep -o "Total.*%" target/site/jacoco/index.html || \
 
 ---
 
-## 📈 WHAT TO LOOK FOR IN THE REPORT
+##  WHAT TO LOOK FOR IN THE REPORT
 
 ### **Main Coverage Metrics:**
 
