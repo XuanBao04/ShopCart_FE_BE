@@ -80,3 +80,25 @@
     * [cite_start]**Lưu ý:** Nộp bài CÁ NHÂN (không chấp nhận báo cáo chung)[cite: 1486, 1487].
 * [cite_start]**Deadline:** 23h59, ngày **10/05/2026** (Không chấp nhận nộp trễ)[cite: 1497, 1498].
 * [cite_start]**Demo (Tùy chọn):** Quay video 10-15 phút demo quá trình chạy unit test, E2E test, CI/CD pipeline và hỏi đáp với giảng viên[cite: 1502, 1503, 1504, 1505, 1506, 1507].
+
+---
+
+## [cite_start]5. Kiến Trúc Hệ Thống Đơn Giản [cite: 1510]
+
+### [cite_start]Flow Chính [cite: 1511]
+1. **Đăng nhập:** User nhập email/password → Backend validate → trả về JWT token
+2. **Giỏ hàng:** Add product → tính giá → hiển thị trên UI
+3. **Thanh toán:** Click checkout → tạo order → trừ inventory → hiển thị hóa đơn
+
+### [cite_start]Database Schema [cite: 1512]
+- **User:** id, email, password (hash), createdAt
+- **Product:** id, name, price, quantity (inventory)
+- **Cart:** id, userId, items (JSON: [{productId, quantity, price}])
+- **Order:** id, userId, items (JSON), totalPrice, status, createdAt
+
+### [cite_start]API Endpoints [cite: 1513]
+- `POST /auth/login` - Đăng nhập
+- `GET /products` - Lấy danh sách sản phẩm
+- `POST /cart/add` - Thêm vào giỏ
+- `POST /orders` - Tạo hóa đơn
+- `GET /orders/:id` - Chi tiết hóa đơn

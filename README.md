@@ -92,8 +92,3 @@ cd backend
 mvn test
 ```
 
-## 📖 Documentation
-
-- [ARCHITECTURE.md](./ARCHITECTURE.md) - Backend clean architecture design
-- [BUSINESS_FLOWS.md](./BUSINESS_FLOWS.md) - Cart, Checkout, Order flows
-- [TDD_GUIDE.md](./TDD_GUIDE.md) - Test-Driven Development approach
