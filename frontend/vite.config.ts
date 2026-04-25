@@ -26,9 +26,6 @@ export default defineConfig({
   preview: {
     port: 5173,
   },
-  preview: {
-    port: 5173
-  },
   build: {
     outDir: "dist",
     sourcemap: true,
