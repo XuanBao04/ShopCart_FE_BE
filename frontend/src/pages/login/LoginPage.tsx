@@ -1,11 +1,12 @@
 import { useState } from "react";
+import { loginService } from "@/services/api/loginService";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -13,9 +14,18 @@ const LoginPage = () => {
       return;
     }
 
+    try {
+      const response = await loginService(username, password);
+      if (response) {
+        console.log(response);
+        localStorage.setItem("userId", response.userId.toString());
+        window.location.href = "/authenticated/products";
+      }
+    } catch (error) {
+      throw error;
+    }
+
     setError(null);
-    // Handle login logic here
-    console.log("Logging in with:", { username, password });
   };
 
   return (
