@@ -38,7 +38,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-shopcart_db}
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-shopcart}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
       SERVER_PORT: 8080

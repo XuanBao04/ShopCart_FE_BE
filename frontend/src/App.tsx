@@ -1,18 +1,25 @@
-import './App.css'
+// import "./App.css";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import HeaderLayout from "./components/HeaderLayout/HeaderLayout";
+import ProductList from "./components/ProductList/ProductList";
+import Cart from "./components/Cart/Cart";
+import Checkout from "./components/Checkout/Checkout";
+import LoginPage from "./pages/login/LoginPage";
 
 function App() {
   return (
-    <div className="min-h-screen bg-gray-50">
-      <header className="bg-white shadow">
-        <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">ShopCart</h1>
-        </nav>
-      </header>
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <p className="text-gray-600">Welcome to ShopCart Frontend</p>
-      </main>
-    </div>
-  )
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LoginPage />} />
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/authenticated" element={<HeaderLayout />}>
+          <Route path="products" element={<ProductList />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  );
 }
 
-export default App
+export default App;
