@@ -11,4 +11,4 @@ COPY package*.json ./
 RUN npm ci --legacy-peer-deps
 COPY --from=builder /app/dist dist
 EXPOSE 5173
-CMD ["npx", "vite", "preview", "--host", "0.0.0.0"]
+CMD ["npx", "vite", "preview", "--host", "0.0.0.0", "--port", "5173"]
