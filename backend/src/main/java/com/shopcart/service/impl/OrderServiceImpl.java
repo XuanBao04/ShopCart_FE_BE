@@ -2,6 +2,8 @@ package com.shopcart.service.impl;
 
 import com.shopcart.dto.request.OrderItemRequest;
 import com.shopcart.dto.request.OrderRequest;
+import com.shopcart.dto.response.OrderItemResponse;
+import com.shopcart.dto.response.OrderPreviewResponse;
 import com.shopcart.dto.response.OrderResponse;
 import com.shopcart.entity.Order;
 import com.shopcart.entity.OrderItem;
@@ -10,6 +12,7 @@ import com.shopcart.exception.ResourceNotFoundException;
 import com.shopcart.exception.BusinessLogicException;
 import com.shopcart.mapper.OrderMapper;
 import com.shopcart.repository.OrderRepository;
+import com.shopcart.service.ICartService;
 import com.shopcart.service.IOrderService;
 import com.shopcart.service.IInventoryService;
 import com.shopcart.service.IProductService;
@@ -32,50 +35,36 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderMapper orderMapper;
     private final IInventoryService inventoryService;
     private final IProductService productService;
+    private final ICartService cartService;
+
+    private static final long SHIPPING_FEE = 29_900L;
 
     @Override
     @Transactional
     public OrderResponse createOrder(OrderRequest request) {
-        // Validate request
-        if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
-            throw new BusinessLogicException("Order must contain at least one item");
-        }
-        
-        // Check stock for all items
-        for (OrderItemRequest item : request.getOrderItems()) {
-            productService.getProductById(item.getProductId());
-            if (!inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())) {
-                throw new BusinessLogicException("Insufficient stock for product: " + item.getProductId());
-            }
-        }
-        
-        // Create order
+        // Validate và kiểm tra tồn kho
+        validateOrderItems(request);
+
+        // Tính giá
+        long subtotal = calculateSubtotal(request.getOrderItems());
+        long totalPrice = subtotal + SHIPPING_FEE;
+
+        // Tạo order
         String orderId = UUID.randomUUID().toString();
         LocalDateTime now = LocalDateTime.now();
-        
-        // Calculate subtotal from items
-        long subtotal = request.getOrderItems().stream()
-                .mapToLong(item -> item.getPrice() * item.getQuantity())
-                .sum();
-        
-        // Fixed shipping fee (29,900 VND)
-        long shippingFee = 29900L;
-        
-        // Calculate total: subtotal + shipping
-        long totalPrice = subtotal + shippingFee;
-        
+
         Order order = Order.builder()
                 .id(orderId)
                 .userId(request.getUserId())
                 .totalPrice(totalPrice)
-                .shippingFee(shippingFee)
+                .shippingFee(SHIPPING_FEE)
                 .status(OrderStatus.PENDING)
                 .createdDate(now)
                 .lastModifiedDate(now)
                 .orderItems(new ArrayList<>())
                 .build();
-        
-        // Create order items and reserve stock
+
+        // Tạo order items (chưa trừ kho, chờ admin xác nhận mới trừ)
         for (OrderItemRequest itemRequest : request.getOrderItems()) {
             OrderItem orderItem = OrderItem.builder()
                     .productId(itemRequest.getProductId())
@@ -83,12 +72,15 @@ public class OrderServiceImpl implements IOrderService {
                     .price(itemRequest.getPrice())
                     .order(order)
                     .build();
-            
+
             order.getOrderItems().add(orderItem);
-            inventoryService.reserveStock(itemRequest.getProductId(), itemRequest.getQuantity());
         }
-        
+
         Order savedOrder = orderRepository.save(order);
+
+        // Xóa giỏ hàng sau khi đặt hàng thành công
+        cartService.clearCart(request.getUserId());
+
         return orderMapper.toOrderResponse(savedOrder);
     }
 
@@ -114,16 +106,18 @@ public class OrderServiceImpl implements IOrderService {
     public OrderResponse cancelOrder(String orderId) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        
+
         if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
             throw new BusinessLogicException("Cannot cancel order with status: " + order.getStatus());
         }
-        
-        // Release reserved stock
-        for (OrderItem item : order.getOrderItems()) {
-            inventoryService.releaseStock(item.getProductId(), item.getQuantity());
+
+        // Chỉ hoàn kho nếu đơn đã được xác nhận (đã trừ kho trước đó)
+        if (order.getStatus() == OrderStatus.CONFIRMED) {
+            for (OrderItem item : order.getOrderItems()) {
+                inventoryService.releaseStock(item.getProductId(), item.getQuantity());
+            }
         }
-        
+
         order.setStatus(OrderStatus.CANCELLED);
         order.setLastModifiedDate(LocalDateTime.now());
         Order updatedOrder = orderRepository.save(order);
@@ -131,17 +125,82 @@ public class OrderServiceImpl implements IOrderService {
     }
 
     @Override
+    @Transactional
     public OrderResponse updateOrderStatus(String orderId, String status) {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
-        
+
+        OrderStatus newStatus;
         try {
-            order.setStatus(OrderStatus.valueOf(status));
-            order.setLastModifiedDate(LocalDateTime.now());
-            Order updatedOrder = orderRepository.save(order);
-            return orderMapper.toOrderResponse(updatedOrder);
+            newStatus = OrderStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
             throw new BusinessLogicException("Invalid order status: " + status);
         }
+
+        // Admin xác nhận đơn → trừ tồn kho
+        if (newStatus == OrderStatus.CONFIRMED && order.getStatus() == OrderStatus.PENDING) {
+            for (OrderItem item : order.getOrderItems()) {
+                inventoryService.reserveStock(item.getProductId(), item.getQuantity());
+            }
+        }
+
+        order.setStatus(newStatus);
+        order.setLastModifiedDate(LocalDateTime.now());
+        Order updatedOrder = orderRepository.save(order);
+        return orderMapper.toOrderResponse(updatedOrder);
+    }
+
+    @Override
+    public OrderPreviewResponse previewOrder(OrderRequest request) {
+        // Validate và kiểm tra tồn kho
+        validateOrderItems(request);
+
+        // Tính giá
+        long subtotal = calculateSubtotal(request.getOrderItems());
+        long totalPrice = subtotal + SHIPPING_FEE;
+
+        // Build danh sách items cho preview
+        List<OrderItemResponse> previewItems = request.getOrderItems().stream()
+                .map(item -> OrderItemResponse.builder()
+                        .productId(item.getProductId())
+                        .quantity(item.getQuantity())
+                        .price(item.getPrice())
+                        .build())
+                .toList();
+
+        return OrderPreviewResponse.builder()
+                .userId(request.getUserId())
+                .items(previewItems)
+                .subtotal(subtotal)
+                .shippingFee(SHIPPING_FEE)
+                .totalPrice(totalPrice)
+                .build();
+    }
+
+    // ======================== Private Helper Methods ========================
+
+    /*
+     * Validate order items: không rỗng, sản phẩm tồn tại, đủ tồn kho.
+     */
+    private void validateOrderItems(OrderRequest request) {
+        if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+            throw new BusinessLogicException("Order must contain at least one item");
+        }
+
+        for (OrderItemRequest item : request.getOrderItems()) {
+            productService.getProductById(item.getProductId());
+            if (!inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())) {
+                throw new BusinessLogicException("Insufficient stock for product: " + item.getProductId());
+            }
+        }
+    }
+
+    /*
+     * Tính tổng tiền hàng (chưa bao gồm phí ship).
+     */
+    private long calculateSubtotal(List<OrderItemRequest> items) {
+        return items.stream()
+                .mapToLong(item -> item.getPrice() * item.getQuantity())
+                .sum();
     }
 }

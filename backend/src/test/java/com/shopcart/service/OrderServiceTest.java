@@ -62,6 +62,9 @@ class OrderServiceTest {
     @Mock
     private IProductService productService;
 
+    @Mock
+    private ICartService cartService;
+
     @InjectMocks
     private OrderServiceImpl orderService;
 

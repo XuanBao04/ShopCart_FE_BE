@@ -1,6 +1,7 @@
 package com.shopcart.controller;
 
 import com.shopcart.dto.request.OrderRequest;
+import com.shopcart.dto.response.OrderPreviewResponse;
 import com.shopcart.dto.response.OrderResponse;
 import com.shopcart.service.IOrderService;
 import lombok.RequiredArgsConstructor;
@@ -23,6 +24,12 @@ public class OrderController {
     public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request) {
         OrderResponse response = orderService.createOrder(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/preview")
+    public ResponseEntity<OrderPreviewResponse> previewOrder(@RequestBody OrderRequest request) {
+        OrderPreviewResponse response = orderService.previewOrder(request);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{orderId}")

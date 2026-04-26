@@ -1,0 +1,12 @@
+FROM maven:3.9-eclipse-temurin-21-alpine
+WORKDIR /app
+
+# Copy pom.xml trước để cache dependencies
+COPY pom.xml .
+RUN mvn dependency:go-offline -q
+
+# Source code sẽ được mount qua volume, không cần COPY src
+EXPOSE 8080
+
+# Chạy bằng spring-boot:run để devtools hoạt động (hot reload)
+CMD ["mvn", "spring-boot:run", "-Dspring-boot.run.jvmArguments=-Dspring.devtools.restart.pollInterval=2000 -Dspring.devtools.restart.quietPeriod=1000"]

@@ -16,7 +16,6 @@ import com.shopcart.repository.InventoryRepository;
 import com.shopcart.repository.OrderRepository;
 import com.shopcart.repository.ProductRepository;
 import com.shopcart.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,7 +29,6 @@ import java.util.List;
  * Data Initializer - Creates default users on application startup
  */
 @Component
-@RequiredArgsConstructor
 @Slf4j
 public class DataInitializer implements CommandLineRunner {
 
@@ -42,11 +40,26 @@ public class DataInitializer implements CommandLineRunner {
     private final OrderRepository orderRepository;
     private final PasswordEncoder passwordEncoder;
 
+        public DataInitializer(UserRepository userRepository,
+                                                   ProductRepository productRepository,
+                                                   InventoryRepository inventoryRepository,
+                                                   CouponRepository couponRepository,
+                                                   CartRepository cartRepository,
+                                                   OrderRepository orderRepository,
+                                                   PasswordEncoder passwordEncoder) {
+                this.userRepository = userRepository;
+                this.productRepository = productRepository;
+                this.inventoryRepository = inventoryRepository;
+                this.couponRepository = couponRepository;
+                this.cartRepository = cartRepository;
+                this.orderRepository = orderRepository;
+                this.passwordEncoder = passwordEncoder;
+        }
+
     @Override
     public void run(String... args) {
         User customer = createUserIfMissing("customer1", "password123", "Customer One", "customer1@shopcart.com", UserRole.CUSTOMER);
         createUserIfMissing("admin", "admin123", "Administrator", "admin@shopcart.com", UserRole.ADMIN);
-
         createDefaultProducts();
         createDefaultCoupons();
         createDefaultCartItems(customer);
