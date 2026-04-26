@@ -26,25 +26,32 @@ services:
       PGADMIN_DEFAULT_PASSWORD: admin
     ports:
       - "8888:80"
-    depends_on: 
+    depends_on:
       - db
 
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: shopcart_backend
     restart: always
+
     ports:
       - "8080:8080"
+
+    volumes:
+      - ./backend:/app
+      - ~/.m2:/root/.m2
+
     environment:
       DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-shopcart}
       DB_USERNAME: ${POSTGRES_USER:-postgres}
       DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
       SERVER_PORT: 8080
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+
     depends_on:
-      db:
-        condition: service_healthy
+      - db
 
   frontend:
     build:
@@ -59,5 +66,5 @@ services:
     depends_on:
       - backend
 
-volumes: 
+volumes:
   postgres_data:

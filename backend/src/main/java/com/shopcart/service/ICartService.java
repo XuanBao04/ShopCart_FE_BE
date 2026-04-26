@@ -38,9 +38,9 @@ public interface ICartService {
      * @param quantity new quantity
      * @return updated CartResponse
      */
-    CartResponse updateCartItem(String userId, Long cartItemId, Integer quantity);
+    CartResponse updateQuantity(String userId, Long cartItemId, Integer quantity);
 
-    /**
+    /**a
      * Clear all items from cart
      * @param userId the user ID
      */

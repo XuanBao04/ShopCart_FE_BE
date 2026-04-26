@@ -1,6 +1,7 @@
 package com.shopcart.service;
 
 import com.shopcart.dto.response.OrderResponse;
+import com.shopcart.dto.response.OrderPreviewResponse;
 import com.shopcart.dto.request.OrderRequest;
 import java.util.List;
 
@@ -44,4 +45,11 @@ public interface IOrderService {
      * @return updated OrderResponse
      */
     OrderResponse updateOrderStatus(String orderId, String status);
+
+    /**
+     * Preview order price before checkout
+     * @param request OrderRequest containing order details
+     * @return OrderPreviewResponse with price breakdown
+     */
+    OrderPreviewResponse previewOrder(OrderRequest request);
 }

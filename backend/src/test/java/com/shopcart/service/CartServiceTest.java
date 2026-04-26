@@ -257,7 +257,7 @@ class CartServiceTest {
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
 
         // Act
-        CartResponse result = cartService.updateCartItem(testUserId, cartItemId, newQuantity);
+        CartResponse result = cartService.updateQuantity(testUserId, cartItemId, newQuantity);
 
         // Assert
         assertNotNull(result);
