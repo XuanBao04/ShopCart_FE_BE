@@ -44,8 +44,9 @@ public class CartServiceImpl implements ICartService {
                 .orElse(null);
 
         if (cartItem != null) {
-            // Đã có -> cộng dồn số lượng
+            // Đã có -> cộng dồn số lượng và cập nhật thời gian để hiển thị lên đầu
             cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
+            cartItem.setCreatedAt(java.time.LocalDateTime.now());
         } else {
             // Chưa có -> tạo mới
             cartItem = CartItem.builder()
@@ -106,7 +107,7 @@ public class CartServiceImpl implements ICartService {
      * Lấy toàn bộ cart items của user và build thành CartResponse.
      */
     private CartResponse buildCartResponse(String userId) {
-        return cartMapper.toCartResponse(userId, cartRepository.findByUserId(userId));
+        return cartMapper.toCartResponse(userId, cartRepository.findByUserIdOrderByCreatedAtDesc(userId));
     }
 }
 

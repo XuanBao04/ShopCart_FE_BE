@@ -175,12 +175,16 @@ class ResponseDTOTest {
     @DisplayName("Should test all-args constructor for Response DTOs")
     void testResponseAllArgsConstructor() {
         // Act
-        CartItemResponse response = new CartItemResponse(5L, "PROD-005", 10);
+        LocalDateTime now = LocalDateTime.now();
+        CartItemResponse response = new CartItemResponse(5L, "PROD-005", 10, 50000L, 500000L, now);
 
         // Assert
         assertEquals(5L, response.getId());
         assertEquals("PROD-005", response.getProductId());
         assertEquals(10, response.getQuantity());
+        assertEquals(50000L, response.getPrice());
+        assertEquals(500000L, response.getTotalPrice());
+        assertEquals(now, response.getCreatedAt());
     }
 
     @Test

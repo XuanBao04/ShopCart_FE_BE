@@ -7,7 +7,7 @@ import java.util.Optional;
 
 @Repository
 public interface CartRepository extends BaseRepository<CartItem, Long> {
-    List<CartItem> findByUserId(String userId);
+    List<CartItem> findByUserIdOrderByCreatedAtDesc(String userId);
     Optional<CartItem> findByUserIdAndProductId(String userId, String productId);
     void deleteByUserId(String userId);
 }

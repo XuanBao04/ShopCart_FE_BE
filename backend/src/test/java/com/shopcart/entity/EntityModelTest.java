@@ -269,13 +269,15 @@ class EntityModelTest {
     @DisplayName("Should test Lombok all-args constructor")
     void testAllArgsConstructor() {
         // Arrange - Using all-args constructor
-        CartItem item = new CartItem(100L, "user-100", "PROD-100", 5);
+        LocalDateTime now = LocalDateTime.now();
+        CartItem item = new CartItem(100L, "user-100", "PROD-100", 5, now);
 
         // Assert
         assertEquals(100L, item.getId());
         assertEquals("user-100", item.getUserId());
         assertEquals("PROD-100", item.getProductId());
         assertEquals(5, item.getQuantity());
+        assertEquals(now, item.getCreatedAt());
 
         log.debug("CartItem from all-args constructor: {}", item);
     }
