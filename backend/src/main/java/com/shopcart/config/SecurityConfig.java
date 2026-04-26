@@ -30,70 +30,71 @@ import java.util.List;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+        @Bean
+        public PasswordEncoder passwordEncoder() {
+                return new BCryptPasswordEncoder();
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(
-            AuthenticationConfiguration authConfig) throws Exception {
-        return authConfig.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(
+                        AuthenticationConfiguration authConfig) throws Exception {
+                return authConfig.getAuthenticationManager();
+        }
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            // CORS configuration
-            .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            
-            // Disable CSRF for REST API
-            .csrf(csrf -> csrf.disable())
-            
-            // Session management
-            .sessionManagement(session -> session
-                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED)
-            )
-            
-            // Authorization rules
-            .authorizeHttpRequests(auth -> auth
-                // Public endpoints - no authentication required
-                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                .requestMatchers("/api/auth/logout").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/inventory/**").permitAll()
-                
-                // H2 Console (development only)
-                .requestMatchers("/h2-console/**").permitAll()
-                
-                // All other endpoints require authentication
-                .anyRequest().authenticated()
-            )
-            
-            // Allow H2 Console frames
-            .headers(headers -> headers
-                .frameOptions(frame -> frame.sameOrigin())
-            );
+        @Bean
+        public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+                http
+                                // CORS configuration
+                                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-        return http.build();
-    }
+                                // Disable CSRF for REST API
+                                .csrf(csrf -> csrf.disable())
 
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "http://localhost:3000"
-        ));
-        configuration.setAllowedMethods(Arrays.asList(
-                "GET", "POST", "PUT", "DELETE", "OPTIONS"
-        ));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
-        configuration.setMaxAge(3600L);
+                                // Session management
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
 
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/api/**", configuration);
-        return source;
-    }
+                                // Authorization rules
+                                .authorizeHttpRequests(auth -> auth
+                                                // Public endpoints - no authentication required
+                                                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                                                .requestMatchers("/api/auth/logout").permitAll()
+                                                .requestMatchers("/api/products/**").permitAll()
+                                                .requestMatchers("/api/inventory/**").permitAll()
+                                                .requestMatchers("/api/cart/**").permitAll()
+                                                // .requestMatchers(HttpMethod.GET, "/api/cart/**").permitAll()
+                                                // .requestMatchers(HttpMethod.POST, "/api/cart/**").permitAll()
+                                                // .requestMatchers(HttpMethod.PATCH, "/api/cart/**").permitAll()
+                                                // .requestMatchers(HttpMethod.PUT, "/api/cart/**").permitAll()
+                                                // .requestMatchers(HttpMethod.DELETE, "/api/cart/**").permitAll()
+
+                                                // H2 Console (development only)
+                                                .requestMatchers("/h2-console/**").permitAll()
+
+                                                // All other endpoints require authentication
+                                                .anyRequest().authenticated())
+
+                                // Allow H2 Console frames
+                                .headers(headers -> headers
+                                                .frameOptions(frame -> frame.sameOrigin()));
+
+                return http.build();
+        }
+
+        @Bean
+        public CorsConfigurationSource corsConfigurationSource() {
+                CorsConfiguration configuration = new CorsConfiguration();
+                configuration.setAllowedOrigins(Arrays.asList(
+                                "http://localhost:5173",
+                                "http://localhost:3000"));
+                configuration.setAllowedMethods(Arrays.asList(
+                                "GET", "POST", "PUT", "DELETE", "OPTIONS"));
+                configuration.setAllowedHeaders(List.of("*"));
+                configuration.setAllowCredentials(true);
+                configuration.setMaxAge(3600L);
+
+                UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+                source.registerCorsConfiguration("/api/**", configuration);
+                return source;
+        }
 }
