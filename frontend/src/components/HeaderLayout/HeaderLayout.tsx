@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
+import { FaShoppingCart } from "react-icons/fa";
 
 export default function HeaderLayout() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -24,23 +25,38 @@ export default function HeaderLayout() {
     <div className="min-h-screen bg-gray-50">
       <header className="bg-white shadow">
         <nav className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-gray-900">ShopCart</h1>
+          <h1
+            className="text-2xl font-bold text-gray-900 cursor-pointer"
+            onClick={() => navigate("/authenticated/products")}
+          >
+            ShopCart
+          </h1>
 
-          {userId ? (
+          <div className="flex items-center gap-4">
             <button
-              onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              onClick={() => navigate("/authenticated/cart")}
+              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
             >
-              Đăng xuất
+              <FaShoppingCart />
+              Giỏ hàng
             </button>
-          ) : (
-            <button
-              onClick={() => navigate("/login")}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Đăng nhập
-            </button>
-          )}
+
+            {userId ? (
+              <button
+                onClick={handleLogout}
+                className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
+              >
+                Đăng xuất
+              </button>
+            ) : (
+              <button
+                onClick={() => navigate("/login")}
+                className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+              >
+                Đăng nhập
+              </button>
+            )}
+          </div>
         </nav>
       </header>
 

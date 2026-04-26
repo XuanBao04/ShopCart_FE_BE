@@ -1,10 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { loginService } from "@/services/api/loginService";
+import { useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  
+  useEffect(() => {
+    const storedUserId = localStorage.getItem("userId");
+    if (storedUserId) {
+      navigate("/authenticated/products", { replace: true });
+    }
+  }, [navigate]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -19,7 +28,7 @@ const LoginPage = () => {
       if (response) {
         console.log(response);
         localStorage.setItem("userId", response.userId.toString());
-        window.location.href = "/authenticated/products";
+        navigate("/authenticated/products", { replace: true });
       }
     } catch (error) {
       throw error;

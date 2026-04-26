@@ -23,7 +23,7 @@ const Cart = () => {
     return (
       <div className="container mx-auto p-8 text-center">
         <h1 className="text-2xl font-bold mb-4">Giỏ hàng trống</h1>
-        <a href="/" className="text-blue-600 hover:underline">
+        <a href="/authenticated/products" className="text-blue-600 hover:underline">
           Tiếp tục mua sắm
         </a>
       </div>
