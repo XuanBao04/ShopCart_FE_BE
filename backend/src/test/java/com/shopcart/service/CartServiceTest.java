@@ -99,7 +99,7 @@ class CartServiceTest {
     void testGetCart_Success() {
         // Arrange
         List<CartItem> cartItems = Arrays.asList(testCartItem);
-        when(cartRepository.findByUserId(testUserId)).thenReturn(cartItems);
+        when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(cartItems);
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
 
         // Act
@@ -112,7 +112,7 @@ class CartServiceTest {
         assertEquals(50000L, result.getTotalPrice());
 
         // Verify mocks were called
-        verify(cartRepository, times(1)).findByUserId(testUserId);
+        verify(cartRepository, times(1)).findByUserIdOrderByCreatedAtDesc(testUserId);
         verify(cartMapper, times(1)).toCartResponse(testUserId, cartItems);
     }
 
@@ -131,7 +131,7 @@ class CartServiceTest {
         when(cartRepository.findByUserIdAndProductId(testUserId, testCartItemRequest.getProductId()))
                 .thenReturn(Optional.empty());
         when(cartRepository.save(any(CartItem.class))).thenReturn(testCartItem);
-        when(cartRepository.findByUserId(testUserId)).thenReturn(Arrays.asList(testCartItem));
+        when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(Arrays.asList(testCartItem));
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
 
         // Act
@@ -164,7 +164,7 @@ class CartServiceTest {
         when(cartRepository.findByUserIdAndProductId(testUserId, testCartItemRequest.getProductId()))
                 .thenReturn(Optional.of(existingCartItem));
         when(cartRepository.save(any(CartItem.class))).thenReturn(existingCartItem);
-        when(cartRepository.findByUserId(testUserId)).thenReturn(Arrays.asList(existingCartItem));
+        when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(Arrays.asList(existingCartItem));
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
 
         // Act
@@ -181,7 +181,7 @@ class CartServiceTest {
         // Arrange
         long cartItemId = 1L;
         when(cartRepository.findById(cartItemId)).thenReturn(Optional.of(testCartItem));
-        when(cartRepository.findByUserId(testUserId)).thenReturn(Arrays.asList());
+        when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(Arrays.asList());
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(
                 CartResponse.builder()
                         .userId(testUserId)
@@ -253,7 +253,7 @@ class CartServiceTest {
 
         when(cartRepository.findById(cartItemId)).thenReturn(Optional.of(itemToUpdate));
         when(cartRepository.save(any(CartItem.class))).thenReturn(itemToUpdate);
-        when(cartRepository.findByUserId(testUserId)).thenReturn(Arrays.asList(itemToUpdate));
+        when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(Arrays.asList(itemToUpdate));
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
 
         // Act
