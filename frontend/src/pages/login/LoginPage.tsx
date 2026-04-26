@@ -26,7 +26,7 @@ const LoginPage = () => {
     try {
       const response = await loginService(username, password);
       if (response) {
-        console.log(response);
+        // console.log(response);
         localStorage.setItem("userId", response.userId.toString());
         navigate("/authenticated/products", { replace: true });
       }

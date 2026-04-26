@@ -22,7 +22,7 @@ export async function loginService(
       },
     );
     if (response.status === 200) {
-      console.log("Login successful:", response.data);
+      // console.log("Login successful:", response.data);
       return response.data;
     }
     throw new Error("Login failed with status " + response.status);
