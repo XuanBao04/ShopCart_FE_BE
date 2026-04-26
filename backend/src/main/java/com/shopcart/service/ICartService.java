@@ -2,6 +2,7 @@ package com.shopcart.service;
 
 import com.shopcart.dto.response.CartResponse;
 import com.shopcart.dto.request.CartItemRequest;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service interface for Cart operations

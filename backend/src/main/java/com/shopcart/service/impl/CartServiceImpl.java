@@ -11,6 +11,7 @@ import com.shopcart.service.ICartService;
 import com.shopcart.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 /**
  * Service xử lý các thao tác liên quan đến giỏ hàng (Cart).
@@ -80,6 +81,7 @@ public class CartServiceImpl implements ICartService {
     }
 
     @Override
+     @Transactional
     public void clearCart(String userId) {
         cartRepository.deleteByUserId(userId);
     }
