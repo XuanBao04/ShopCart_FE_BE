@@ -1,6 +1,6 @@
-import { useState, useEffect } from "react";
+﻿import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { FaShoppingCart } from "react-icons/fa";
+import { FaShoppingCart, FaClipboardList } from "react-icons/fa";
 import apiClient from "../../services/api/apiClient";
 
 export default function HeaderLayout() {
@@ -47,6 +47,14 @@ export default function HeaderLayout() {
               Giỏ hàng
             </button>
 
+            <button
+              onClick={() => navigate("/authenticated/orders")}
+              className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 flex items-center gap-2"
+            >
+              <FaClipboardList />
+              Đơn hàng
+            </button>
+
             {userId ? (
               <button
                 onClick={handleLogout}
@@ -74,3 +82,4 @@ export default function HeaderLayout() {
     </div>
   );
 }
+
