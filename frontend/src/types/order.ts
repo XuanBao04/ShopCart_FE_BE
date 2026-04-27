@@ -15,6 +15,7 @@ export interface OrderItemResponse {
   productId: string;
   quantity: number;
   price: number;
+  name: string;
 }
 
 export interface OrderRequest {
@@ -29,4 +30,7 @@ export interface OrderResponse {
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
   createdDate: string;
   lastModifiedDate: string;
+  totalPrice: number;
+  name: string;
+  date: string;
 }

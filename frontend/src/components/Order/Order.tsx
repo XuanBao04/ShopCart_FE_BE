@@ -44,7 +44,7 @@ export default function Order() {
         {orders.map((order) => (
           <li key={order.id} className="border p-4 rounded">
             <h2 className="text-xl font-bold">Đơn hàng #{order.id}</h2>
-            <p>Ngày đặt: {new Date(order.date).toLocaleDateString()}</p>
+            <p>Ngày đặt: {order.date ? new Date(order.date).toLocaleDateString() : "Không xác định"}</p>
             <p>Tổng tiền: {order.totalPrice} VND</p>
             <ul className="mt-2 space-y-1">
               {order.items.map((item) => (
