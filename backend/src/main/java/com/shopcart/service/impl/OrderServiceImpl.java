@@ -41,7 +41,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     @Transactional
-    public OrderResponse createOrder(OrderRequest request) {
+    public OrderResponse createOrder(OrderRequest request,String userId ) {
         // Validate và kiểm tra tồn kho
         validateOrderItems(request);
 
@@ -55,7 +55,7 @@ public class OrderServiceImpl implements IOrderService {
 
         Order order = Order.builder()
                 .id(orderId)
-                .userId(request.getUserId())
+                .userId(userId)
                 .totalPrice(totalPrice)
                 .shippingFee(SHIPPING_FEE)
                 .status(OrderStatus.PENDING)
@@ -79,9 +79,16 @@ public class OrderServiceImpl implements IOrderService {
         Order savedOrder = orderRepository.save(order);
 
         // Xóa giỏ hàng sau khi đặt hàng thành công
-        cartService.clearCart(request.getUserId());
+        cartService.clearCart(userId);
 
         return orderMapper.toOrderResponse(savedOrder);
+    }
+    @Override
+    public List<OrderResponse> getAllOrders(){
+        List<Order> orders = orderRepository.findAll();
+        return orders.stream()
+                .map(orderMapper::toOrderResponse)
+                .toList();
     }
 
     @Override
@@ -93,9 +100,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public List<OrderResponse> getUserOrders(String userId) {
-        List<Order> orders = orderRepository.findAll().stream()
-                .filter(o -> o.getUserId().equals(userId))
-                .toList();
+        List<Order> orders = orderRepository.findByUserId(userId);
         return orders.stream()
                 .map(orderMapper::toOrderResponse)
                 .toList();

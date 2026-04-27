@@ -6,6 +6,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -27,6 +28,7 @@ import java.util.List;
  */
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -59,9 +61,10 @@ public class SecurityConfig {
                                                 // Public endpoints - no authentication required
                                                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                                                 .requestMatchers("/api/auth/logout").permitAll()
-                                                .requestMatchers("/api/products/**").permitAll()
+                                                .requestMatchers("/api/products/**").authenticated()
                                                 .requestMatchers("/api/inventory/**").permitAll()
                                                 .requestMatchers("/api/cart/**").permitAll()
+                                                .requestMatchers("/api/orders/**").authenticated()
                                                 // .requestMatchers(HttpMethod.GET, "/api/cart/**").permitAll()
                                                 // .requestMatchers(HttpMethod.POST, "/api/cart/**").permitAll()
                                                 // .requestMatchers(HttpMethod.PATCH, "/api/cart/**").permitAll()

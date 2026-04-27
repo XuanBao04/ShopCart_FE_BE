@@ -15,7 +15,7 @@ public interface IOrderService {
      * @param request OrderRequest containing order details
      * @return created OrderResponse
      */
-    OrderResponse createOrder(OrderRequest request);
+    OrderResponse createOrder(OrderRequest request,String userId);
 
     /**
      * Get order by ID
@@ -52,4 +52,10 @@ public interface IOrderService {
      * @return OrderPreviewResponse with price breakdown
      */
     OrderPreviewResponse previewOrder(OrderRequest request);
+
+    /**
+     * Get all orders
+     * @return list of all OrderResponse
+     */
+    List<OrderResponse> getAllOrders();
 }

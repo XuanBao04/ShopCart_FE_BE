@@ -137,7 +137,7 @@ class OrderServiceTest {
             when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
 
             // Act
-            OrderResponse result = orderService.createOrder(testOrderRequest);
+            OrderResponse result = orderService.createOrder(testOrderRequest, testUserId);
 
             // Assert
             assertNotNull(result);
@@ -187,7 +187,7 @@ class OrderServiceTest {
             });
 
             // Act
-            OrderResponse result = orderService.createOrder(multiItemRequest);
+            OrderResponse result = orderService.createOrder(multiItemRequest, testUserId);
 
             // Assert
             Order capturedOrder = orderCaptor.getValue();
@@ -213,7 +213,7 @@ class OrderServiceTest {
 
             // Act & Assert
             assertThrows(BusinessLogicException.class, () -> {
-                orderService.createOrder(emptyRequest);
+                orderService.createOrder(emptyRequest, testUserId);
             });
 
             verify(orderRepository, never()).save(any());
@@ -240,7 +240,7 @@ class OrderServiceTest {
 
             // Act & Assert
             assertThrows(ResourceNotFoundException.class, () -> {
-                orderService.createOrder(request);
+                orderService.createOrder(request, testUserId);
             });
 
             verify(orderRepository, never()).save(any());
@@ -256,7 +256,7 @@ class OrderServiceTest {
 
             // Act & Assert
             assertThrows(BusinessLogicException.class, () -> {
-                orderService.createOrder(testOrderRequest);
+                orderService.createOrder(testOrderRequest, testUserId);
             });
 
             verify(orderRepository, never()).save(any());
@@ -354,7 +354,7 @@ class OrderServiceTest {
                 });
 
                 // Act
-                OrderResponse result = orderService.createOrder(request);
+                OrderResponse result = orderService.createOrder(request, testUserId);
 
                 // Assert
                 assertEquals(29900L, result.getShippingFee());
@@ -362,6 +362,209 @@ class OrderServiceTest {
 
                 log.info("Verified shipping fee (29,900 VND) for subtotal: {} VND", subtotal);
             }
+        }
+    }
+
+    @Nested
+    @DisplayName("Order Status Update Tests")
+    class UpdateOrderStatusTests {
+
+        @Test
+        @DisplayName("Should update order status from PENDING to CONFIRMED and reserve stock")
+        void testUpdateOrderStatus_PendingToConfirmed_Success() {
+            // Arrange
+            String orderId = "ORD-001";
+            OrderItem item1 = OrderItem.builder()
+                    .productId("PROD-001")
+                    .quantity(2)
+                    .price(50000L)
+                    .build();
+
+            Order order = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .status(OrderStatus.PENDING)
+                    .orderItems(Arrays.asList(item1))
+                    .totalPrice(129900L)
+                    .shippingFee(29900L)
+                    .build();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                return savedOrder;
+            });
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act
+            OrderResponse result = orderService.updateOrderStatus(orderId, "CONFIRMED");
+
+            // Assert
+            assertNotNull(result);
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+            verify(orderRepository).save(orderCaptor.capture());
+            Order capturedOrder = orderCaptor.getValue();
+            assertEquals(OrderStatus.CONFIRMED, capturedOrder.getStatus());
+
+            // Verify stock reservation was called
+            verify(inventoryService).reserveStock("PROD-001", 2);
+
+            verify(orderMapper).toOrderResponse(any(Order.class));
+            log.info("Order status updated to CONFIRMED and stock reserved for: {}", orderId);
+        }
+
+        @Test
+        @DisplayName("Should update order status without reserving stock when not transitioning to CONFIRMED")
+        void testUpdateOrderStatus_ToShipped_NoStockReservation() {
+            // Arrange
+            String orderId = "ORD-001";
+            OrderItem item1 = OrderItem.builder()
+                    .productId("PROD-001")
+                    .quantity(2)
+                    .price(50000L)
+                    .build();
+
+            Order order = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .status(OrderStatus.CONFIRMED)
+                    .orderItems(Arrays.asList(item1))
+                    .totalPrice(129900L)
+                    .shippingFee(29900L)
+                    .build();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                return savedOrder;
+            });
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act
+            OrderResponse result = orderService.updateOrderStatus(orderId, "SHIPPED");
+
+            // Assert
+            assertNotNull(result);
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+            verify(orderRepository).save(orderCaptor.capture());
+            Order capturedOrder = orderCaptor.getValue();
+            assertEquals(OrderStatus.SHIPPED, capturedOrder.getStatus());
+
+            // Verify stock reservation was NOT called
+            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+
+            log.info("Order status updated to SHIPPED without stock reservation for: {}", orderId);
+        }
+
+        @Test
+        @DisplayName("Should update last modified date when status is updated")
+        void testUpdateOrderStatus_UpdatesLastModifiedDate() {
+            // Arrange
+            String orderId = "ORD-001";
+            Order order = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .status(OrderStatus.PENDING)
+                    .orderItems(new ArrayList<>())
+                    .build();
+
+            LocalDateTime beforeUpdate = LocalDateTime.now();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
+                Order savedOrder = invocation.getArgument(0);
+                return savedOrder;
+            });
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act
+            OrderResponse result = orderService.updateOrderStatus(orderId, "CANCELLED");
+
+            // Assert
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+            verify(orderRepository).save(orderCaptor.capture());
+            Order capturedOrder = orderCaptor.getValue();
+            
+            assertNotNull(capturedOrder.getLastModifiedDate());
+            assertTrue(capturedOrder.getLastModifiedDate().isAfter(beforeUpdate) || 
+                      capturedOrder.getLastModifiedDate().isEqual(beforeUpdate));
+
+            log.info("Last modified date updated for order: {}", orderId);
+        }
+
+        @Test
+        @DisplayName("Should throw exception when order not found")
+        void testUpdateOrderStatus_OrderNotFound_ThrowsException() {
+            // Arrange
+            String orderId = "ORD-999";
+            when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+
+            // Act & Assert
+            assertThrows(ResourceNotFoundException.class, () -> {
+                orderService.updateOrderStatus(orderId, "CONFIRMED");
+            });
+
+            verify(orderRepository).findById(orderId);
+            verify(orderRepository, never()).save(any());
+            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+
+            log.info("Validation: Non-existent order correctly rejected");
+        }
+
+        @Test
+        @DisplayName("Should throw exception for invalid order status")
+        void testUpdateOrderStatus_InvalidStatus_ThrowsException() {
+            // Arrange
+            String orderId = "ORD-001";
+            Order order = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .status(OrderStatus.PENDING)
+                    .build();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+
+            // Act & Assert
+            assertThrows(BusinessLogicException.class, () -> {
+                orderService.updateOrderStatus(orderId, "INVALID_STATUS");
+            });
+
+            verify(orderRepository).findById(orderId);
+            verify(orderRepository, never()).save(any());
+            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+
+            log.info("Validation: Invalid status correctly rejected");
+        }
+
+        @Test
+        @DisplayName("Should not reserve stock when order is already CONFIRMED")
+        void testUpdateOrderStatus_AlreadyConfirmed_NoDoubleReservation() {
+            // Arrange
+            String orderId = "ORD-001";
+            OrderItem item = OrderItem.builder()
+                    .productId("PROD-001")
+                    .quantity(2)
+                    .build();
+
+            Order order = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .status(OrderStatus.CONFIRMED)  // Already CONFIRMED
+                    .orderItems(Arrays.asList(item))
+                    .build();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> 
+                    invocation.getArgument(0));
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act - Updating to CONFIRMED again (should not trigger stock reservation)
+            orderService.updateOrderStatus(orderId, "CONFIRMED");
+
+            // Assert
+            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+
+            log.info("Stock reservation correctly skipped for already CONFIRMED order: {}", orderId);
         }
     }
 }
