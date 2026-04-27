@@ -23,17 +23,16 @@ const apiClient: AxiosInstance = axios.create({
 //   (error) => Promise.reject(error)
 // );
 
-// Response interceptor
-// apiClient.interceptors.response.use(
-//   (response) => response,
-//   (error: AxiosError) => {
-//     if (error.response?.status === 401) {
-//       // Handle unauthorized
-//       localStorage.removeItem('authToken');
-//       window.location.href = '/login';
-//     }
-//     return Promise.reject(error);
-//   }
-// );
+// Response interceptor - redirect to login on 401
+apiClient.interceptors.response.use(
+  (response) => response,
+  (error: AxiosError) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('userId');
+      window.location.href = '/login';
+    }
+    return Promise.reject(error);
+  }
+);
 
 export default apiClient;

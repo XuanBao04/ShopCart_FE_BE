@@ -31,7 +31,7 @@ const Cart = () => {
       await clear();
       window.location.href = "/authenticated/orders";
     } catch (error) {
-      throw new Error("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại.");
+      alert("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại.");
     }
   };
 

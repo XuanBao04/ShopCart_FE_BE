@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FaShoppingCart } from "react-icons/fa";
+import apiClient from "../../services/api/apiClient";
 
 export default function HeaderLayout() {
   const [userId, setUserId] = useState<string | null>(null);
@@ -15,7 +16,12 @@ export default function HeaderLayout() {
     }
   }, []);
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
+    try {
+      await apiClient.post("/auth/logout");
+    } catch (error) {
+      // Continue with client-side logout even if server logout fails
+    }
     localStorage.removeItem("userId");
     setUserId(null);
     navigate("/login"); // chuyển về login

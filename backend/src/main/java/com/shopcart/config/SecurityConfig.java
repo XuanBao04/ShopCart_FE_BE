@@ -19,6 +19,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import jakarta.servlet.http.HttpServletResponse;
 
 /**
  * Spring Security Configuration
@@ -76,6 +77,19 @@ public class SecurityConfig {
 
                                                 // All other endpoints require authentication
                                                 .anyRequest().authenticated())
+
+                                // Return 401 for unauthenticated requests (instead of redirect/403)
+                                .exceptionHandling(exception -> exception
+                                                .authenticationEntryPoint((request, response, authException) -> {
+                                                        response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                                                        response.setContentType("application/json");
+                                                        response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Vui lòng đăng nhập để tiếp tục.\"}");
+                                                })
+                                                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                                                        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                                        response.setContentType("application/json");
+                                                        response.getWriter().write("{\"error\": \"Forbidden\", \"message\": \"Bạn không có quyền truy cập.\"}");
+                                                }))
 
                                 // Allow H2 Console frames
                                 .headers(headers -> headers

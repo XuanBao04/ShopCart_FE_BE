@@ -1,4 +1,4 @@
-import axios from "axios";
+import apiClient from "./apiClient";
 
 export interface LoginResponse {
   userId: number;
@@ -13,20 +13,15 @@ export async function loginService(
   username: string,
   password: string,
 ): Promise<LoginResponse> {
-  try {
-    const response = await axios.post<LoginResponse>(
-      "http://localhost:8080/api/auth/login",
-      {
-        username,
-        password,
-      },
-    );
-    if (response.status === 200) {
-      // console.log("Login successful:", response.data);
-      return response.data;
-    }
-    throw new Error("Login failed with status " + response.status);
-  } catch (error) {
-    throw error;
+  const response = await apiClient.post<LoginResponse>(
+    "/auth/login",
+    {
+      username,
+      password,
+    },
+  );
+  if (response.status === 200) {
+    return response.data;
   }
+  throw new Error("Login failed with status " + response.status);
 }
