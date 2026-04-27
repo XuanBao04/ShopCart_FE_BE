@@ -61,7 +61,7 @@ public class SecurityConfig {
                                                 // Public endpoints - no authentication required
                                                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                                                 .requestMatchers("/api/auth/logout").permitAll()
-                                                .requestMatchers("/api/products/**").authenticated()
+                                                .requestMatchers("/api/products/**").permitAll()
                                                 .requestMatchers("/api/inventory/**").permitAll()
                                                 .requestMatchers("/api/cart/**").permitAll()
                                                 .requestMatchers("/api/orders/**").authenticated()
