@@ -13,6 +13,7 @@ export interface CartItemResponse {
   id: number;
   productId: string;
   quantity: number;
+  price: number;
 }
 
 export interface CartResponse {

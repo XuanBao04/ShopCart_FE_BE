@@ -3,8 +3,8 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import HeaderLayout from "./components/HeaderLayout/HeaderLayout";
 import ProductList from "./components/ProductList/ProductList";
 import Cart from "./components/Cart/Cart";
-import Checkout from "./components/Checkout/Checkout";
 import LoginPage from "./pages/login/LoginPage";
+import Order from "./components/Order/Order";
 
 function App() {
   return (
@@ -15,7 +15,7 @@ function App() {
         <Route path="/authenticated" element={<HeaderLayout />}>
           <Route path="products" element={<ProductList />} />
           <Route path="cart" element={<Cart />} />
-          <Route path="checkout" element={<Checkout />} />
+          <Route path="orders" element={<Order />} />
         </Route>
       </Routes>
     </BrowserRouter>
