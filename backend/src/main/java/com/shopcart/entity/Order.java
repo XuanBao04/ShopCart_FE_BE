@@ -37,8 +37,8 @@ public class Order {
     @Column(nullable = false)
     private OrderStatus status; 
 
-    @Column(name = "created_date")
-    private LocalDateTime createdDate;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt;
 
     @Column(name = "last_modified_date")
     private LocalDateTime lastModifiedDate;

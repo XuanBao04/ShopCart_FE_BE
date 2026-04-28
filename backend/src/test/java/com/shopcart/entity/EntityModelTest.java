@@ -66,7 +66,7 @@ class EntityModelTest {
                 .shippingFee(10000L)
                 .couponCode("SAVE10")
                 .status(OrderStatus.PENDING)
-                .createdDate(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .lastModifiedDate(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .build();
@@ -162,7 +162,7 @@ class EntityModelTest {
                 .userId("user-002")
                 .totalPrice(200000L)
                 .status(OrderStatus.PROCESSING)
-                .createdDate(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .orderItems(new ArrayList<>())
                 .build();
 
@@ -228,7 +228,7 @@ class EntityModelTest {
                 .userId("user-003")
                 .totalPrice(100000L)
                 .status(OrderStatus.PENDING)
-                .createdDate(LocalDateTime.now())
+                .createdAt(LocalDateTime.now())
                 .build();
 
         // Act - Progress order through statuses

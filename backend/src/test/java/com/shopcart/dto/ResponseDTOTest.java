@@ -93,7 +93,7 @@ class ResponseDTOTest {
                 .userId("user-001")
                 .items(new ArrayList<>())
                 .status("PENDING")
-                .createdDate(now)
+                .createdAt(now)
                 .lastModifiedDate(now)
                 .build();
 
@@ -101,7 +101,7 @@ class ResponseDTOTest {
         assertEquals("ORD-001", response.getId());
         assertEquals("user-001", response.getUserId());
         assertEquals("PENDING", response.getStatus());
-        assertNotNull(response.getCreatedDate());
+        assertNotNull(response.getCreatedAt());
         assertNotNull(response.getLastModifiedDate());
 
         log.debug("OrderResponse: {}", response);

@@ -130,7 +130,7 @@ class OrderServiceTest {
             when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> {
                 Order order = invocation.getArgument(0);
                 order.setId("ORD-001");
-                order.setCreatedDate(LocalDateTime.now());
+                order.setCreatedAt(LocalDateTime.now());
                 order.setLastModifiedDate(LocalDateTime.now());
                 return order;
             });

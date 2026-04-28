@@ -7,4 +7,5 @@ import java.util.List;
 @Repository
 public interface OrderRepository extends BaseRepository<Order, String> {
     List<Order> findByUserId(String userId);
+    List<Order> findByUserIdOrderByCreatedAtDesc(String userId);
 }

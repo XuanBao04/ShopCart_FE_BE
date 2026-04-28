@@ -1,7 +1,9 @@
-# Điều phối môi trường chạy (test,dev)
 spring:
   application:
     name: shopcart-api
   profiles:
-    # Ứng dụng sẽ chạy ở môi trường 'dev' (PostgreSQL)
     active: dev
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+    time-zone: Asia/Ho_Chi_Minh

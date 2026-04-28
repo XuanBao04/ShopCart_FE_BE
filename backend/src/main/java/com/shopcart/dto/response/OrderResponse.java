@@ -18,6 +18,6 @@ public class OrderResponse {
     private Long shippingFee;
     private Long totalPrice;
     private String status;
-    private LocalDateTime createdDate;
+    private LocalDateTime createdAt;
     private LocalDateTime lastModifiedDate;
 }

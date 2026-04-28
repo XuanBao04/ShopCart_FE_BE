@@ -72,6 +72,7 @@ public class AuthServiceImpl implements IAuthService {
     private AuthResponse toAuthResponse(User user, String message) {
         return AuthResponse.builder()
                 .userId(user.getId())
+                
                 .username(user.getUsername())
                 .fullName(user.getFullName())
                 .email(user.getEmail())

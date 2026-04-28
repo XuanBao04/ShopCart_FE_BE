@@ -20,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -51,7 +52,7 @@ public class OrderServiceImpl implements IOrderService {
 
         // Tạo order
         String orderId = UUID.randomUUID().toString();
-        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime now = LocalDateTime.now(ZoneId.of("Asia/Ho_Chi_Minh"));
 
         Order order = Order.builder()
                 .id(orderId)
@@ -59,7 +60,7 @@ public class OrderServiceImpl implements IOrderService {
                 .totalPrice(totalPrice)
                 .shippingFee(SHIPPING_FEE)
                 .status(OrderStatus.PENDING)
-                .createdDate(now)
+                .createdAt(now)
                 .lastModifiedDate(now)
                 .orderItems(new ArrayList<>())
                 .build();
@@ -100,7 +101,7 @@ public class OrderServiceImpl implements IOrderService {
 
     @Override
     public List<OrderResponse> getUserOrders(String userId) {
-        List<Order> orders = orderRepository.findByUserId(userId);
+        List<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
         return orders.stream()
                 .map(orderMapper::toOrderResponse)
                 .toList();

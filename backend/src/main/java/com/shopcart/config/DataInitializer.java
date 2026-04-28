@@ -177,7 +177,7 @@ public class DataInitializer implements CommandLineRunner {
                 .shippingFee(29900L)
                 .couponCode("WELCOME10")
                 .status(OrderStatus.DELIVERED)
-                .createdDate(now.minusDays(5))
+                .createdAt(now.minusDays(5))
                 .lastModifiedDate(now.minusDays(3))
                 .orderItems(new ArrayList<>())
                 .build();
@@ -191,7 +191,7 @@ public class DataInitializer implements CommandLineRunner {
                 .shippingFee(29900L)
                 .couponCode(null)
                 .status(OrderStatus.PENDING)
-                .createdDate(now.minusHours(6))
+                .createdAt(now.minusHours(6))
                 .lastModifiedDate(now.minusHours(2))
                 .orderItems(new ArrayList<>())
                 .build();

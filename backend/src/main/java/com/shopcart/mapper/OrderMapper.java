@@ -30,7 +30,7 @@ public class OrderMapper {
                 .shippingFee(order.getShippingFee())
                 .totalPrice(order.getTotalPrice())
                 .status(order.getStatus() != null ? order.getStatus().toString() : null)
-                .createdDate(order.getCreatedDate())
+                .createdAt(order.getCreatedAt())
                 .lastModifiedDate(order.getLastModifiedDate())
                 .build();
     }
