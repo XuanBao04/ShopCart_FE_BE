@@ -204,4 +204,134 @@ class ResponseDTOTest {
         assertEquals("New Product", response.getName());
         assertEquals(50000L, response.getPrice());
     }
+
+    @Test
+    @DisplayName("Should build OrderResponse with shipping address fields")
+    void testOrderResponseWithShippingAddress() {
+        // Arrange & Act
+        OrderResponse response = OrderResponse.builder()
+                .id("ORD-ADDR-001")
+                .userId("user-001")
+                .items(new ArrayList<>())
+                .subtotal(100000L)
+                .discountAmount(10000L)
+                .shippingFee(29900L)
+                .totalPrice(119900L)
+                .couponCode("SUMMER10")
+                .status("PENDING")
+                .shippingAddress("123 Đường Nguyễn Huệ")
+                .city("TP Hồ Chí Minh")
+                .district("Quận 1")
+                .ward("Phường Bến Nghé")
+                .postalCode("700000")
+                .phoneNumber("0912345678")
+                .build();
+
+        // Assert
+        assertEquals("ORD-ADDR-001", response.getId());
+        assertEquals("user-001", response.getUserId());
+        assertEquals("123 Đường Nguyễn Huệ", response.getShippingAddress());
+        assertEquals("TP Hồ Chí Minh", response.getCity());
+        assertEquals("Quận 1", response.getDistrict());
+        assertEquals("Phường Bến Nghé", response.getWard());
+        assertEquals("700000", response.getPostalCode());
+        assertEquals("0912345678", response.getPhoneNumber());
+        assertEquals(119900L, response.getTotalPrice());
+
+        log.info("OrderResponse with address: {}", response);
+    }
+
+    @Test
+    @DisplayName("Should handle optional postal code in OrderResponse")
+    void testOrderResponseOptionalPostalCode() {
+        // Arrange & Act
+        OrderResponse response = OrderResponse.builder()
+                .id("ORD-ADDR-002")
+                .userId("user-002")
+                .items(new ArrayList<>())
+                .subtotal(50000L)
+                .discountAmount(0L)
+                .shippingFee(29900L)
+                .totalPrice(79900L)
+                .status("PENDING")
+                .shippingAddress("456 Đường Lê Lợi")
+                .city("Hà Nội")
+                .district("Quận Ba Đình")
+                .ward("Phường Cát Linh")
+                .postalCode(null)
+                .phoneNumber("0987654321")
+                .build();
+
+        // Assert
+        assertNull(response.getPostalCode());
+        assertNotNull(response.getShippingAddress());
+        assertEquals("0987654321", response.getPhoneNumber());
+
+        log.info("OrderResponse without postal code: {}", response);
+    }
+
+    @Test
+    @DisplayName("Should test OrderResponse address fields equality")
+    void testOrderResponseAddressEquality() {
+        // Arrange
+        OrderResponse response1 = OrderResponse.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .items(new ArrayList<>())
+                .subtotal(100000L)
+                .discountAmount(0L)
+                .shippingFee(29900L)
+                .totalPrice(129900L)
+                .status("PENDING")
+                .shippingAddress("789 Đường A")
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .build();
+
+        OrderResponse response2 = OrderResponse.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .items(new ArrayList<>())
+                .subtotal(100000L)
+                .discountAmount(0L)
+                .shippingFee(29900L)
+                .totalPrice(129900L)
+                .status("PENDING")
+                .shippingAddress("789 Đường A")
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .build();
+
+        OrderResponse response3 = OrderResponse.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .items(new ArrayList<>())
+                .subtotal(100000L)
+                .discountAmount(0L)
+                .shippingFee(29900L)
+                .totalPrice(129900L)
+                .status("PENDING")
+                .shippingAddress("999 Đường B")  // Different address
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .build();
+
+        // Assert - Same address should be equal
+        assertEquals(response1, response2);
+        assertEquals(response1.hashCode(), response2.hashCode());
+        
+        // Different address should not be equal
+        assertNotEquals(response1, response3);
+
+        log.info("OrderResponse address equality verified");
+    }
 }

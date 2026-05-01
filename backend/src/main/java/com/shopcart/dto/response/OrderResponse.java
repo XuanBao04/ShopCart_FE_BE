@@ -23,4 +23,12 @@ public class OrderResponse {
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime lastModifiedDate;
+
+    // Shipping address fields
+    private String shippingAddress;
+    private String city;
+    private String district;
+    private String ward;
+    private String postalCode;
+    private String phoneNumber;
 }

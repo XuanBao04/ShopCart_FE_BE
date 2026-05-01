@@ -22,4 +22,21 @@ public class OrderRequest {
     private List<OrderItemRequest> orderItems;
 
     private String couponCode;  // Optional coupon code
+
+    @NotBlank(message = "Shipping address is required")
+    private String shippingAddress;
+
+    @NotBlank(message = "City is required")
+    private String city;
+
+    @NotBlank(message = "District is required")
+    private String district;
+
+    @NotBlank(message = "Ward is required")
+    private String ward;
+
+    private String postalCode;  // Optional postal code
+
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
 }

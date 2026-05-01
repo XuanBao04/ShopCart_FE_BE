@@ -18,13 +18,22 @@ export interface OrderItemResponse {
   name: string;
 }
 
-export interface OrderRequest {
+export interface ShippingAddress {
+  shippingAddress: string;
+  city: string;
+  district: string;
+  ward: string;
+  postalCode?: string;
+  phoneNumber: string;
+}
+
+export interface OrderRequest extends ShippingAddress {
   userId: string;
   orderItems: OrderItemRequest[];
   couponCode?: string;
 }
 
-export interface OrderResponse {
+export interface OrderResponse extends ShippingAddress {
   id: string;
   userId: string;
   items: OrderItemResponse[];

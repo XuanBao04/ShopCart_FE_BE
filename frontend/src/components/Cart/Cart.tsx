@@ -4,8 +4,10 @@ import { formatPrice } from "../../utils/priceCalculation";
 import CartItem from "./CartItem";
 import CouponInput from "./CouponInput";
 import PriceBreakdown from "./PriceBreakdown";
+import AddressForm from "./AddressForm";
 import { orderService } from "../../services/api/orderService";
 import { Navigate } from "react-router-dom";
+import { ShippingAddress } from "../../types/order";
 
 const SHIPPING_FEE = 29900;
 
@@ -17,6 +19,14 @@ const Cart = () => {
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
   const [orderPreview, setOrderPreview] = useState<any>(null);
+  const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
+    shippingAddress: "",
+    city: "",
+    district: "",
+    ward: "",
+    postalCode: "",
+    phoneNumber: "",
+  });
 
   // Recalculate when cart or coupon changes
   useEffect(() => {
@@ -43,7 +53,19 @@ const Cart = () => {
         return <Navigate to="/authenticated/products" />;
       }
 
-      // Create order with coupon if applied
+      // Validate address fields
+      if (
+        !shippingAddress.shippingAddress ||
+        !shippingAddress.city ||
+        !shippingAddress.district ||
+        !shippingAddress.ward ||
+        !shippingAddress.phoneNumber
+      ) {
+        alert("Vui lòng điền đầy đủ thông tin giao hàng.");
+        return;
+      }
+
+      // Create order with coupon and address if applied
       const orderRequest = {
         userId,
         orderItems: cart.items.map((item) => ({
@@ -52,6 +74,7 @@ const Cart = () => {
           price: item.price,
         })),
         couponCode: couponCode || undefined,
+        ...shippingAddress,
       };
 
       await orderService.createOrder(orderRequest);
@@ -99,8 +122,9 @@ const Cart = () => {
       <h1 className="text-3xl font-bold mb-8">Giỏ hàng</h1>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Cart Items */}
-        <div className="lg:col-span-2">
+        {/* Left Column: Cart Items and Address */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Cart Items */}
           <div className="border rounded-lg p-4">
             {cart.items.map((item) => (
               <CartItem
@@ -111,9 +135,12 @@ const Cart = () => {
               />
             ))}
           </div>
+
+          {/* Address Form */}
+          <AddressForm onAddressChange={setShippingAddress} />
         </div>
 
-        {/* Cart Summary */}
+        {/* Right Column: Cart Summary */}
         <div className="space-y-4">
           {/* Coupon Input */}
           <CouponInput

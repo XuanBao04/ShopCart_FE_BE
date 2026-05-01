@@ -37,6 +37,24 @@ public class Order {
     @Column(name = "coupon_code", length = 50)
     private String couponCode;
 
+    @Column(name = "shipping_address", length = 255)
+    private String shippingAddress;
+
+    @Column(name = "city", length = 100)
+    private String city;
+
+    @Column(name = "district", length = 100)
+    private String district;
+
+    @Column(name = "ward", length = 100)
+    private String ward;
+
+    @Column(name = "postal_code", length = 20)
+    private String postalCode;
+
+    @Column(name = "phone_number", length = 20)
+    private String phoneNumber;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private OrderStatus status; 

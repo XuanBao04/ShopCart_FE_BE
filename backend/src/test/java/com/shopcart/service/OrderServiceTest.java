@@ -14,6 +14,7 @@ import com.shopcart.exception.ResourceNotFoundException;
 import com.shopcart.mapper.OrderMapper;
 import com.shopcart.repository.OrderRepository;
 import com.shopcart.service.impl.OrderServiceImpl;
+import com.shopcart.service.ICouponService;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -64,6 +65,9 @@ class OrderServiceTest {
 
     @Mock
     private ICartService cartService;
+
+    @Mock
+    private ICouponService couponService;
 
     @InjectMocks
     private OrderServiceImpl orderService;
@@ -565,6 +569,214 @@ class OrderServiceTest {
             verify(inventoryService, never()).confirmStock(anyString(), anyInt());
 
             log.info("Stock confirmation correctly skipped for already CONFIRMED order: {}", orderId);
+        }
+    }
+
+    @Nested
+    @DisplayName("Shipping Address Tests")
+    class ShippingAddressTests {
+
+        @Test
+        @DisplayName("Should save shipping address when creating order")
+        void testCreateOrder_SavesShippingAddress() {
+            // Arrange
+            OrderItemRequest itemRequest = OrderItemRequest.builder()
+                    .productId("PROD-001")
+                    .quantity(1)
+                    .price(100000L)
+                    .build();
+
+            OrderRequest request = OrderRequest.builder()
+                    .userId(testUserId)
+                    .orderItems(Arrays.asList(itemRequest))
+                    .shippingAddress("123 Đường Nguyễn Huệ")
+                    .city("TP Hồ Chí Minh")
+                    .district("Quận 1")
+                    .ward("Phường Bến Nghé")
+                    .postalCode("700000")
+                    .phoneNumber("0912345678")
+                    .build();
+
+            when(productService.getProductById("PROD-001")).thenReturn(testProduct);
+            when(inventoryService.hasEnoughStock("PROD-001", 1)).thenReturn(true);
+
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+            when(orderRepository.save(orderCaptor.capture())).thenAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                order.setId("ORD-ADDR-001");
+                order.setCreatedAt(LocalDateTime.now());
+                return order;
+            });
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act
+            orderService.createOrder(request, testUserId);
+
+            // Assert
+            Order capturedOrder = orderCaptor.getValue();
+            assertEquals("123 Đường Nguyễn Huệ", capturedOrder.getShippingAddress());
+            assertEquals("TP Hồ Chí Minh", capturedOrder.getCity());
+            assertEquals("Quận 1", capturedOrder.getDistrict());
+            assertEquals("Phường Bến Nghé", capturedOrder.getWard());
+            assertEquals("700000", capturedOrder.getPostalCode());
+            assertEquals("0912345678", capturedOrder.getPhoneNumber());
+
+            verify(orderRepository).save(any(Order.class));
+            log.info("Shipping address saved correctly for order");
+        }
+
+        @Test
+        @DisplayName("Should handle optional postal code in shipping address")
+        void testCreateOrder_OptionalPostalCode() {
+            // Arrange
+            OrderItemRequest itemRequest = OrderItemRequest.builder()
+                    .productId("PROD-001")
+                    .quantity(1)
+                    .price(100000L)
+                    .build();
+
+            OrderRequest request = OrderRequest.builder()
+                    .userId(testUserId)
+                    .orderItems(Arrays.asList(itemRequest))
+                    .shippingAddress("456 Đường Lê Lợi")
+                    .city("TP Hồ Chí Minh")
+                    .district("Quận 3")
+                    .ward("Phường 5")
+                    .postalCode(null)  // Optional
+                    .phoneNumber("0987654321")
+                    .build();
+
+            when(productService.getProductById("PROD-001")).thenReturn(testProduct);
+            when(inventoryService.hasEnoughStock("PROD-001", 1)).thenReturn(true);
+
+            ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+            when(orderRepository.save(orderCaptor.capture())).thenAnswer(invocation -> {
+                Order order = invocation.getArgument(0);
+                order.setId("ORD-ADDR-002");
+                return order;
+            });
+            when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+            // Act
+            orderService.createOrder(request, testUserId);
+
+            // Assert
+            Order capturedOrder = orderCaptor.getValue();
+            assertNull(capturedOrder.getPostalCode());
+            assertEquals("456 Đường Lê Lợi", capturedOrder.getShippingAddress());
+            assertEquals("0987654321", capturedOrder.getPhoneNumber());
+
+            log.info("Order created successfully without postal code");
+        }
+
+        @Test
+        @DisplayName("Should retrieve complete address information when fetching order")
+        void testGetOrderById_ReturnsCompleteAddress() {
+            // Arrange
+            String orderId = "ORD-ADDR-003";
+            Order orderWithAddress = Order.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .totalPrice(129900L)
+                    .shippingFee(29900L)
+                    .status(OrderStatus.PENDING)
+                    .shippingAddress("789 Đường Hai Bà Trưng")
+                    .city("TP Hồ Chí Minh")
+                    .district("Quận 2")
+                    .ward("Phường An Phú")
+                    .postalCode("700100")
+                    .phoneNumber("0911111111")
+                    .build();
+
+            when(orderRepository.findById(orderId)).thenReturn(Optional.of(orderWithAddress));
+            
+            OrderResponse responseWithAddress = OrderResponse.builder()
+                    .id(orderId)
+                    .userId(testUserId)
+                    .totalPrice(129900L)
+                    .shippingFee(29900L)
+                    .status("PENDING")
+                    .shippingAddress("789 Đường Hai Bà Trưng")
+                    .city("TP Hồ Chí Minh")
+                    .district("Quận 2")
+                    .ward("Phường An Phú")
+                    .postalCode("700100")
+                    .phoneNumber("0911111111")
+                    .build();
+
+            when(orderMapper.toOrderResponse(orderWithAddress)).thenReturn(responseWithAddress);
+
+            // Act
+            OrderResponse result = orderService.getOrderById(orderId);
+
+            // Assert
+            assertNotNull(result);
+            assertEquals("789 Đường Hai Bà Trưng", result.getShippingAddress());
+            assertEquals("TP Hồ Chí Minh", result.getCity());
+            assertEquals("Quận 2", result.getDistrict());
+            assertEquals("Phường An Phú", result.getWard());
+            assertEquals("700100", result.getPostalCode());
+            assertEquals("0911111111", result.getPhoneNumber());
+
+            verify(orderRepository).findById(orderId);
+            verify(orderMapper).toOrderResponse(orderWithAddress);
+
+            log.info("Order retrieved with complete address information");
+        }
+
+        @Test
+        @DisplayName("Should handle different valid address formats")
+        void testCreateOrder_DifferentAddressFormats() {
+            // Arrange: Multiple address scenarios
+            String[][] addressScenarios = {
+                {"123 Đường A", "Hà Nội", "Quận Ba Đình", "Phường Cát Linh", "100000", "0912345670"},
+                {"456 Ngõ B", "Đà Nẵng", "Quận Hải Châu", "Phường Thanh Bình", "500000", "0987654320"},
+                {"789 Toà nhà C", "TP HCM", "Quận Gò Vấp", "Phường 8", "750000", "0901234560"}
+            };
+
+            for (String[] scenario : addressScenarios) {
+                // Setup request with current scenario
+                OrderItemRequest itemRequest = OrderItemRequest.builder()
+                        .productId("PROD-001")
+                        .quantity(1)
+                        .price(100000L)
+                        .build();
+
+                OrderRequest request = OrderRequest.builder()
+                        .userId(testUserId)
+                        .orderItems(Arrays.asList(itemRequest))
+                        .shippingAddress(scenario[0])
+                        .city(scenario[1])
+                        .district(scenario[2])
+                        .ward(scenario[3])
+                        .postalCode(scenario[4])
+                        .phoneNumber(scenario[5])
+                        .build();
+
+                when(productService.getProductById("PROD-001")).thenReturn(testProduct);
+                when(inventoryService.hasEnoughStock("PROD-001", 1)).thenReturn(true);
+
+                ArgumentCaptor<Order> orderCaptor = ArgumentCaptor.forClass(Order.class);
+                when(orderRepository.save(orderCaptor.capture())).thenAnswer(invocation -> {
+                    Order order = invocation.getArgument(0);
+                    return order;
+                });
+                when(orderMapper.toOrderResponse(any(Order.class))).thenReturn(testOrderResponse);
+
+                // Act
+                orderService.createOrder(request, testUserId);
+
+                // Assert
+                Order capturedOrder = orderCaptor.getValue();
+                assertEquals(scenario[0], capturedOrder.getShippingAddress());
+                assertEquals(scenario[1], capturedOrder.getCity());
+                assertEquals(scenario[2], capturedOrder.getDistrict());
+                assertEquals(scenario[3], capturedOrder.getWard());
+                assertEquals(scenario[4], capturedOrder.getPostalCode());
+                assertEquals(scenario[5], capturedOrder.getPhoneNumber());
+
+                log.info("Address scenario verified: {}", scenario[0]);
+            }
         }
     }
 }

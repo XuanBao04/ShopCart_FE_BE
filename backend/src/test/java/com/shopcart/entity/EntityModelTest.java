@@ -340,4 +340,169 @@ class EntityModelTest {
 
         log.info("Order with default items list: {}", newOrder);
     }
+
+    @Test
+    @DisplayName("Should create Order with shipping address fields using Lombok Builder")
+    void testOrderBuilderWithShippingAddress() {
+        // Arrange & Act
+        Order orderWithAddress = Order.builder()
+                .id("ORD-ADDR-001")
+                .userId("user-001")
+                .totalPrice(150000L)
+                .shippingFee(29900L)
+                .shippingAddress("123 Đường Nguyễn Huệ")
+                .city("TP Hồ Chí Minh")
+                .district("Quận 1")
+                .ward("Phường Bến Nghé")
+                .postalCode("700000")
+                .phoneNumber("0912345678")
+                .status(OrderStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .lastModifiedDate(LocalDateTime.now())
+                .orderItems(new ArrayList<>())
+                .build();
+
+        // Assert - Verify all address fields are saved correctly
+        assertEquals("ORD-ADDR-001", orderWithAddress.getId());
+        assertEquals("user-001", orderWithAddress.getUserId());
+        assertEquals("123 Đường Nguyễn Huệ", orderWithAddress.getShippingAddress());
+        assertEquals("TP Hồ Chí Minh", orderWithAddress.getCity());
+        assertEquals("Quận 1", orderWithAddress.getDistrict());
+        assertEquals("Phường Bến Nghé", orderWithAddress.getWard());
+        assertEquals("700000", orderWithAddress.getPostalCode());
+        assertEquals("0912345678", orderWithAddress.getPhoneNumber());
+
+        log.info("Order with address: {}", orderWithAddress);
+    }
+
+    @Test
+    @DisplayName("Should handle optional postal code in Order entity")
+    void testOrderWithOptionalPostalCode() {
+        // Arrange & Act
+        Order orderOptionalPostal = Order.builder()
+                .id("ORD-ADDR-002")
+                .userId("user-002")
+                .totalPrice(100000L)
+                .shippingFee(29900L)
+                .shippingAddress("456 Đường Lê Lợi")
+                .city("Hà Nội")
+                .district("Quận Ba Đình")
+                .ward("Phường Cát Linh")
+                .postalCode(null)  // Optional
+                .phoneNumber("0987654321")
+                .status(OrderStatus.PENDING)
+                .createdAt(LocalDateTime.now())
+                .build();
+
+        // Assert
+        assertNull(orderOptionalPostal.getPostalCode());
+        assertNotNull(orderOptionalPostal.getShippingAddress());
+        assertEquals("0987654321", orderOptionalPostal.getPhoneNumber());
+
+        log.info("Order without postal code: {}", orderOptionalPostal);
+    }
+
+    @Test
+    @DisplayName("Should test Order address fields equality")
+    void testOrderAddressEquality() {
+        // Arrange
+        LocalDateTime now = LocalDateTime.now();
+
+        Order order1 = Order.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .totalPrice(150000L)
+                .shippingFee(29900L)
+                .shippingAddress("789 Đường A")
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .status(OrderStatus.PENDING)
+                .createdAt(now)
+                .lastModifiedDate(now)
+                .orderItems(new ArrayList<>())
+                .build();
+
+        Order order2 = Order.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .totalPrice(150000L)
+                .shippingFee(29900L)
+                .shippingAddress("789 Đường A")
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .status(OrderStatus.PENDING)
+                .createdAt(now)
+                .lastModifiedDate(now)
+                .orderItems(new ArrayList<>())
+                .build();
+
+        Order order3 = Order.builder()
+                .id("ORD-ADDR-003")
+                .userId("user-003")
+                .totalPrice(150000L)
+                .shippingFee(29900L)
+                .shippingAddress("999 Đường B")  // Different address
+                .city("Đà Nẵng")
+                .district("Quận Hải Châu")
+                .ward("Phường Thanh Bình")
+                .postalCode("500000")
+                .phoneNumber("0901234567")
+                .status(OrderStatus.PENDING)
+                .createdAt(now)
+                .lastModifiedDate(now)
+                .orderItems(new ArrayList<>())
+                .build();
+
+        // Assert - Same address fields should be equal
+        assertEquals(order1, order2);
+        assertEquals(order1.hashCode(), order2.hashCode());
+        
+        // Different address should not be equal
+        assertNotEquals(order1, order3);
+
+        log.info("Order address equality verified");
+    }
+
+    @Test
+    @DisplayName("Should update Order address fields")
+    void testOrderAddressFieldsUpdatable() {
+        // Arrange
+        Order order = Order.builder()
+                .id("ORD-ADDR-UPDATE")
+                .userId("user-update")
+                .totalPrice(100000L)
+                .shippingFee(29900L)
+                .shippingAddress("Old Address")
+                .city("TP HCM")
+                .district("Q1")
+                .ward("P1")
+                .postalCode("700000")
+                .phoneNumber("0912345678")
+                .status(OrderStatus.PENDING)
+                .build();
+
+        // Act - Update address fields
+        order.setShippingAddress("New Address");
+        order.setCity("Hà Nội");
+        order.setDistrict("Ba Đình");
+        order.setWard("Cát Linh");
+        order.setPostalCode("100000");
+        order.setPhoneNumber("0987654321");
+
+        // Assert
+        assertEquals("New Address", order.getShippingAddress());
+        assertEquals("Hà Nội", order.getCity());
+        assertEquals("Ba Đình", order.getDistrict());
+        assertEquals("Cát Linh", order.getWard());
+        assertEquals("100000", order.getPostalCode());
+        assertEquals("0987654321", order.getPhoneNumber());
+
+        log.info("Order address fields updated successfully");
+    }
 }
