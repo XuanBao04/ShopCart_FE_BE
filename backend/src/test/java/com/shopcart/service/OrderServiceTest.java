@@ -407,10 +407,10 @@ class OrderServiceTest {
             assertEquals(OrderStatus.CONFIRMED, capturedOrder.getStatus());
 
             // Verify stock reservation was called
-            verify(inventoryService).reserveStock("PROD-001", 2);
+            verify(inventoryService).confirmStock("PROD-001", 2);
 
             verify(orderMapper).toOrderResponse(any(Order.class));
-            log.info("Order status updated to CONFIRMED and stock reserved for: {}", orderId);
+            log.info("Order status updated to CONFIRMED and stock confirmed for: {}", orderId);
         }
 
         @Test
@@ -451,9 +451,9 @@ class OrderServiceTest {
             assertEquals(OrderStatus.SHIPPED, capturedOrder.getStatus());
 
             // Verify stock reservation was NOT called
-            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+            verify(inventoryService, never()).confirmStock(anyString(), anyInt());
 
-            log.info("Order status updated to SHIPPED without stock reservation for: {}", orderId);
+            log.info("Order status updated to SHIPPED without stock confirmation for: {}", orderId);
         }
 
         @Test
@@ -506,7 +506,7 @@ class OrderServiceTest {
 
             verify(orderRepository).findById(orderId);
             verify(orderRepository, never()).save(any());
-            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+            verify(inventoryService, never()).confirmStock(anyString(), anyInt());
 
             log.info("Validation: Non-existent order correctly rejected");
         }
@@ -531,7 +531,7 @@ class OrderServiceTest {
 
             verify(orderRepository).findById(orderId);
             verify(orderRepository, never()).save(any());
-            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+            verify(inventoryService, never()).confirmStock(anyString(), anyInt());
 
             log.info("Validation: Invalid status correctly rejected");
         }
@@ -562,9 +562,9 @@ class OrderServiceTest {
             orderService.updateOrderStatus(orderId, "CONFIRMED");
 
             // Assert
-            verify(inventoryService, never()).reserveStock(anyString(), anyInt());
+            verify(inventoryService, never()).confirmStock(anyString(), anyInt());
 
-            log.info("Stock reservation correctly skipped for already CONFIRMED order: {}", orderId);
+            log.info("Stock confirmation correctly skipped for already CONFIRMED order: {}", orderId);
         }
     }
 }

@@ -50,6 +50,9 @@ class CartServiceTest {
     @Mock
     private IProductService productService;
 
+    @Mock
+    private IInventoryService inventoryService;
+
     @InjectMocks
     private CartServiceImpl cartService;
 
@@ -128,6 +131,7 @@ class CartServiceTest {
                         .status(ProductStatus.ACTIVE)
                         .build()
         );
+        when(inventoryService.hasEnoughStock(anyString(), anyInt())).thenReturn(true);
         when(cartRepository.findByUserIdAndProductId(testUserId, testCartItemRequest.getProductId()))
                 .thenReturn(Optional.empty());
         when(cartRepository.save(any(CartItem.class))).thenReturn(testCartItem);
@@ -161,6 +165,7 @@ class CartServiceTest {
         when(productService.getProductById(testCartItemRequest.getProductId())).thenReturn(
                 Product.builder().id("PROD-001").build()
         );
+        when(inventoryService.hasEnoughStock(anyString(), anyInt())).thenReturn(true);
         when(cartRepository.findByUserIdAndProductId(testUserId, testCartItemRequest.getProductId()))
                 .thenReturn(Optional.of(existingCartItem));
         when(cartRepository.save(any(CartItem.class))).thenReturn(existingCartItem);
@@ -252,6 +257,7 @@ class CartServiceTest {
                 .build();
 
         when(cartRepository.findById(cartItemId)).thenReturn(Optional.of(itemToUpdate));
+        when(inventoryService.hasEnoughStock(anyString(), anyInt())).thenReturn(true);
         when(cartRepository.save(any(CartItem.class))).thenReturn(itemToUpdate);
         when(cartRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(Arrays.asList(itemToUpdate));
         when(cartMapper.toCartResponse(anyString(), any())).thenReturn(testCartResponse);
