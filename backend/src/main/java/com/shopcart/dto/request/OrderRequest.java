@@ -20,4 +20,6 @@ public class OrderRequest {
     @NotEmpty(message = "Order items list cannot be empty")
     @Valid
     private List<OrderItemRequest> orderItems;
+
+    private String couponCode;  // Optional coupon code
 }

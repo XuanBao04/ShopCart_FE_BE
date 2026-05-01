@@ -1,7 +1,6 @@
 import { useState, useCallback } from "react";
 import { cartService } from "../services/api/cartService";
 import { CartResponse, CartItemRequest } from "../types/cart";
-import { useAsync } from "./useAsync";
 
 export function useCart(userId: string) {
   const [cart, setCart] = useState<CartResponse | null>(null);

@@ -2,4 +2,5 @@
 export { cartService } from './api/cartService';
 export { orderService } from './api/orderService';
 export { productService } from './api/productService';
-export { authService } from './api/authService';
+export { loginService } from './api/loginService';
+export { inventoryService } from './api/inventoryService';

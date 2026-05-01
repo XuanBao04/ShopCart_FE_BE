@@ -1,5 +1,5 @@
 import apiClient from "./apiClient";
-import { OrderRequest, OrderResponse } from "../../types/order";
+import { OrderRequest, OrderResponse, OrderPreviewResponse } from "../../types/order";
 
 const ORDER_API = "/orders";
 
@@ -10,6 +10,17 @@ export const orderService = {
   async createOrder(request: OrderRequest): Promise<OrderResponse> {
     const response = await apiClient.post<OrderResponse>(
       `${ORDER_API}/${request.userId}`,
+      request,
+    );
+    return response.data;
+  },
+
+  /**
+   * Preview order before checkout
+   */
+  async previewOrder(request: OrderRequest): Promise<OrderPreviewResponse> {
+    const response = await apiClient.post<OrderPreviewResponse>(
+      `${ORDER_API}/preview`,
       request,
     );
     return response.data;
@@ -52,13 +63,20 @@ export const orderService = {
     orderId: string,
     status: string,
   ): Promise<OrderResponse> {
-    const response = await apiClient.put<OrderResponse>(
-      `${ORDER_API}/${orderId}/status`,
-      null,
-      {
-        params: { status },
-      },
+    const response = await apiClient.patch<OrderResponse>(
+      `${ORDER_API}/${orderId}/${status}`,
+    );
+    return response.data;
+  },
+
+  /**
+   * Get all orders (admin only)
+   */
+  async getAllOrders(): Promise<OrderResponse[]> {
+    const response = await apiClient.get<OrderResponse[]>(
+      `${ORDER_API}/all`,
     );
     return response.data;
   },
 };
+

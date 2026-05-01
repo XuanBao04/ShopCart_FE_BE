@@ -2,7 +2,7 @@ name: ShopCart CI/CD Pipeline
 
 on:
   push:
-    branches: [ "main","bao/backend" ]
+    branches: [ "main","bao/backend","thanh/frontend" ]
 
 jobs:
   backend-tests:

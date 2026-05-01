@@ -1,5 +1,5 @@
 import apiClient from './apiClient';
-import { Product, ProductResponse } from '../../types/product';
+import { Product } from '../../types/product';
 
 const PRODUCT_API = '/products';
 

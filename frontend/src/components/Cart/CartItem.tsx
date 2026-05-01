@@ -6,6 +6,7 @@ import { productService } from '../../services/api/productService';
 interface CartItemProps {
   item: CartItemResponse;
   onRemove: () => void;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   onUpdateQuantity: (quantity: number) => void;
 }
 

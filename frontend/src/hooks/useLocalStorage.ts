@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T) => void] {
   const [storedValue, setStoredValue] = useState<T>(() => {
     try {
@@ -11,10 +12,10 @@ export function useLocalStorage<T>(key: string, initialValue: T): [T, (value: T)
     }
   });
 
-  const setValue = (value: T) => {
+  const setValue = (storedValue: T) => {
     try {
-      setStoredValue(value);
-      window.localStorage.setItem(key, JSON.stringify(value));
+      setStoredValue(storedValue);
+      window.localStorage.setItem(key, JSON.stringify(storedValue));
     } catch (error) {
       console.error('Error writing to localStorage:', error);
     }

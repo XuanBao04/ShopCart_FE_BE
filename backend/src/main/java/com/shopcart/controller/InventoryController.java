@@ -1,6 +1,8 @@
 package com.shopcart.controller;
 
+import com.shopcart.dto.request.UpdateStockRequest;
 import com.shopcart.service.IInventoryService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,11 +23,11 @@ public class InventoryController {
         return ResponseEntity.ok(stock);
     }
 
-    @PutMapping("/{productId}")
+    @PatchMapping("/{productId}")
     public ResponseEntity<Void> updateStock(
             @PathVariable String productId,
-            @RequestParam Integer quantity) {
-        inventoryService.updateStock(productId, quantity);
+            @Valid @RequestBody UpdateStockRequest request) {
+        inventoryService.updateStock(productId, request.getQuantity());
         return ResponseEntity.noContent().build();
     }
 

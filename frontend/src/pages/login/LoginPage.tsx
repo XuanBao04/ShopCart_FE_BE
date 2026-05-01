@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { loginService } from "@/services/api/loginService";
 import { useNavigate } from "react-router-dom";
 
@@ -15,7 +15,7 @@ const LoginPage = () => {
     }
   }, [navigate]);
 
-  const handleLogin = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
     if (!username || !password) {
@@ -28,10 +28,18 @@ const LoginPage = () => {
       if (response) {
         // console.log(response);
         localStorage.setItem("userId", response.userId.toString());
-        navigate("/authenticated/products", { replace: true });
+        localStorage.setItem("role", response.role);
+        localStorage.setItem("username", response.username);
+        
+        // Redirect based on role
+        if (response.role === "ADMIN") {
+          navigate("/admin/dashboard", { replace: true });
+        } else {
+          navigate("/authenticated/products", { replace: true });
+        }
       }
     } catch (error) {
-      throw error;
+      setError((error as Error).message);
     }
 
     setError(null);

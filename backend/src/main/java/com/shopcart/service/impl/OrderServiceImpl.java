@@ -16,6 +16,7 @@ import com.shopcart.service.ICartService;
 import com.shopcart.service.IOrderService;
 import com.shopcart.service.IInventoryService;
 import com.shopcart.service.IProductService;
+import com.shopcart.service.ICouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ public class OrderServiceImpl implements IOrderService {
     private final IInventoryService inventoryService;
     private final IProductService productService;
     private final ICartService cartService;
+    private final ICouponService couponService;
 
     private static final long SHIPPING_FEE = 29_900L;
 
@@ -48,7 +50,21 @@ public class OrderServiceImpl implements IOrderService {
 
         // Tính giá
         long subtotal = calculateSubtotal(request.getOrderItems());
-        long totalPrice = subtotal + SHIPPING_FEE;
+
+        // Validate và apply coupon nếu có
+        long discountAmount = 0L;
+        String couponCode = null;
+        try {
+            if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+                discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
+                couponCode = request.getCouponCode();
+            }
+        } catch (Exception e) {
+            // Coupon không hợp lệ - vẫn tiếp tục tạo order nhưng không áp dụng discount
+            // Log exception nếu cần
+        }
+
+        long totalPrice = subtotal - discountAmount + SHIPPING_FEE;
 
         // Tạo order
         String orderId = UUID.randomUUID().toString();
@@ -59,6 +75,8 @@ public class OrderServiceImpl implements IOrderService {
                 .userId(userId)
                 .totalPrice(totalPrice)
                 .shippingFee(SHIPPING_FEE)
+                .discountAmount(discountAmount)
+                .couponCode(couponCode)
                 .status(OrderStatus.PENDING)
                 .createdAt(now)
                 .lastModifiedDate(now)
@@ -163,7 +181,21 @@ public class OrderServiceImpl implements IOrderService {
 
         // Tính giá
         long subtotal = calculateSubtotal(request.getOrderItems());
-        long totalPrice = subtotal + SHIPPING_FEE;
+
+        // Validate và apply coupon nếu có
+        long discountAmount = 0L;
+        String couponCode = null;
+        try {
+            if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+                discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
+                couponCode = request.getCouponCode();
+            }
+        } catch (Exception e) {
+            // Coupon không hợp lệ - vẫn hiển thị preview nhưng không áp dụng discount
+            // Log exception nếu cần
+        }
+
+        long totalPrice = subtotal - discountAmount + SHIPPING_FEE;
 
         // Build danh sách items cho preview
         List<OrderItemResponse> previewItems = request.getOrderItems().stream()
@@ -178,6 +210,8 @@ public class OrderServiceImpl implements IOrderService {
                 .userId(request.getUserId())
                 .items(previewItems)
                 .subtotal(subtotal)
+                .discountAmount(discountAmount)
+                .couponCode(couponCode)
                 .shippingFee(SHIPPING_FEE)
                 .totalPrice(totalPrice)
                 .build();

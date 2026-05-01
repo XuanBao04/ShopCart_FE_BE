@@ -86,7 +86,7 @@
 ## [cite_start]5. Kiến Trúc Hệ Thống Đơn Giản [cite: 1510]
 
 ### [cite_start]Flow Chính [cite: 1511]
-1. **Đăng nhập:** User nhập email/password → Backend validate → trả về JWT token
+1. **Đăng nhập:** User nhập email/password → Backend validate → trả về userId
 2. **Giỏ hàng:** Add product → tính giá → hiển thị trên UI
 3. **Thanh toán:** Click checkout → tạo order → trừ inventory → hiển thị hóa đơn
 

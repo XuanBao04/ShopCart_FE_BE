@@ -1,14 +1,40 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useCart } from "../../hooks/useCart";
 import { formatPrice } from "../../utils/priceCalculation";
 import CartItem from "./CartItem";
+import CouponInput from "./CouponInput";
+import PriceBreakdown from "./PriceBreakdown";
 import { orderService } from "../../services/api/orderService";
 import { Navigate } from "react-router-dom";
+
+const SHIPPING_FEE = 29900;
 
 const Cart = () => {
   const userId = localStorage.getItem("userId") || "user1";
   const { cart, isLoading, error, fetchCart, removeItem, updateItem, clear } =
     useCart(userId);
+
+  const [couponCode, setCouponCode] = useState<string | null>(null);
+  const [discountAmount, setDiscountAmount] = useState(0);
+  const [orderPreview, setOrderPreview] = useState<any>(null);
+
+  // Recalculate when cart or coupon changes
+  useEffect(() => {
+    if (cart && cart.items.length > 0) {
+      const subtotal = cart.items.reduce(
+        (sum, item) => sum + item.price * item.quantity,
+        0
+      );
+
+      setOrderPreview({
+        subtotal,
+        discountAmount,
+        shippingFee: SHIPPING_FEE,
+        totalPrice: subtotal - discountAmount + SHIPPING_FEE,
+        couponCode: couponCode,
+      });
+    }
+  }, [cart, discountAmount, couponCode]);
 
   const handleRedirectToOrders = async () => {
     try {
@@ -16,7 +42,8 @@ const Cart = () => {
         alert("Giỏ hàng trống. Vui lòng thêm sản phẩm vào giỏ hàng.");
         return <Navigate to="/authenticated/products" />;
       }
-      // Create order
+
+      // Create order with coupon if applied
       const orderRequest = {
         userId,
         orderItems: cart.items.map((item) => ({
@@ -24,14 +51,16 @@ const Cart = () => {
           quantity: item.quantity,
           price: item.price,
         })),
+        couponCode: couponCode || undefined,
       };
+
       await orderService.createOrder(orderRequest);
 
       // Clear cart and redirect
       await clear();
       window.location.href = "/authenticated/orders";
-    } catch (error) {
-      alert("Đã xảy ra lỗi khi tạo đơn hàng. Vui lòng thử lại.");
+    } catch (err: any) {
+      alert(`Đã xảy ra lỗi khi tạo đơn hàng: ${err.message}`);
     }
   };
 
@@ -85,30 +114,45 @@ const Cart = () => {
         </div>
 
         {/* Cart Summary */}
-        <div className="bg-gray-100 rounded-lg p-6 h-fit">
-          <h2 className="text-xl font-bold mb-4">Tóm tắt đơn hàng</h2>
-          <div className="space-y-3 mb-4">
-            <div className="flex justify-between">
-              <span>Tổng sản phẩm:</span>
-              <span>{cart.totalItems}</span>
-            </div>
-            <div className="flex justify-between text-lg font-bold border-t pt-3">
-              <span>Tổng cộng:</span>
-              <span>{formatPrice(cart.totalPrice)}</span>
-            </div>
+        <div className="space-y-4">
+          {/* Coupon Input */}
+          <CouponInput
+            onCouponApply={setCouponCode}
+            onDiscountChange={setDiscountAmount}
+            orderAmount={
+              cart?.items.reduce(
+                (sum, item) => sum + item.price * item.quantity,
+                0
+              ) || 0
+            }
+          />
+
+          {/* Price Breakdown */}
+          {orderPreview && (
+            <PriceBreakdown
+              subtotal={orderPreview.subtotal}
+              discountAmount={orderPreview.discountAmount}
+              couponCode={orderPreview.couponCode}
+              shippingFee={orderPreview.shippingFee}
+              totalPrice={orderPreview.totalPrice}
+            />
+          )}
+
+          {/* Action Buttons */}
+          <div className="space-y-2">
+            <button
+              className="w-full bg-blue-600 text-white py-3 rounded hover:bg-blue-700 font-semibold transition-colors"
+              onClick={handleRedirectToOrders}
+            >
+              Thanh toán
+            </button>
+            <button
+              onClick={clear}
+              className="w-full bg-red-600 text-white py-3 rounded hover:bg-red-700 font-semibold transition-colors"
+            >
+              Xóa giỏ hàng
+            </button>
           </div>
-          <button
-            className="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 mb-2"
-            onClick={handleRedirectToOrders}
-          >
-            Thanh toán
-          </button>
-          <button
-            onClick={clear}
-            className="w-full bg-red-600 text-white py-2 rounded hover:bg-red-700"
-          >
-            Xóa giỏ hàng
-          </button>
         </div>
       </div>
     </div>
@@ -116,3 +160,4 @@ const Cart = () => {
 };
 
 export default Cart;
+

@@ -23,10 +23,18 @@ public class OrderMapper {
                     .collect(Collectors.toList())
                 : java.util.Collections.emptyList();
 
+        // Calculate subtotal from order items
+        long subtotal = itemResponses.stream()
+                .mapToLong(item -> item.getPrice() * item.getQuantity())
+                .sum();
+
         return OrderResponse.builder()
                 .id(order.getId())
                 .userId(order.getUserId())
                 .items(itemResponses)
+                .subtotal(subtotal)
+                .discountAmount(order.getDiscountAmount() != null ? order.getDiscountAmount() : 0L)
+                .couponCode(order.getCouponCode())
                 .shippingFee(order.getShippingFee())
                 .totalPrice(order.getTotalPrice())
                 .status(order.getStatus() != null ? order.getStatus().toString() : null)

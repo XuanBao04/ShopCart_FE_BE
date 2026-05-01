@@ -2,69 +2,56 @@ services:
   db:
     image: postgres:17-alpine
     container_name: shopcart_postgres
-    restart: always
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-shopcart}
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
-      - "${POSTGRES_PORT:-5432}:5432"
+      - "${POSTGRES_PORT}:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER}"]
       interval: 10s
       timeout: 5s
       retries: 5
-
-  pgadmin:
-    image: dpage/pgadmin4
-    container_name: shopcart_pgadmin
-    restart: always
-    environment:
-      PGADMIN_DEFAULT_EMAIL: admin@shopcart.com
-      PGADMIN_DEFAULT_PASSWORD: admin
-    ports:
-      - "8888:80"
-    depends_on:
-      - db
 
   backend:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
     container_name: shopcart_backend
-    restart: always
-
+    restart: unless-stopped
     ports:
       - "8080:8080"
-
     volumes:
       - ./backend:/app
-      - ~/.m2:/root/.m2
-
+      - maven_cache:/root/.m2
     environment:
-      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-shopcart}
-      DB_USERNAME: ${POSTGRES_USER:-postgres}
-      DB_PASSWORD: ${POSTGRES_PASSWORD:-postgres_password}
-      SERVER_PORT: 8080
-      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
-
+      DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB}
+      DB_USERNAME: ${POSTGRES_USER}
+      DB_PASSWORD: ${POSTGRES_PASSWORD}
+      SPRING_PROFILES_ACTIVE: local
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.dev
     container_name: shopcart_frontend
-    restart: always
     ports:
       - "5173:5173"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
     environment:
-      VITE_API_URL: http://localhost:8080
+      VITE_API_URL: http://localhost:8080/api
     depends_on:
       - backend
 
 volumes:
   postgres_data:
+  maven_cache:

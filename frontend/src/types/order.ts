@@ -21,6 +21,7 @@ export interface OrderItemResponse {
 export interface OrderRequest {
   userId: string;
   orderItems: OrderItemRequest[];
+  couponCode?: string;
 }
 
 export interface OrderResponse {
@@ -28,9 +29,31 @@ export interface OrderResponse {
   userId: string;
   items: OrderItemResponse[];
   status: 'PENDING' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
-  createdDate: string;
+  createdAt: string;
   lastModifiedDate: string;
+  subtotal: number;
+  discountAmount: number;
+  couponCode?: string;
   totalPrice: number;
-  name: string;
-  date: string;
+  shippingFee: number;
+}
+
+export interface OrderPreviewResponse {
+  userId: string;
+  items: OrderItemResponse[];
+  subtotal: number;
+  discountAmount: number;
+  couponCode?: string;
+  shippingFee: number;
+  totalPrice: number;
+}
+
+export interface Coupon {
+  code: string;
+  discountPercent: number;
+  active: boolean;
+  minimumOrderAmount: number;
+  expiryDate?: string;
+  createdAt: string;
+  updatedAt: string;
 }

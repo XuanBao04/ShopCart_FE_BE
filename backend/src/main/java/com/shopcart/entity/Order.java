@@ -30,6 +30,10 @@ public class Order {
     @Column(name = "shipping_fee")
     private Long shippingFee;
 
+    @Column(name = "discount_amount")
+    @Builder.Default
+    private Long discountAmount = 0L;  // Discount in VND
+
     @Column(name = "coupon_code", length = 50)
     private String couponCode;
 
