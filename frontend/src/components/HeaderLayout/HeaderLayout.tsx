@@ -1,12 +1,14 @@
-﻿import { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
 import { FaShoppingCart, FaClipboardList, FaShieldAlt } from "react-icons/fa";
 import apiClient from "../../services/api/apiClient";
+import { useCart } from "../../hooks/useCart";
 
 export default function HeaderLayout() {
   const [userId, setUserId] = useState<string | null>(null);
   const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
+  const { cart } = useCart();
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -57,10 +59,15 @@ export default function HeaderLayout() {
 
             <button
               onClick={() => navigate("/authenticated/cart")}
-              className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
+              className="relative bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
             >
               <FaShoppingCart />
               Giỏ hàng
+              {cart && cart.totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                  {cart.totalItems}
+                </span>
+              )}
             </button>
 
             <button

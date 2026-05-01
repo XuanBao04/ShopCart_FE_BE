@@ -1,12 +1,14 @@
 package com.shopcart.controller;
 
 import com.shopcart.dto.request.CartItemRequest;
+import com.shopcart.dto.request.UpdateQuantityRequest;
 import com.shopcart.dto.response.CartResponse;
 import com.shopcart.service.ICartService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 
 /**
  * REST Controller for Cart operations
@@ -27,7 +29,7 @@ public class CartController {
     @PostMapping("/{userId}/add")
     public ResponseEntity<CartResponse> addToCart(
             @PathVariable String userId,
-            @RequestBody CartItemRequest request) {
+            @Valid @RequestBody CartItemRequest request) {
         CartResponse response = cartService.addToCart(userId, request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
@@ -44,7 +46,7 @@ public class CartController {
     public ResponseEntity<CartResponse> updateQuantity(
             @PathVariable String userId,
             @PathVariable Long cartItemId,
-            @RequestBody CartItemRequest request) {
+            @Valid @RequestBody UpdateQuantityRequest request) {
         CartResponse response = cartService.updateQuantity(userId, cartItemId, request.getQuantity());
         return ResponseEntity.ok(response);
     }

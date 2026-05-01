@@ -83,8 +83,10 @@ public class OrderServiceImpl implements IOrderService {
                 .orderItems(new ArrayList<>())
                 .build();
 
-        // Tạo order items (chưa trừ kho, chờ admin xác nhận mới trừ)
+        // Tạo order items (reserve kho ngay lập tức cho PENDING)
         for (OrderItemRequest itemRequest : request.getOrderItems()) {
+            inventoryService.reserveStock(itemRequest.getProductId(), itemRequest.getQuantity());
+
             OrderItem orderItem = OrderItem.builder()
                     .productId(itemRequest.getProductId())
                     .quantity(itemRequest.getQuantity())
@@ -135,8 +137,8 @@ public class OrderServiceImpl implements IOrderService {
             throw new BusinessLogicException("Cannot cancel order with status: " + order.getStatus());
         }
 
-        // Chỉ hoàn kho nếu đơn đã được xác nhận (đã trừ kho trước đó)
-        if (order.getStatus() == OrderStatus.CONFIRMED) {
+        // Hủy đơn / timeout -> giảm reserved_stock
+        if (order.getStatus() == OrderStatus.PENDING) {
             for (OrderItem item : order.getOrderItems()) {
                 inventoryService.releaseStock(item.getProductId(), item.getQuantity());
             }
@@ -161,10 +163,10 @@ public class OrderServiceImpl implements IOrderService {
             throw new BusinessLogicException("Invalid order status: " + status);
         }
 
-        // Admin xác nhận đơn → trừ tồn kho
+        // Admin xác nhận đơn → chuyển từ reserved → sold
         if (newStatus == OrderStatus.CONFIRMED && order.getStatus() == OrderStatus.PENDING) {
             for (OrderItem item : order.getOrderItems()) {
-                inventoryService.reserveStock(item.getProductId(), item.getQuantity());
+                inventoryService.confirmStock(item.getProductId(), item.getQuantity());
             }
         }
 

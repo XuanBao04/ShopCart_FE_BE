@@ -17,11 +17,19 @@ public class InventoryServiceImpl implements IInventoryService {
 
     private final InventoryRepository inventoryRepository;
 
+    private int getSafeReservedQuantity(Inventory inventory) {
+        return inventory.getReservedQuantity() == null ? 0 : inventory.getReservedQuantity();
+    }
+
+    private int getSafeSoldQuantity(Inventory inventory) {
+        return inventory.getSoldQuantity() == null ? 0 : inventory.getSoldQuantity();
+    }
+
     @Override
     public Integer getStock(String productId) {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
-        return inventory.getQuantity();
+        return inventory.getQuantity() - getSafeReservedQuantity(inventory);
     }
 
     @Override
@@ -30,7 +38,8 @@ public class InventoryServiceImpl implements IInventoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
         int newQuantity = inventory.getQuantity() + quantity;
-        if (newQuantity < 0) {
+        int newAvailable = newQuantity - getSafeReservedQuantity(inventory);
+        if (newAvailable < 0) {
             throw new BusinessLogicException("Insufficient stock for product: " + productId);
         }
         
@@ -43,11 +52,12 @@ public class InventoryServiceImpl implements IInventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
-        if (inventory.getQuantity() < quantity) {
+        int availableStock = inventory.getQuantity() - getSafeReservedQuantity(inventory);
+        if (availableStock < quantity) {
             throw new BusinessLogicException("Insufficient stock to reserve for product: " + productId);
         }
         
-        inventory.setQuantity(inventory.getQuantity() - quantity);
+        inventory.setReservedQuantity(getSafeReservedQuantity(inventory) + quantity);
         inventoryRepository.save(inventory);
     }
 
@@ -56,13 +66,31 @@ public class InventoryServiceImpl implements IInventoryService {
         Inventory inventory = inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
         
-        inventory.setQuantity(inventory.getQuantity() + quantity);
+        int newReserved = getSafeReservedQuantity(inventory) - quantity;
+        if (newReserved < 0) newReserved = 0;
+        inventory.setReservedQuantity(newReserved);
         inventoryRepository.save(inventory);
     }
 
     @Override
     public boolean hasEnoughStock(String productId, Integer quantity) {
         Inventory inventory = inventoryRepository.findByProductId(productId).orElse(null);
-        return inventory != null && inventory.getQuantity() >= quantity;
+        if (inventory == null) return false;
+        return (inventory.getQuantity() - getSafeReservedQuantity(inventory)) >= quantity;
+    }
+
+    @Override
+    public void confirmStock(String productId, Integer quantity) {
+        Inventory inventory = inventoryRepository.findByProductId(productId)
+                .orElseThrow(() -> new ResourceNotFoundException("Inventory not found for product: " + productId));
+        
+        int newReserved = getSafeReservedQuantity(inventory) - quantity;
+        if (newReserved < 0) newReserved = 0;
+        
+        inventory.setReservedQuantity(newReserved);
+        inventory.setQuantity(inventory.getQuantity() - quantity);
+        inventory.setSoldQuantity(getSafeSoldQuantity(inventory) + quantity);
+        
+        inventoryRepository.save(inventory);
     }
 }

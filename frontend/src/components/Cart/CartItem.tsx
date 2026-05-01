@@ -14,6 +14,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity);
   const [price, setPrice] = useState(0);
   const [productName, setProductName] = useState('');
+  const [availableStock, setAvailableStock] = useState<number>(0);
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -21,6 +22,9 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
         const product = await productService.getProductById(item.productId);
         setProductName(product.name);
         setPrice(product.price);
+        
+        const stock = await productService.getAvailableStock(item.productId);
+        setAvailableStock(stock);
       } catch (error) {
         console.error('Error fetching product:', error);
       }
@@ -30,9 +34,10 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
   }, [item.productId]);
 
   const handleQuantityChange = (newQuantity: number) => {
-    if (newQuantity >= 1) {
-      setQuantity(newQuantity);
-      onUpdateQuantity(newQuantity);
+    const validQuantity = Math.min(Math.max(1, newQuantity), availableStock);
+    if (validQuantity !== quantity) {
+      setQuantity(validQuantity);
+      onUpdateQuantity(validQuantity);
     }
   };
 
@@ -45,19 +50,23 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
       <div className="flex items-center gap-2">
         <button
           onClick={() => handleQuantityChange(quantity - 1)}
-          className="px-2 py-1 border rounded hover:bg-gray-200"
+          disabled={quantity <= 1}
+          className="px-2 py-1 border rounded hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
         >
           -
         </button>
         <input
           type="number"
+          min="1"
+          max={availableStock}
           value={quantity}
-          onChange={(e) => handleQuantityChange(Math.max(1, parseInt(e.target.value) || 1))}
-          className="w-12 text-center border rounded py-1"
+          onChange={(e) => handleQuantityChange(parseInt(e.target.value) || 1)}
+          className="w-16 text-center border rounded py-1"
         />
         <button
           onClick={() => handleQuantityChange(quantity + 1)}
-          className="px-2 py-1 border rounded hover:bg-gray-200"
+          disabled={quantity >= availableStock}
+          className="px-2 py-1 border rounded hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400"
         >
           +
         </button>

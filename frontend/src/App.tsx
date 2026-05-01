@@ -7,21 +7,24 @@ import LoginPage from "./pages/login/LoginPage";
 import Order from "./components/Order/Order";
 import Inventory from "./components/Inventory/Inventory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import { CartProvider } from "./context/CartContext";
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LoginPage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/authenticated" element={<HeaderLayout />}>
-          <Route path="products" element={<ProductList />} />
-          <Route path="cart" element={<Cart />} />
-          <Route path="orders" element={<Order />} />
-          <Route path="inventory" element={<Inventory />} />
-        </Route>
-      </Routes>
+      <CartProvider>
+        <Routes>
+          <Route path="/" element={<LoginPage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/authenticated" element={<HeaderLayout />}>
+            <Route path="products" element={<ProductList />} />
+            <Route path="cart" element={<Cart />} />
+            <Route path="orders" element={<Order />} />
+            <Route path="inventory" element={<Inventory />} />
+          </Route>
+        </Routes>
+      </CartProvider>
     </BrowserRouter>
   );
 }

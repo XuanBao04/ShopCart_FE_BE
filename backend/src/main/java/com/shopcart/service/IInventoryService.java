@@ -40,4 +40,11 @@ public interface IInventoryService {
      * @return true if available, false otherwise
      */
     boolean hasEnoughStock(String productId, Integer quantity);
+
+    /**
+     * Confirm sold stock for an order (chuyển từ reserved sang sold)
+     * @param productId the product ID
+     * @param quantity quantity to confirm as sold
+     */
+    void confirmStock(String productId, Integer quantity);
 }

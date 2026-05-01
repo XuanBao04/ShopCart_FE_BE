@@ -9,6 +9,7 @@ import com.shopcart.mapper.CartMapper;
 import com.shopcart.repository.CartRepository;
 import com.shopcart.service.ICartService;
 import com.shopcart.service.IProductService;
+import com.shopcart.service.IInventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ public class CartServiceImpl implements ICartService {
     private final CartRepository cartRepository;
     private final CartMapper cartMapper;
     private final IProductService productService;
+    private final IInventoryService inventoryService;
 
     @Override
     public CartResponse getCart(String userId) {
@@ -46,10 +48,17 @@ public class CartServiceImpl implements ICartService {
 
         if (cartItem != null) {
             // Đã có -> cộng dồn số lượng và cập nhật thời gian để hiển thị lên đầu
-            cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
+            int newQuantity = cartItem.getQuantity() + request.getQuantity();
+            if (!inventoryService.hasEnoughStock(request.getProductId(), newQuantity)) {
+                throw new BusinessLogicException("Insufficient stock for product: " + request.getProductId());
+            }
+            cartItem.setQuantity(newQuantity);
             cartItem.setCreatedAt(java.time.LocalDateTime.now());
         } else {
             // Chưa có -> tạo mới
+            if (!inventoryService.hasEnoughStock(request.getProductId(), request.getQuantity())) {
+                throw new BusinessLogicException("Insufficient stock for product: " + request.getProductId());
+            }
             cartItem = CartItem.builder()
                     .userId(userId)
                     .productId(request.getProductId())
@@ -72,8 +81,16 @@ public class CartServiceImpl implements ICartService {
 
     @Override
     public CartResponse updateQuantity(String userId, Long cartItemId, Integer quantity) {
+        if (quantity <= 0) {
+            throw new BusinessLogicException("Số lượng phải lớn hơn 0");
+        }
+        
         // Tìm và xác thực cart item thuộc về user
         CartItem cartItem = findCartItemByUser(userId, cartItemId);
+
+        if (!inventoryService.hasEnoughStock(cartItem.getProductId(), quantity)) {
+            throw new BusinessLogicException("Insufficient stock for product: " + cartItem.getProductId());
+        }
 
         cartItem.setQuantity(quantity);
         cartRepository.save(cartItem);

@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import jakarta.validation.Valid;
 import java.util.List;
 
 /**
@@ -22,13 +23,13 @@ public class OrderController {
     private final IOrderService orderService;
 
     @PostMapping("/{userId}")
-    public ResponseEntity<OrderResponse> createOrder(@RequestBody OrderRequest request, @PathVariable String userId) {
+    public ResponseEntity<OrderResponse> createOrder(@Valid @RequestBody OrderRequest request, @PathVariable String userId) {
         OrderResponse response = orderService.createOrder(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @PostMapping("/preview")
-    public ResponseEntity<OrderPreviewResponse> previewOrder(@RequestBody OrderRequest request) {
+    public ResponseEntity<OrderPreviewResponse> previewOrder(@Valid @RequestBody OrderRequest request) {
         OrderPreviewResponse response = orderService.previewOrder(request);
         return ResponseEntity.ok(response);
     }

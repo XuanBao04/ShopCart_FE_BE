@@ -21,5 +21,13 @@ public class Inventory {
     private String productId;
 
     @Column(nullable = false)
-    private Integer quantity;
+    private Integer quantity; // total_stock
+
+    @Column(name = "reserved_quantity", nullable = false)
+    @Builder.Default
+    private Integer reservedQuantity = 0;
+
+    @Column(name = "sold_quantity", nullable = false)
+    @Builder.Default
+    private Integer soldQuantity = 0;
 }
