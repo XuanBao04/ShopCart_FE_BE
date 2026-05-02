@@ -54,17 +54,15 @@ public class OrderServiceImpl implements IOrderService {
         // Validate và apply coupon nếu có
         long discountAmount = 0L;
         String couponCode = null;
-        try {
-            if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
-                discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
-                couponCode = request.getCouponCode();
-            }
-        } catch (Exception e) {
-            // Coupon không hợp lệ - vẫn tiếp tục tạo order nhưng không áp dụng discount
-            // Log exception nếu cần
-        }
-
-        long totalPrice = subtotal - discountAmount + SHIPPING_FEE;
+        
+        if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+            discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
+            couponCode = request.getCouponCode();
+        }   
+       
+        // Cap discount to prevent negative total price
+        long actualDiscount = Math.min(subtotal, discountAmount);
+        long totalPrice = subtotal - actualDiscount + SHIPPING_FEE;
 
         // Tạo order
         String orderId = UUID.randomUUID().toString();
@@ -75,7 +73,7 @@ public class OrderServiceImpl implements IOrderService {
                 .userId(userId)
                 .totalPrice(totalPrice)
                 .shippingFee(SHIPPING_FEE)
-                .discountAmount(discountAmount)
+                .discountAmount(actualDiscount)
                 .couponCode(couponCode)
                 .shippingAddress(request.getShippingAddress())
                 .city(request.getCity())
@@ -139,7 +137,7 @@ public class OrderServiceImpl implements IOrderService {
         Order order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
 
-        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.CANCELLED) {
+        if (order.getStatus() == OrderStatus.DELIVERED || order.getStatus() == OrderStatus.SHIPPED || order.getStatus() == OrderStatus.CANCELLED) {
             throw new BusinessLogicException("Cannot cancel order with status: " + order.getStatus());
         }
 
@@ -193,17 +191,15 @@ public class OrderServiceImpl implements IOrderService {
         // Validate và apply coupon nếu có
         long discountAmount = 0L;
         String couponCode = null;
-        try {
-            if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
-                discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
-                couponCode = request.getCouponCode();
-            }
-        } catch (Exception e) {
-            // Coupon không hợp lệ - vẫn hiển thị preview nhưng không áp dụng discount
-            // Log exception nếu cần
+    
+        if (request.getCouponCode() != null && !request.getCouponCode().trim().isEmpty()) {
+            discountAmount = couponService.calculateDiscount(request.getCouponCode(), subtotal);
+            couponCode = request.getCouponCode();
         }
-
-        long totalPrice = subtotal - discountAmount + SHIPPING_FEE;
+        
+        // Cap discount to prevent negative total price
+        long actualDiscount = Math.min(subtotal, discountAmount);
+        long totalPrice = subtotal - actualDiscount + SHIPPING_FEE;
 
         // Build danh sách items cho preview
         List<OrderItemResponse> previewItems = request.getOrderItems().stream()
@@ -218,7 +214,7 @@ public class OrderServiceImpl implements IOrderService {
                 .userId(request.getUserId())
                 .items(previewItems)
                 .subtotal(subtotal)
-                .discountAmount(discountAmount)
+                .discountAmount(actualDiscount)
                 .couponCode(couponCode)
                 .shippingFee(SHIPPING_FEE)
                 .totalPrice(totalPrice)
@@ -227,9 +223,7 @@ public class OrderServiceImpl implements IOrderService {
 
     // ======================== Private Helper Methods ========================
 
-    /*
-     * Validate order items: không rỗng, sản phẩm tồn tại, đủ tồn kho.
-     */
+    
     private void validateOrderItems(OrderRequest request) {
         if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
             throw new BusinessLogicException("Order must contain at least one item");
