@@ -61,14 +61,11 @@ class CartServiceTest {
     private CartItemRequest testCartItemRequest;
     private CartResponse testCartResponse;
 
-    /**
-     * Setup test data using Lombok @Builder - Very clean and readable!
-     */
+   
     @BeforeEach
     void setUp() {
         testUserId = "user-123";
         
-        // Using Lombok @Builder for clean test data creation
         testCartItem = CartItem.builder()
                 .id(1L)
                 .userId(testUserId)
