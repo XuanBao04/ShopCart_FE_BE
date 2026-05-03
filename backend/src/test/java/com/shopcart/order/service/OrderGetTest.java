@@ -1,24 +1,12 @@
-package com.shopcart.service.order;
+package com.shopcart.order.service;
 
 import com.shopcart.dto.response.OrderResponse;
 import com.shopcart.entity.Order;
 import com.shopcart.entity.enums.OrderStatus;
 import com.shopcart.exception.ResourceNotFoundException;
-import com.shopcart.mapper.OrderMapper;
-import com.shopcart.repository.OrderRepository;
-import com.shopcart.service.ICartService;
-import com.shopcart.service.ICouponService;
-import com.shopcart.service.IInventoryService;
-import com.shopcart.service.IProductService;
-import com.shopcart.service.impl.OrderServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -29,46 +17,15 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("TC1: Kiểm thử đơn vị chức năng truy vấn đơn hàng")
-class OrderQueryTest {
-
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private OrderMapper orderMapper;
-
-    @Mock
-    private IInventoryService inventoryService;
-
-    @Mock
-    private IProductService productService;
-
-    @Mock
-    private ICartService cartService;
-
-    @Mock
-    private ICouponService couponService;
-
-    @InjectMocks
-    private OrderServiceImpl orderService;
-
-    private String testUserId;
-    private String testOrderId;
-
-    @BeforeEach
-    void setUp() {
-        testUserId = "user-123";
-        testOrderId = "order-789";
-    }
+@DisplayName("Order Service — Get/Retrieve orders")
+class OrderGetTest extends BaseOrderServiceTest {
 
     @Nested
-    @DisplayName("TC2: getOrderById() — lấy đơn hàng theo mã")
+    @DisplayName("TC1: getOrderById() — lấy đơn hàng theo mã")
     class GetOrderByIdTests {
 
         @Test
-        @DisplayName("TC3: Trả về đơn hàng khi tìm thấy theo mã định danh")
+        @DisplayName("TC2: Trả về đơn hàng khi tìm thấy theo mã định danh")
         void getOrderByIdSuccess() {
             Order order = Order.builder()
                     .id(testOrderId)
@@ -91,7 +48,7 @@ class OrderQueryTest {
         }
 
         @Test
-        @DisplayName("TC4: Ném lỗi khi không tìm thấy đơn hàng")
+        @DisplayName("TC3: Ném lỗi khi không tìm thấy đơn hàng")
         void throwExceptionWhenOrderNotFound() {
             when(orderRepository.findById(testOrderId)).thenReturn(Optional.empty());
 
@@ -102,11 +59,11 @@ class OrderQueryTest {
     }
 
     @Nested
-    @DisplayName("TC5: getUserOrders() — truy vấn danh sách đơn của người dùng")
+    @DisplayName("TC4: getUserOrders() — truy vấn danh sách đơn của người dùng")
     class GetUserOrdersTests {
 
         @Test
-        @DisplayName("TC6: Trả về đầy đủ danh sách đơn của người dùng")
+        @DisplayName("TC5: Trả về đầy đủ danh sách đơn của người dùng")
         void getUserOrdersSuccess() {
             Order order1 = Order.builder().id("order-1").userId(testUserId).build();
             Order order2 = Order.builder().id("order-2").userId(testUserId).build();
@@ -126,7 +83,7 @@ class OrderQueryTest {
         }
 
         @Test
-        @DisplayName("TC7: Trả về danh sách rỗng khi người dùng chưa có đơn")
+        @DisplayName("TC6: Trả về danh sách rỗng khi người dùng chưa có đơn")
         void getUserOrdersEmpty() {
             when(orderRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(new ArrayList<>());
 
@@ -137,11 +94,11 @@ class OrderQueryTest {
     }
 
     @Nested
-    @DisplayName("TC8: getAllOrders() — truy vấn tất cả đơn hàng")
+    @DisplayName("TC7: getAllOrders() — truy vấn tất cả đơn hàng")
     class GetAllOrdersTests {
 
         @Test
-        @DisplayName("TC9: Trả về danh sách tất cả đơn hàng")
+        @DisplayName("TC8: Trả về danh sách tất cả đơn hàng")
         void getAllOrdersSuccess() {
             Order order1 = Order.builder().id("order-1").build();
             Order order2 = Order.builder().id("order-2").build();
@@ -160,7 +117,7 @@ class OrderQueryTest {
         }
 
         @Test
-        @DisplayName("TC10: Trả về danh sách rỗng khi hệ thống chưa có đơn")
+        @DisplayName("TC9: Trả về danh sách rỗng khi hệ thống chưa có đơn")
         void getAllOrdersEmpty() {
             when(orderRepository.findAll()).thenReturn(new ArrayList<>());
 

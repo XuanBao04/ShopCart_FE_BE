@@ -1,4 +1,4 @@
-package com.shopcart.service.order;
+package com.shopcart.order.data;
 
 import com.shopcart.dto.request.OrderItemRequest;
 import com.shopcart.dto.request.OrderRequest;

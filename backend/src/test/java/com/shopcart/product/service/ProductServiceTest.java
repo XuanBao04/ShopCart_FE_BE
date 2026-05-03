@@ -1,9 +1,10 @@
-package com.shopcart.service;
+package com.shopcart.product.service;
 
 import com.shopcart.entity.Product;
 import com.shopcart.entity.enums.ProductStatus;
 import com.shopcart.exception.ResourceNotFoundException;
 import com.shopcart.repository.ProductRepository;
+import com.shopcart.service.IInventoryService;
 import com.shopcart.service.impl.ProductServiceImpl;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.BeforeEach;

@@ -1,4 +1,4 @@
-package com.shopcart.service.order;
+package com.shopcart.order.service;
 
 import com.shopcart.dto.request.OrderItemRequest;
 import com.shopcart.dto.request.OrderRequest;
@@ -9,22 +9,11 @@ import com.shopcart.entity.OrderItem;
 import com.shopcart.entity.enums.OrderStatus;
 import com.shopcart.exception.BusinessLogicException;
 import com.shopcart.exception.ResourceNotFoundException;
-import com.shopcart.mapper.OrderMapper;
-import com.shopcart.repository.OrderRepository;
-import com.shopcart.service.ICartService;
-import com.shopcart.service.ICouponService;
-import com.shopcart.service.IInventoryService;
-import com.shopcart.service.IProductService;
-import com.shopcart.service.impl.OrderServiceImpl;
-import org.junit.jupiter.api.BeforeEach;
+import com.shopcart.order.data.OrderTestFactory;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -42,48 +31,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
-@DisplayName("TC1: Kiểm thử đơn vị chức năng tạo đơn hàng")
-class OrderCreateTest {
-
-    @Mock
-    private OrderRepository orderRepository;
-
-    @Mock
-    private OrderMapper orderMapper;
-
-    @Mock
-    private IInventoryService inventoryService;
-
-    @Mock
-    private IProductService productService;
-
-    @Mock
-    private ICartService cartService;
-
-    @Mock
-    private ICouponService couponService;
-
-    @InjectMocks
-    private OrderServiceImpl orderService;
-
-    private String testUserId;
-    private String testProductId;
-    private String testOrderId;
-
-    @BeforeEach
-    void setUp() {
-        testUserId = "user-123";
-        testProductId = "product-456";
-        testOrderId = "order-789";
-    }
+@DisplayName("Order Service — Create order")
+class OrderCreateTest extends BaseOrderServiceTest {
 
     @Nested
-    @DisplayName("TC2: createOrder() — luồng thành công chính")
+    @DisplayName("TC1: createOrder() — luồng thành công chính")
     class CreateOrderHappyPath {
 
         @Test
-        @DisplayName("TC3: Tạo đơn hàng thành công khi không sử dụng mã giảm giá")
+        @DisplayName("TC2: Tạo đơn hàng thành công khi không sử dụng mã giảm giá")
         void createOrderWithoutCoupon() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -128,7 +84,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC4: Tạo đơn hàng thành công khi mã giảm giá hợp lệ và áp dụng giảm giá")
+        @DisplayName("TC3: Tạo đơn hàng thành công khi mã giảm giá hợp lệ và áp dụng giảm giá")
         void createOrderWithValidCoupon() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -173,7 +129,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC5: Tạo đơn hàng thành công với nhiều dòng sản phẩm")
+        @DisplayName("TC4: Tạo đơn hàng thành công với nhiều dòng sản phẩm")
         void createOrderWithMultipleItems() {
             OrderItemRequest item1 = OrderItemRequest.builder()
                     .productId("product-1")
@@ -219,11 +175,11 @@ class OrderCreateTest {
     }
 
     @Nested
-    @DisplayName("TC6: createOrder() — các trường hợp biên")
+    @DisplayName("TC5: createOrder() — các trường hợp biên")
     class CreateOrderEdgeCases {
 
         @Test
-        @DisplayName("TC7: Không lưu đơn và ném lỗi khi mã giảm giá không hợp lệ")
+        @DisplayName("TC6: Không lưu đơn và ném lỗi khi mã giảm giá không hợp lệ")
         void createOrderWithInvalidCoupon() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -255,7 +211,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC8: Tiếp tục tạo đơn khi mã giảm giá là chuỗi rỗng")
+        @DisplayName("TC7: Tiếp tục tạo đơn khi mã giảm giá là chuỗi rỗng")
         void createOrderWithEmptyCouponCode() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -292,7 +248,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC9: Tạo đơn hàng chỉ với một dòng sản phẩm")
+        @DisplayName("TC8: Tạo đơn hàng chỉ với một dòng sản phẩm")
         void createOrderWithSingleItem() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -329,7 +285,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC10: Ánh xạ thực thể đơn hàng khi userId bằng null")
+        @DisplayName("TC9: Ánh xạ thực thể đơn hàng khi userId bằng null")
         void createOrder_VerifyEntityMapping_AndNullUserId() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -373,7 +329,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC11: Tính tổng tiền không tràn số khi số lượng bằng Integer.MAX_VALUE")
+        @DisplayName("TC10: Tính tổng tiền không tràn số khi số lượng bằng Integer.MAX_VALUE")
         void createOrder_WithMaxIntegerQuantity_ShouldNotOverflow() {
             long price = 100L;
             OrderItemRequest itemRequest = OrderItemRequest.builder()
@@ -419,11 +375,11 @@ class OrderCreateTest {
     }
 
     @Nested
-    @DisplayName("TC12: previewOrder() — kiểm tra tồn kho và giá")
+    @DisplayName("TC11: previewOrder() — kiểm tra tồn kho và giá")
     class PreviewOrderTests {
 
         @Test
-        @DisplayName("TC13: Xem trước đơn không mã giảm giá — tổng tiền gồm phí vận chuyển")
+        @DisplayName("TC12: Xem trước đơn không mã giảm giá — tổng tiền gồm phí vận chuyển")
         void previewOrder_WithoutCoupon_ShouldReturnFullPrice() {
             OrderRequest request = OrderTestFactory.defaultOrderRequest();
             request.setCouponCode(null);
@@ -441,7 +397,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC14: Xem trước đơn với mã giảm giá hợp lệ — áp dụng giảm giá")
+        @DisplayName("TC13: Xem trước đơn với mã giảm giá hợp lệ — áp dụng giảm giá")
         void previewOrder_WithValidCoupon_ShouldApplyDiscount() {
             OrderRequest request = OrderTestFactory.defaultOrderRequest();
             request.setCouponCode("DISCOUNT20");
@@ -460,7 +416,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC15: Xem trước đơn khi mã chỉ gồm khoảng trắng — không gọi tính giảm giá")
+        @DisplayName("TC14: Xem trước đơn khi mã chỉ gồm khoảng trắng — không gọi tính giảm giá")
         void previewOrder_WithEmptyCoupon_ShouldCoverMissingBranch() {
             OrderRequest request = OrderTestFactory.defaultOrderRequest();
             request.setCouponCode("   ");
@@ -478,11 +434,11 @@ class OrderCreateTest {
     }
 
     @Nested
-    @DisplayName("TC16: createOrder() — các tình huống ngoại lệ")
+    @DisplayName("TC15: createOrder() — các tình huống ngoại lệ")
     class CreateOrderExceptions {
 
         @Test
-        @DisplayName("TC17: Ném lỗi khi danh sách sản phẩm đặt mua rỗng")
+        @DisplayName("TC16: Ném lỗi khi danh sách sản phẩm đặt mua rỗng")
         void throwExceptionWhenOrderItemsEmpty() {
             OrderRequest request = OrderRequest.builder()
                     .orderItems(new ArrayList<>())
@@ -496,7 +452,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC18: Ném lỗi khi danh sách sản phẩm đặt mua null")
+        @DisplayName("TC17: Ném lỗi khi danh sách sản phẩm đặt mua null")
         void throwExceptionWhenOrderItemsNull() {
             OrderRequest request = OrderRequest.builder()
                     .orderItems(null)
@@ -507,7 +463,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC19: Ném lỗi khi tồn kho không đủ")
+        @DisplayName("TC18: Ném lỗi khi tồn kho không đủ")
         void throwExceptionWhenInsufficientStock() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -536,7 +492,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC20: Ném lỗi khi không tìm thấy sản phẩm")
+        @DisplayName("TC19: Ném lỗi khi không tìm thấy sản phẩm")
         void throwExceptionWhenProductNotFound() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -558,7 +514,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC21: Ném lỗi khi giữ kho (reserve) thất bại giữa giao dịch")
+        @DisplayName("TC20: Ném lỗi khi giữ kho (reserve) thất bại giữa giao dịch")
         void createOrder_WhenReserveStockFails_ShouldThrowException() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
@@ -590,7 +546,7 @@ class OrderCreateTest {
         }
 
         @Test
-        @DisplayName("TC22: Giới hạn giảm giá theo tổng tiền hàng, tránh tổng thanh toán âm")
+        @DisplayName("TC21: Giới hạn giảm giá theo tổng tiền hàng, tránh tổng thanh toán âm")
         void createOrder_WhenDiscountExceedsSubtotal_PriceShouldNotBeNegative() {
             OrderItemRequest itemRequest = OrderItemRequest.builder()
                     .productId(testProductId)
