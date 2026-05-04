@@ -1,6 +1,7 @@
 package com.shopcart.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.shopcart.controller.OrderController;
 import com.shopcart.dto.request.OrderItemRequest;
 import com.shopcart.dto.request.OrderRequest;
 import com.shopcart.dto.response.OrderItemResponse;
@@ -61,7 +62,7 @@ class OrderControllerLayerTest {
                 .thenReturn(response);
 
         // Act & Assert
-        mockMvc.perform(post("/orders/{userId}", USER_ID)
+        mockMvc.perform(post("/api/orders/{userId}", USER_ID)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -98,7 +99,7 @@ class OrderControllerLayerTest {
                 .build();
 
         // Act & Assert
-        mockMvc.perform(post("/orders/{userId}", USER_ID)
+        mockMvc.perform(post("/api/orders/{userId}", USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(invalidRequest)))
@@ -122,7 +123,7 @@ class OrderControllerLayerTest {
                 .thenThrow(new BusinessLogicException("Product PRD-001 is out of stock"));
 
         // Act & Assert
-        mockMvc.perform(post("/orders/{userId}", USER_ID)
+        mockMvc.perform(post("/api/orders/{userId}", USER_ID)
                         .with(csrf())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
@@ -145,7 +146,7 @@ class OrderControllerLayerTest {
         when(orderService.getOrderById(ORDER_ID)).thenReturn(response);
 
         // Act & Assert
-        mockMvc.perform(get("/orders/{orderId}", ORDER_ID))
+        mockMvc.perform(get("/api/orders/{orderId}", ORDER_ID))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.id").value(ORDER_ID))
@@ -170,7 +171,7 @@ class OrderControllerLayerTest {
                 .thenThrow(new ResourceNotFoundException("Order not found with id: " + nonExistentId));
 
         // Act & Assert
-        mockMvc.perform(get("/orders/{orderId}", nonExistentId))
+        mockMvc.perform(get("/api/orders/{orderId}", nonExistentId))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.error").value("Not Found"))
@@ -193,7 +194,7 @@ class OrderControllerLayerTest {
         when(orderService.cancelOrder(ORDER_ID)).thenReturn(cancelledOrder);
 
         // Act & Assert
-        mockMvc.perform(delete("/orders/{orderId}", ORDER_ID)
+        mockMvc.perform(delete("/api/orders/{orderId}", ORDER_ID)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -216,7 +217,7 @@ class OrderControllerLayerTest {
                 .thenThrow(new ResourceNotFoundException("Order not found with id: " + nonExistentId));
 
         // Act & Assert
-        mockMvc.perform(delete("/orders/{orderId}", nonExistentId)
+        mockMvc.perform(delete("/api/orders/{orderId}", nonExistentId)
                         .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
@@ -240,7 +241,7 @@ class OrderControllerLayerTest {
         when(orderService.updateOrderStatus(ORDER_ID, newStatus)).thenReturn(updatedOrder);
 
         // Act & Assert
-        mockMvc.perform(patch("/orders/{orderId}/{status}", ORDER_ID, newStatus)
+        mockMvc.perform(patch("/api/orders/{orderId}/{status}", ORDER_ID, newStatus)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
@@ -257,7 +258,7 @@ class OrderControllerLayerTest {
 @WithMockUser(username = "user123", roles = "USER")
 void testUpdateOrderStatus_forbidden() throws Exception {
 
-    mockMvc.perform(patch("/orders/{orderId}/{status}", ORDER_ID, "CONFIRMED")
+    mockMvc.perform(patch("/api/orders/{orderId}/{status}", ORDER_ID, "CONFIRMED")
                     .with(csrf()))
             .andExpect(status().isForbidden());
 
