@@ -8,6 +8,7 @@ import com.shopcart.exception.ResourceNotFoundException;
 import com.shopcart.mapper.CartMapper;
 import com.shopcart.repository.CartRepository;
 import com.shopcart.service.ICartService;
+import com.shopcart.service.IInventoryService;
 import com.shopcart.service.IProductService;
 import com.shopcart.service.IInventoryService;
 import lombok.RequiredArgsConstructor;
