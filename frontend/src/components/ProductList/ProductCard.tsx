@@ -3,6 +3,7 @@ import { Product } from "../../types/product";
 import { useCart } from "../../hooks/useCart";
 import { formatPrice } from "../../utils/priceCalculation";
 import { productService } from "../../services/api/productService";
+import { useNavigate } from "react-router-dom";
 
 interface ProductCardProps {
   product: Product;
@@ -10,13 +11,12 @@ interface ProductCardProps {
 
 const ProductCard = ({ product }: ProductCardProps) => {
   const { cart, addItem } = useCart();
+  const navigate = useNavigate();
   const [quantity, setQuantity] = useState(1);
   const [isAdding, setIsAdding] = useState(false);
   const [availableStock, setAvailableStock] = useState<number>(0);
 
-  // Tính số lượng đang có trong giỏ hàng
   const quantityInCart = cart?.items.find((item) => item.productId === product.id)?.quantity || 0;
-  // Số lượng thực sự có thể thêm vào giỏ
   const displayStock = Math.max(0, availableStock - quantityInCart);
 
   useEffect(() => {
@@ -34,6 +34,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
   }, [product.id, product.status]);
 
   const handleAddToCart = async () => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) {
+      const shouldGoToLogin = confirm("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      if (shouldGoToLogin) {
+        navigate("/login");
+      }
+      return;
+    }
+
     setIsAdding(true);
     try {
       await addItem({
@@ -41,7 +50,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
         quantity,
       });
       setQuantity(1);
-      alert("Đã thêm vào giỏ hàng thành công!");
+      alert("Đã thêm sản phẩm vào giỏ hàng!");
     } catch (error: any) {
       console.error("Error adding to cart:", error);
       alert(error.message || "Có lỗi xảy ra khi thêm vào giỏ hàng.");
@@ -90,7 +99,7 @@ const ProductCard = ({ product }: ProductCardProps) => {
             disabled={isAdding || product.status !== "ACTIVE" || displayStock === 0}
             className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
           >
-            {isAdding ? "Đang thêm..." : "Thêm vào giỏ"}
+            {isAdding ? "Đang thêm..." : "Thêm vào giỏ hàng"}
           </button>
         </div>
       </div>

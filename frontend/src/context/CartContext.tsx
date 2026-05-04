@@ -15,13 +15,20 @@ export interface CartContextType {
 
 export const CartContext = createContext<CartContextType | undefined>(undefined);
 
+const getCurrentUserId = () => localStorage.getItem("userId");
+
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const userId = localStorage.getItem("userId") || "user1";
   const [cart, setCart] = useState<CartResponse | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchCart = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      setCart(null);
+      return;
+    }
+
     setIsLoading(true);
     try {
       const response = await cartService.getCart(userId);
@@ -32,9 +39,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } finally {
       setIsLoading(false);
     }
-  }, [userId]);
+  }, []);
 
   const addItem = useCallback(async (item: CartItemRequest) => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("Vui lòng dang nh?p d? thêm s?n ph?m vào gi? hàng.");
+    }
+
     try {
       const response = await cartService.addToCart(userId, item);
       setCart(response);
@@ -44,9 +56,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(errorMessage);
       throw new Error(errorMessage);
     }
-  }, [userId]);
+  }, []);
 
   const removeItem = useCallback(async (cartItemId: number) => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("Vui lòng dang nh?p d? thao tác gi? hàng.");
+    }
+
     try {
       const response = await cartService.removeFromCart(userId, cartItemId);
       setCart(response);
@@ -54,9 +71,14 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     } catch (err) {
       setError((err as Error).message);
     }
-  }, [userId]);
+  }, []);
 
   const updateItem = useCallback(async (cartItemId: number, quantity: number) => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      throw new Error("Vui lòng dang nh?p d? thao tác gi? hàng.");
+    }
+
     try {
       const response = await cartService.updateCartItem(userId, cartItemId, quantity);
       setCart(response);
@@ -66,19 +88,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setError(errorMessage);
       throw new Error(errorMessage);
     }
-  }, [userId]);
+  }, []);
 
   const clear = useCallback(async () => {
+    const userId = getCurrentUserId();
+    if (!userId) {
+      setCart(null);
+      return;
+    }
+
     await cartService.clearCart(userId);
     setCart({ userId, items: [], totalItems: 0, totalPrice: 0 });
     setError(null);
-  }, [userId]);
+  }, []);
 
   useEffect(() => {
-    if (localStorage.getItem("userId") || userId === "user1") {
-      fetchCart();
-    }
-  }, [fetchCart, userId]);
+    fetchCart();
+  }, [fetchCart]);
 
   return (
     <CartContext.Provider value={{ cart, isLoading, error, fetchCart, addItem, removeItem, updateItem, clear }}>

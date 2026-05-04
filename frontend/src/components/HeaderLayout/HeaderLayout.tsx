@@ -9,6 +9,7 @@ export default function HeaderLayout() {
   const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const { cart } = useCart();
+  const isLoggedIn = Boolean(userId);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
@@ -16,10 +17,19 @@ export default function HeaderLayout() {
     if (storedUserId) {
       setUserId(storedUserId);
       setRole(storedRole);
-    } else {
-      navigate("/login");
     }
   }, []);
+
+  const requireLogin = () => {
+    if (!isLoggedIn) {
+      const shouldGoToLogin = confirm("Vui lòng đăng nhập để sử dụng tính năng này.");
+      if (shouldGoToLogin) {
+        navigate("/login");
+      }
+      return false;
+    }
+    return true;
+  };
 
   const handleLogout = async () => {
     try {
@@ -32,7 +42,7 @@ export default function HeaderLayout() {
     localStorage.removeItem("username");
     setUserId(null);
     setRole(null);
-    navigate("/login"); // chuyển về login
+    navigate("/login");
   };
 
   return (
@@ -47,18 +57,14 @@ export default function HeaderLayout() {
           </h1>
 
           <div className="flex items-center gap-4">
-            {role === "ADMIN" && (
-              <button
-                onClick={() => navigate("/admin/dashboard")}
-                className="bg-purple-600 text-white px-4 py-2 rounded hover:bg-purple-700 flex items-center gap-2"
-              >
-                <FaShieldAlt />
-                Quản lý
-              </button>
-            )}
+          
 
             <button
-              onClick={() => navigate("/authenticated/cart")}
+              onClick={() => {
+                if (requireLogin()) {
+                  navigate("/authenticated/cart");
+                }
+              }}
               className="relative bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
             >
               <FaShoppingCart />
@@ -71,7 +77,11 @@ export default function HeaderLayout() {
             </button>
 
             <button
-              onClick={() => navigate("/authenticated/orders")}
+              onClick={() => {
+                if (requireLogin()) {
+                  navigate("/authenticated/orders");
+                }
+              }}
               className="bg-indigo-500 text-white px-4 py-2 rounded hover:bg-indigo-600 flex items-center gap-2"
             >
               <FaClipboardList />
@@ -105,4 +115,3 @@ export default function HeaderLayout() {
     </div>
   );
 }
-

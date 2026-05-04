@@ -12,9 +12,9 @@ import { ShippingAddress } from "../../types/order";
 const SHIPPING_FEE = 29900;
 
 const Cart = () => {
-  const userId = localStorage.getItem("userId") || "user1";
+  const userId = localStorage.getItem("userId") || "";
   const { cart, isLoading, error, fetchCart, removeItem, updateItem, clear } =
-    useCart(userId);
+    useCart();
 
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
@@ -187,4 +187,5 @@ const Cart = () => {
 };
 
 export default Cart;
+
 
