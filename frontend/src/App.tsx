@@ -1,5 +1,5 @@
 // import "./App.css";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import HeaderLayout from "./components/HeaderLayout/HeaderLayout";
 import ProductList from "./components/ProductList/ProductList";
 import Cart from "./components/Cart/Cart";
@@ -14,7 +14,7 @@ function App() {
     <BrowserRouter>
       <CartProvider>
         <Routes>
-          <Route path="/" element={<LoginPage />} />
+          <Route path="/" element={<Navigate to="/login" />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/authenticated" element={<HeaderLayout />}>

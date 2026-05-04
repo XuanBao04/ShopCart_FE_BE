@@ -80,7 +80,7 @@ export default function Order() {
       <h1 className="text-3xl font-bold mb-8">Lịch sử đơn hàng</h1>
       <div className="space-y-4">
         {orders.map((order) => {
-          const isCancelled = order.status === "CANCELLED";
+          const isPending = order.status === "PENDING";
           const isCancelling = cancelingOrderId === order.id;
           const isExpanded = expandedOrderId === order.id;
 
@@ -183,13 +183,13 @@ export default function Order() {
                   <div className="flex gap-2 justify-end">
                     <button
                       onClick={() => handleCancelOrder(order.id)}
-                      disabled={isCancelled || isCancelling}
+                      disabled={!isPending || isCancelling}
                       className="bg-red-500 text-white px-6 py-2 rounded hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors font-semibold"
                     >
                       {isCancelling
                         ? "Đang hủy..."
-                        : isCancelled
-                          ? "Đã hủy"
+                        : !isPending
+                          ? "Không thể hủy"
                           : "Hủy đơn hàng"}
                     </button>
                   </div>
@@ -202,3 +202,5 @@ export default function Order() {
     </div>
   );
 }
+
+
