@@ -1,12 +1,12 @@
 package com.shopcart.order.service;
 
-import com.shopcart.mapper.OrderMapper;
-import com.shopcart.repository.OrderRepository;
-import com.shopcart.service.ICartService;
-import com.shopcart.service.ICouponService;
-import com.shopcart.service.IInventoryService;
-import com.shopcart.service.IProductService;
-import com.shopcart.service.impl.OrderServiceImpl;
+import com.shopcart.order.mapper.OrderMapper;
+import com.shopcart.order.repository.OrderRepository;
+import com.shopcart.cart.service.ICartService;
+import com.shopcart.coupon.service.ICouponService;
+import com.shopcart.inventory.service.IInventoryService;
+import com.shopcart.product.service.IProductService;
+import com.shopcart.order.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -17,7 +17,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * Shared Mockito wiring and order test fixtures for OrderServiceImpl tests.
  */
 @ExtendWith(MockitoExtension.class)
-abstract class BaseOrderServiceTest {
+public abstract class BaseOrderServiceTest {
 
     @Mock
     protected OrderRepository orderRepository;

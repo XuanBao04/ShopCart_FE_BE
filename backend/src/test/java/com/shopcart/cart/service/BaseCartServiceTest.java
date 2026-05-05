@@ -1,13 +1,13 @@
 package com.shopcart.cart.service;
 
-import com.shopcart.dto.request.CartItemRequest;
-import com.shopcart.dto.response.CartResponse;
-import com.shopcart.entity.CartItem;
-import com.shopcart.mapper.CartMapper;
-import com.shopcart.repository.CartRepository;
-import com.shopcart.service.IInventoryService;
-import com.shopcart.service.IProductService;
-import com.shopcart.service.impl.CartServiceImpl;
+import com.shopcart.cart.dto.request.CartItemRequest;
+import com.shopcart.cart.dto.response.CartResponse;
+import com.shopcart.cart.entity.CartItem;
+import com.shopcart.cart.mapper.CartMapper;
+import com.shopcart.cart.repository.CartRepository;
+import com.shopcart.inventory.service.IInventoryService;
+import com.shopcart.product.service.IProductService;
+import com.shopcart.cart.service.impl.CartServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -22,7 +22,7 @@ import static org.mockito.Mockito.when;
  * Shared Mockito wiring and cart test fixtures for CartServiceImpl tests.
  */
 @ExtendWith(MockitoExtension.class)
-abstract class BaseCartServiceTest {
+public abstract class BaseCartServiceTest {
 
     @Mock
     protected CartRepository cartRepository;

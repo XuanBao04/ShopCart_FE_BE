@@ -6,6 +6,7 @@
 # IDE
 .vscode/
 .idea/
+.mvn/
 *.swp
 *.swo
 *~
@@ -35,6 +36,7 @@ yarn-error.log*
 # Testing
 coverage/
 .nyc_output/
+*.prompt-test.md
 
 # OS
 Thumbs.db

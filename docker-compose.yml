@@ -64,6 +64,15 @@ services:
     depends_on:
       - db
 
+  k6:
+    image: grafana/k6:latest
+    container_name: shopcart_k6
+    volumes:
+      - ./k6-tests:/scripts
+    command: run /scripts/test.js
+    depends_on:
+      - backend
+
 volumes:
   postgres_data:
   maven_cache:

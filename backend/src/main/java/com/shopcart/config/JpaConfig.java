@@ -6,7 +6,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 
 @Configuration
-@EntityScan(basePackages = "com.shopcart.entity")
+@EntityScan(basePackages = "com.shopcart")
 @EnableJpaAuditing
 public class JpaConfig {
     // JPA configuration - Repository scanning is auto-configured by Spring Boot

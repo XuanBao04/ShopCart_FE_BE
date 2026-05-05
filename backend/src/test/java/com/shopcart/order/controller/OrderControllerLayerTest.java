@@ -1,14 +1,14 @@
 package com.shopcart.order.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.shopcart.controller.OrderController;
-import com.shopcart.dto.request.OrderItemRequest;
-import com.shopcart.dto.request.OrderRequest;
-import com.shopcart.dto.response.OrderItemResponse;
-import com.shopcart.dto.response.OrderResponse;
-import com.shopcart.exception.BusinessLogicException;
-import com.shopcart.exception.ResourceNotFoundException;
-import com.shopcart.service.IOrderService;
+import com.shopcart.order.controller.OrderController;
+import com.shopcart.order.dto.request.OrderItemRequest;
+import com.shopcart.order.dto.request.OrderRequest;
+import com.shopcart.order.dto.response.OrderItemResponse;
+import com.shopcart.order.dto.response.OrderResponse;
+import com.shopcart.common.exception.BusinessLogicException;
+import com.shopcart.common.exception.ResourceNotFoundException;
+import com.shopcart.order.service.IOrderService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

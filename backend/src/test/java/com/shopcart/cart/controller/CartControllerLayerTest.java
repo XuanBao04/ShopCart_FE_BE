@@ -1,11 +1,11 @@
 package com.shopcart.cart.controller;
 
-import com.shopcart.controller.CartController;
-import com.shopcart.dto.request.CartItemRequest;
-import com.shopcart.dto.response.CartResponse;
-import com.shopcart.exception.BusinessLogicException;
-import com.shopcart.exception.ResourceNotFoundException;
-import com.shopcart.service.ICartService;
+import com.shopcart.cart.controller.CartController;
+import com.shopcart.cart.dto.request.CartItemRequest;
+import com.shopcart.cart.dto.response.CartResponse;
+import com.shopcart.common.exception.BusinessLogicException;
+import com.shopcart.common.exception.ResourceNotFoundException;
+import com.shopcart.cart.service.ICartService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
