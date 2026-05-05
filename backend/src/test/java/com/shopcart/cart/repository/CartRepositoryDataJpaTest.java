@@ -1,7 +1,6 @@
 package com.shopcart.cart.repository;
 
 import com.shopcart.cart.entity.CartItem;
-import com.shopcart.cart.repository.CartRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -10,7 +9,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import com.shopcart.config.JpaConfig;
+import com.shopcart.config.database.JpaConfig;
 
 import java.util.List;
 import java.util.Optional;
@@ -83,7 +82,7 @@ class CartRepositoryDataJpaTest {
         List<CartItem> items = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
 
         assertThat(items).hasSize(2);
-        assertThat(items.get(0).getProductId()).isEqualTo("p2"); // Mới nhất lên đầu
+        assertThat(items.get(0).getProductId()).isEqualTo("p2"); 
         assertThat(items.get(1).getProductId()).isEqualTo("p1");
     }
 

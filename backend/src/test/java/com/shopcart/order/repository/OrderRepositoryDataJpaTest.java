@@ -3,7 +3,6 @@ package com.shopcart.order.repository;
 import com.shopcart.order.entity.Order;
 import com.shopcart.order.entity.OrderItem;
 import com.shopcart.common.enums.OrderStatus;
-import com.shopcart.order.repository.OrderRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,7 +10,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
 import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
-import com.shopcart.config.JpaConfig;
+import com.shopcart.config.database.JpaConfig;
 
 import java.util.List;
 import java.util.Optional;

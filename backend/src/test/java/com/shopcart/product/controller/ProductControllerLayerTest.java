@@ -1,17 +1,14 @@
 package com.shopcart.product.controller;
 
-import com.shopcart.product.controller.ProductController;
 import com.shopcart.product.entity.Product;
 import com.shopcart.common.enums.ProductStatus;
 import com.shopcart.product.service.IProductService;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
@@ -30,9 +27,6 @@ class ProductControllerLayerTest {
 
     @MockBean
     private IProductService productService;
-
-    @Autowired
-    private ObjectMapper objectMapper;
 
     @Test
     @DisplayName("Nên lấy được tất cả sản phẩm")

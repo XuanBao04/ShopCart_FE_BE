@@ -54,4 +54,11 @@ public class ProductServiceImpl implements IProductService {
         // TODO: Implement logic
         return getProductById(productId);
     }
+
+    @Override
+    public long deleteAllProducts() {
+        long count = productRepository.count();
+        productRepository.deleteAll();
+        return count;
+    }
 }

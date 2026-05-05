@@ -49,4 +49,10 @@ public interface IProductService {
      * @return Product
      */
     Product getProductWithInventory(String productId);
+
+    /**
+     * Delete all products
+     * @return number of products deleted
+     */
+    long deleteAllProducts();
 }

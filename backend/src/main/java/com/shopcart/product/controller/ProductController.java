@@ -46,4 +46,11 @@ public class ProductController {
         boolean available = productService.isProductAvailable(productId);
         return ResponseEntity.ok(available);
     }
+
+    @DeleteMapping
+    public ResponseEntity<Long> deleteAllProducts() {
+        long deletedCount = productService.deleteAllProducts();
+        return ResponseEntity.ok(deletedCount);
+    }
+
 }
