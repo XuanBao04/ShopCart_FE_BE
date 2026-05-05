@@ -1,5 +1,7 @@
 package com.shopcart.inventory.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.inventory.entity.Inventory;
 import com.shopcart.common.exception.ResourceNotFoundException;
 import com.shopcart.common.exception.BusinessLogicException;
@@ -62,7 +64,7 @@ public class InventoryServiceImpl implements IInventoryService {
         int newQuantity = inventory.getQuantity() + quantity;
         int newAvailable = newQuantity - getSafeReservedQuantity(inventory);
         if (newAvailable < 0) {
-            throw new BusinessLogicException("Insufficient stock for product: " + productId);
+            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + productId);
         }
         
         inventory.setQuantity(newQuantity);
@@ -79,7 +81,7 @@ public class InventoryServiceImpl implements IInventoryService {
         
         int availableStock = inventory.getQuantity() - getSafeReservedQuantity(inventory);
         if (availableStock < quantity) {
-            throw new BusinessLogicException("Insufficient stock to reserve for product: " + productId);
+            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + productId);
         }
         
         inventory.setReservedQuantity(getSafeReservedQuantity(inventory) + quantity);
@@ -126,7 +128,7 @@ public class InventoryServiceImpl implements IInventoryService {
     private Inventory findInventoryOrThrow(String productId) {
         return inventoryRepository.findByProductId(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                    "Inventory not found for product: " + productId));
+                    MessageConstant.Inventory.NOT_FOUND + productId));
     }
 
     /**
@@ -155,7 +157,7 @@ public class InventoryServiceImpl implements IInventoryService {
      */
     private void validateProductId(String productId) {
         if (productId == null || productId.trim().isEmpty()) {
-            throw new BusinessLogicException("Product ID cannot be null or empty");
+            throw new BusinessLogicException(MessageConstant.Product.ID_REQUIRED);
         }
     }
 
@@ -164,7 +166,7 @@ public class InventoryServiceImpl implements IInventoryService {
      */
     private void validateQuantity(Integer quantity) {
         if (quantity == null || quantity <= 0) {
-            throw new BusinessLogicException("Quantity must be a positive integer");
+            throw new BusinessLogicException(MessageConstant.Inventory.POSITIVE_QUANTITY);
         }
     }
 }

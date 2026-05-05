@@ -1,5 +1,7 @@
 package com.shopcart.cart.service.update;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.cart.service.BaseCartServiceTest;
 import com.shopcart.cart.entity.CartItem;
 import com.shopcart.common.exception.BusinessLogicException;
@@ -40,7 +42,7 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
             cartService.updateQuantity(userId, cartItemId, newQuantity);
         });
 
-        assertEquals("Insufficient stock for product: " + validCartItem.getProductId(), exception.getMessage());
+        assertEquals(MessageConstant.Inventory.INSUFFICIENT_STOCK + validCartItem.getProductId(), exception.getMessage());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
 
@@ -55,7 +57,7 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
             cartService.updateQuantity(userId, cartItemId, newQuantity);
         });
 
-        assertEquals("Không tìm thấy cart item với id: " + cartItemId, exception.getMessage());
+        assertEquals(MessageConstant.Cart.NOT_FOUND + cartItemId, exception.getMessage());
         verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
@@ -78,7 +80,7 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
             cartService.updateQuantity(userId, cartItemId, newQuantity);
         });
 
-        assertEquals("Cart item không thuộc về user: " + userId, exception.getMessage());
+        assertEquals(MessageConstant.Cart.WRONG_USER + userId, exception.getMessage());
         verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
     }

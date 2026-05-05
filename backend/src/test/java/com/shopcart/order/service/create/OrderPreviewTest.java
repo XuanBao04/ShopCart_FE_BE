@@ -3,7 +3,8 @@ package com.shopcart.order.service.create;
 import com.shopcart.order.dto.request.OrderItemRequest;
 import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderPreviewResponse;
-import com.shopcart.order.factory.OrderTestFactory;
+import com.shopcart.order.factory.OrderRequestFactory;
+import com.shopcart.order.factory.OrderTestConstants;
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,7 +22,7 @@ class OrderPreviewTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC12: Xem trước đơn không mã giảm giá — tổng tiền gồm phí vận chuyển")
     void previewOrder_WithoutCoupon_ShouldReturnFullPrice() {
-        OrderRequest request = OrderTestFactory.defaultOrderRequest();
+        OrderRequest request = OrderRequestFactory.defaultOrderRequest();
         request.setCouponCode(null);
 
         OrderItemRequest item = request.getOrderItems().get(0);
@@ -33,13 +34,13 @@ class OrderPreviewTest extends BaseOrderServiceTest {
         OrderPreviewResponse response = orderService.previewOrder(request);
 
         assertEquals(0L, response.getDiscountAmount());
-        assertEquals(subtotal + OrderTestFactory.DEFAULT_SHIPPING_FEE, response.getTotalPrice());
+        assertEquals(subtotal + OrderTestConstants.DEFAULT_SHIPPING_FEE, response.getTotalPrice());
     }
 
     @Test
     @DisplayName("TC13: Xem trước đơn với mã giảm giá hợp lệ — áp dụng giảm giá")
     void previewOrder_WithValidCoupon_ShouldApplyDiscount() {
-        OrderRequest request = OrderTestFactory.defaultOrderRequest();
+        OrderRequest request = OrderRequestFactory.defaultOrderRequest();
         request.setCouponCode("DISCOUNT20");
 
         OrderItemRequest item = request.getOrderItems().get(0);
@@ -58,7 +59,7 @@ class OrderPreviewTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC14: Xem trước đơn khi mã chỉ gồm khoảng trắng — không gọi tính giảm giá")
     void previewOrder_WithEmptyCoupon_ShouldCoverMissingBranch() {
-        OrderRequest request = OrderTestFactory.defaultOrderRequest();
+        OrderRequest request = OrderRequestFactory.defaultOrderRequest();
         request.setCouponCode("   ");
 
         OrderItemRequest item = request.getOrderItems().get(0);

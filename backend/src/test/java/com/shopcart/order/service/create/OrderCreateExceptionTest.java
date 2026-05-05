@@ -7,10 +7,11 @@ import com.shopcart.order.entity.Order;
 import com.shopcart.common.enums.OrderStatus;
 import com.shopcart.common.exception.BusinessLogicException;
 import com.shopcart.common.exception.ResourceNotFoundException;
+import com.shopcart.order.factory.OrderRequestFactory;  
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
+import org.mockito.ArgumentCaptor;      
 
 import java.util.ArrayList;
 import java.util.List;
@@ -54,21 +55,7 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC18: Ném lỗi khi tồn kho không đủ")
     void throwExceptionWhenInsufficientStock() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(100)
-                .price(100_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 100, 100_000L);
 
         when(productService.getProductById(testProductId)).thenReturn(null);
         when(inventoryService.hasEnoughStock(testProductId, 100)).thenReturn(false);
@@ -83,15 +70,7 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC19: Ném lỗi khi không tìm thấy sản phẩm")
     void throwExceptionWhenProductNotFound() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(1)
-                .price(100_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 1, 100_000L);
 
         when(productService.getProductById(testProductId))
                 .thenThrow(new ResourceNotFoundException("Product not found"));
@@ -105,21 +84,7 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC20: Ném lỗi khi giữ kho (reserve) thất bại giữa giao dịch")
     void createOrder_WhenReserveStockFails_ShouldThrowException() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(5)
-                .price(100_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 5, 100_000L);
 
         when(productService.getProductById(testProductId)).thenReturn(null);
         when(inventoryService.hasEnoughStock(testProductId, 5)).thenReturn(true);
@@ -137,22 +102,7 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC21: Giới hạn giảm giá theo tổng tiền hàng, tránh tổng thanh toán âm")
     void createOrder_WhenDiscountExceedsSubtotal_PriceShouldNotBeNegative() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(1)
-                .price(100_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .couponCode("SUPER_DISCOUNT")
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItemsAndCoupon(testProductId, 1, 100_000L, "SUPER_DISCOUNT");
 
         Order savedOrder = Order.builder()
                 .id(testOrderId)

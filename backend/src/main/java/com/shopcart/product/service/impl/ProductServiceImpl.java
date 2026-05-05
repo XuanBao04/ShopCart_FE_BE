@@ -1,5 +1,7 @@
 package com.shopcart.product.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.product.entity.Product;
 import com.shopcart.common.exception.ResourceNotFoundException;
 import com.shopcart.product.repository.ProductRepository;
@@ -27,7 +29,7 @@ public class ProductServiceImpl implements IProductService {
     @Override
     public Product getProductById(String productId) {
         return productRepository.findById(productId)
-                .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Product.NOT_FOUND + productId));
     }
 
     @Override

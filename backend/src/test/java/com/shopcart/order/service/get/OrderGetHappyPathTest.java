@@ -1,12 +1,11 @@
 package com.shopcart.order.service.get;
-
 import com.shopcart.order.dto.response.OrderResponse;
 import com.shopcart.order.entity.Order;
 import com.shopcart.common.enums.OrderStatus;
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
+import com.shopcart.order.factory.OrderResponseFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -26,9 +25,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        OrderResponse expectedResponse = OrderResponse.builder()
-                .id(testOrderId)
-                .build();
+        OrderResponse expectedResponse = OrderResponseFactory.defaultOrderResponse();
 
         when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
         when(orderMapper.toOrderResponse(order)).thenReturn(expectedResponse);
@@ -44,7 +41,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
     void getUserOrdersSuccess() {
         Order order1 = Order.builder().id("order-1").userId(testUserId).build();
         List<Order> orders = List.of(order1);
-        OrderResponse response1 = OrderResponse.builder().id("order-1").build();
+        OrderResponse response1 = OrderResponseFactory.defaultOrderResponse();
 
         when(orderRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(orders);
         when(orderMapper.toOrderResponse(order1)).thenReturn(response1);
@@ -67,8 +64,8 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
     void getAllOrdersSuccess() {
         Order order1 = Order.builder().id("order-1").build();
         when(orderRepository.findAll()).thenReturn(List.of(order1));
-        when(orderMapper.toOrderResponse(order1)).thenReturn(OrderResponse.builder().id("order-1").build());
-
+        when(orderMapper.toOrderResponse(order1)).thenReturn(OrderResponseFactory.defaultOrderResponse());
+        
         List<OrderResponse> responses = orderService.getAllOrders();
 
         assertThat(responses).hasSize(1);

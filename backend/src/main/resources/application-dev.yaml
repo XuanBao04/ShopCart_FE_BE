@@ -7,16 +7,14 @@ spring:
     # hikari:
     #   maximum-pool-size: 50 # tăng số kết nối DB tối đa (mặc định là 10)
     #   minimum-idle: 10    # tăng số kết nối DB tối thiểu
-    
-  
   jpa:
     hibernate:
       # update: Tự động tạo/cập nhật bảng dựa trên Entity.
-      ddl-auto: update 
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
-        format_sql: true
+        "[format_sql]": true
         dialect: org.hibernate.dialect.PostgreSQLDialect
 
 server:
@@ -25,3 +23,13 @@ server:
   #   threads:
   #     max: 500                   # Tăng số lượng luồng xử lý yêu cầu (mặc định là 200)
   #     min-spare: 50                # Tăng số lượng luồng rảnh (mặc định là 10)
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true

@@ -75,4 +75,3 @@ class OrderRepositoryDataJpaTest {
     }
 }
 
-// mvn test -Dtest=*RepositoryDataJpaTest

@@ -4,7 +4,7 @@ import com.shopcart.order.entity.Order;
 import com.shopcart.common.enums.OrderStatus;
 import com.shopcart.common.exception.BusinessLogicException;
 import com.shopcart.common.exception.ResourceNotFoundException;
-import com.shopcart.order.factory.OrderTestFactory;
+import com.shopcart.order.factory.OrderEntityFactory;
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -27,7 +27,7 @@ class OrderCancelExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC3: Ném lỗi khi hủy đơn ở trạng thái SHIPPED")
     void cancelOrder_WhenStatusIsShipped_ShouldThrowException() {
-        Order order = OrderTestFactory.order(testOrderId, testUserId, OrderStatus.SHIPPED, List.of());
+        Order order = OrderEntityFactory.order(testOrderId, testUserId, OrderStatus.SHIPPED, List.of());
         when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
 
         BusinessLogicException exception = assertThrows(

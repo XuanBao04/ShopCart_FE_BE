@@ -1,5 +1,7 @@
 package com.shopcart.cart.service.remove;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.cart.service.BaseCartServiceTest;
 import com.shopcart.cart.entity.CartItem;
 import com.shopcart.common.exception.ResourceNotFoundException;
@@ -28,7 +30,7 @@ class CartRemoveItemExceptionTest extends BaseCartServiceTest {
             cartService.removeFromCart(userId, cartItemId);
         });
 
-        assertEquals("Không tìm thấy cart item với id: " + cartItemId, exception.getMessage());
+        assertEquals(MessageConstant.Cart.NOT_FOUND + cartItemId, exception.getMessage());
         verify(cartRepository, never()).delete(any(CartItem.class));
     }
 
@@ -49,7 +51,7 @@ class CartRemoveItemExceptionTest extends BaseCartServiceTest {
             cartService.removeFromCart(userId, cartItemId);
         });
 
-        assertEquals("Cart item không thuộc về user: " + userId, exception.getMessage());
+        assertEquals(MessageConstant.Cart.WRONG_USER + userId, exception.getMessage());
         verify(cartRepository, never()).delete(any(CartItem.class));
     }
 }

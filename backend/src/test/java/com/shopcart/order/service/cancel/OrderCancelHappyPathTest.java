@@ -3,7 +3,9 @@ package com.shopcart.order.service.cancel;
 import com.shopcart.order.entity.Order;
 import com.shopcart.order.entity.OrderItem;
 import com.shopcart.common.enums.OrderStatus;
-import com.shopcart.order.factory.OrderTestFactory;
+import com.shopcart.order.factory.OrderEntityFactory;
+
+
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -21,8 +23,8 @@ class OrderCancelHappyPathTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC2: Hủy đơn thành công khi đơn đang ở trạng thái PENDING")
     void cancelOrder_WhenStatusIsPending_ShouldSucceed() {
-        OrderItem item = OrderTestFactory.orderItem("product-1", 2, 100_000L);
-        Order order = OrderTestFactory.order(testOrderId, testUserId, OrderStatus.PENDING, List.of(item));
+        OrderItem item = OrderEntityFactory.orderItem("product-1", 2, 100_000L);
+        Order order = OrderEntityFactory.order(testOrderId, testUserId, OrderStatus.PENDING, List.of(item));
 
         when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);

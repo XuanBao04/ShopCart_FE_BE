@@ -1,5 +1,7 @@
 package com.shopcart.order.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.order.dto.request.OrderItemRequest;
 import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderItemResponse;
@@ -119,7 +121,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     public OrderResponse getOrderById(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
         return orderMapper.toOrderResponse(order);
     }
 
@@ -135,10 +137,10 @@ public class OrderServiceImpl implements IOrderService {
     @Transactional
     public OrderResponse cancelOrder(String orderId) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
 
         if (!order.getStatus().equals(OrderStatus.PENDING)) {
-            throw new BusinessLogicException("Cannot cancel order with status: " + order.getStatus());
+            throw new BusinessLogicException(MessageConstant.Order.CANNOT_CANCEL + order.getStatus());
         }
 
         // Hủy đơn / timeout -> giảm reserved_stock
@@ -158,13 +160,13 @@ public class OrderServiceImpl implements IOrderService {
     @Transactional
     public OrderResponse updateOrderStatus(String orderId, String status) {
         Order order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new ResourceNotFoundException("Order not found with id: " + orderId));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
 
         OrderStatus newStatus;
         try {
             newStatus = OrderStatus.valueOf(status);
         } catch (IllegalArgumentException e) {
-            throw new BusinessLogicException("Invalid order status: " + status);
+            throw new BusinessLogicException(MessageConstant.Order.INVALID_STATUS + status);
         }
 
         // Admin xác nhận đơn → chuyển từ reserved → sold
@@ -226,13 +228,13 @@ public class OrderServiceImpl implements IOrderService {
     
     private void validateOrderItems(OrderRequest request) {
         if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
-            throw new BusinessLogicException("Order must contain at least one item");
+            throw new BusinessLogicException(MessageConstant.Order.EMPTY_ITEMS);
         }
 
         for (OrderItemRequest item : request.getOrderItems()) {
             productService.getProductById(item.getProductId());
             if (!inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())) {
-                throw new BusinessLogicException("Insufficient stock for product: " + item.getProductId());
+                throw new BusinessLogicException(MessageConstant.Product.INSUFFICIENT_STOCK + item.getProductId());
             }
         }
     }

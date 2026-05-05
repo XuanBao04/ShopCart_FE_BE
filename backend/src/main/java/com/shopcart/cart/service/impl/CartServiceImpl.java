@@ -1,5 +1,7 @@
 package com.shopcart.cart.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.cart.dto.request.CartItemRequest;
 import com.shopcart.cart.dto.response.CartResponse;
 import com.shopcart.cart.entity.CartItem;
@@ -10,7 +12,6 @@ import com.shopcart.cart.repository.CartRepository;
 import com.shopcart.cart.service.ICartService;
 import com.shopcart.inventory.service.IInventoryService;
 import com.shopcart.product.service.IProductService;
-import com.shopcart.inventory.service.IInventoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -53,7 +54,7 @@ public class CartServiceImpl implements ICartService {
 
         // Kiểm tra tồn kho một lần duy nhất cho số lượng mới
         if (!inventoryService.hasEnoughStock(request.getProductId(), newQuantity)) {
-            throw new BusinessLogicException("Insufficient stock for product: " + request.getProductId());
+            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + request.getProductId());
         }
 
         // Cập nhật số lượng và thời gian tạo để áp dụng cho cả trường hợp mới và cộng dồn
@@ -81,7 +82,7 @@ public class CartServiceImpl implements ICartService {
         CartItem cartItem = findCartItemByUser(userId, cartItemId);
 
         if (!inventoryService.hasEnoughStock(cartItem.getProductId(), quantity)) {
-            throw new BusinessLogicException("Insufficient stock for product: " + cartItem.getProductId());
+            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + cartItem.getProductId());
         }
 
         cartItem.setQuantity(quantity);
@@ -104,11 +105,11 @@ public class CartServiceImpl implements ICartService {
     private CartItem findCartItemByUser(String userId, Long cartItemId) {
         CartItem cartItem = cartRepository.findById(cartItemId)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "Không tìm thấy cart item với id: " + cartItemId));
+                        MessageConstant.Cart.NOT_FOUND + cartItemId));
 
         if (!cartItem.getUserId().equals(userId)) {
             throw new ResourceNotFoundException(
-                    "Cart item không thuộc về user: " + userId);
+                    MessageConstant.Cart.WRONG_USER + userId);
         }
 
         return cartItem;

@@ -11,14 +11,28 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.function.Supplier;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import java.io.IOException;
+import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.security.web.csrf.CsrfToken;
+import org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.csrf.CsrfTokenRequestHandler;
+import org.springframework.security.web.csrf.XorCsrfTokenRequestAttributeHandler;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.util.StringUtils;
+import org.springframework.lang.NonNull;
 
 @Configuration
 @EnableWebSecurity
@@ -43,8 +57,11 @@ public class SecurityConfig {
                                 // CORS configuration
                                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
 
-                                // Disable CSRF for REST API
-                                .csrf(csrf -> csrf.disable())
+                                // Enable CSRF with CookieCsrfTokenRepository for REST APIs
+                                .csrf(csrf -> csrf
+                                                .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
+                                                .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
+                                                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**"))
 
                                 // Session management
                                 .sessionManagement(session -> session
@@ -53,11 +70,13 @@ public class SecurityConfig {
                                 // Authorization rules
                                 .authorizeHttpRequests(auth -> auth
                                                 // Public endpoints - no authentication required
+                                                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                                                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
                                                 .requestMatchers("/api/auth/logout").permitAll()
+                                                .requestMatchers("/api/csrf-token").permitAll()
                                                 .requestMatchers("/api/products/**").permitAll()
                                                 .requestMatchers("/api/inventory/**").permitAll()
-                                                .requestMatchers("/api/cart/**").permitAll()
+                                                .requestMatchers("/api/cart/**").authenticated()
                                                 .requestMatchers("/api/orders/**").authenticated()
                                                
                                                 .requestMatchers("/h2-console/**").permitAll()
@@ -80,10 +99,42 @@ public class SecurityConfig {
 
                                 // Allow H2 Console frames
                                 .headers(headers -> headers
-                                                .frameOptions(frame -> frame.sameOrigin()));
+                                                .frameOptions(frame -> frame.sameOrigin()))
+                                
+                                .addFilterAfter(new CsrfCookieFilter(), BasicAuthenticationFilter.class);
 
                 return http.build();
+    }
+
+    private static final class CsrfCookieFilter extends OncePerRequestFilter {
+        @Override
+                protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain)
+                throws ServletException, IOException {
+            CsrfToken csrfToken = (CsrfToken) request.getAttribute(CsrfToken.class.getName());
+            if (csrfToken != null && csrfToken.getHeaderName() != null) {
+                String token = csrfToken.getToken();
+                response.setHeader(csrfToken.getHeaderName(), token);
+            }
+            filterChain.doFilter(request, response);
         }
+    }
+
+    private static final class SpaCsrfTokenRequestHandler extends CsrfTokenRequestAttributeHandler {
+        private final CsrfTokenRequestHandler delegate = new XorCsrfTokenRequestAttributeHandler();
+
+        @Override
+        public void handle(HttpServletRequest request, HttpServletResponse response, Supplier<CsrfToken> csrfToken) {
+            this.delegate.handle(request, response, csrfToken);
+        }
+
+        @Override
+        public String resolveCsrfTokenValue(HttpServletRequest request, CsrfToken csrfToken) {
+            String headerValue = request.getHeader(csrfToken.getHeaderName());
+            return StringUtils.hasText(headerValue)
+                    ? super.resolveCsrfTokenValue(request, csrfToken)
+                    : this.delegate.resolveCsrfTokenValue(request, csrfToken);
+        }
+    }
 
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
@@ -94,6 +145,7 @@ public class SecurityConfig {
                 configuration.setAllowedMethods(Arrays.asList(
                                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
+                configuration.setExposedHeaders(List.of("X-XSRF-TOKEN"));
                 configuration.setAllowCredentials(true);
                 configuration.setMaxAge(3600L);
 

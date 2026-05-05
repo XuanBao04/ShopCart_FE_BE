@@ -5,6 +5,8 @@ import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderResponse;
 import com.shopcart.order.entity.Order;
 import com.shopcart.common.enums.OrderStatus;
+import com.shopcart.order.factory.OrderRequestFactory;
+import com.shopcart.order.factory.OrderTestConstants;
 import com.shopcart.order.service.BaseOrderServiceTest;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -25,22 +27,7 @@ class OrderCreateHappyPathTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC2: Tạo đơn hàng thành công khi không sử dụng mã giảm giá")
     void createOrderWithoutCoupon() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(2)
-                .price(100_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .couponCode(null)
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 2, 100_000L);
 
         Order savedOrder = Order.builder()
                 .id(testOrderId)
@@ -70,22 +57,7 @@ class OrderCreateHappyPathTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC3: Tạo đơn hàng thành công khi mã giảm giá hợp lệ và áp dụng giảm giá")
     void createOrderWithValidCoupon() {
-        OrderItemRequest itemRequest = OrderItemRequest.builder()
-                .productId(testProductId)
-                .quantity(1)
-                .price(1_000_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(itemRequest))
-                .couponCode("DISCOUNT50")
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .build();
+        OrderRequest request = OrderRequestFactory.orderRequestWithItemsAndCoupon(testProductId, 1, 1_000_000L, "DISCOUNT50");
 
         Order savedOrder = Order.builder()
                 .id(testOrderId)
@@ -115,27 +87,9 @@ class OrderCreateHappyPathTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC4: Tạo đơn hàng thành công với nhiều dòng sản phẩm")
     void createOrderWithMultipleItems() {
-        OrderItemRequest item1 = OrderItemRequest.builder()
-                .productId("product-1")
-                .quantity(2)
-                .price(50_000L)
-                .build();
-
-        OrderItemRequest item2 = OrderItemRequest.builder()
-                .productId("product-2")
-                .quantity(3)
-                .price(75_000L)
-                .build();
-
-        OrderRequest request = OrderRequest.builder()
-                .orderItems(List.of(item1, item2))
-                .shippingAddress("123 Main St")
-                .city("Hanoi")
-                .district("Ba Dinh")
-                .ward("Truc Bach")
-                .postalCode("10000")
-                .phoneNumber("0912345678")
-                .build();
+        OrderItemRequest item1 = OrderRequestFactory.orderItemRequest("product-1", 2, 50_000L);
+        OrderItemRequest item2 = OrderRequestFactory.orderItemRequest("product-2", 3, 75_000L);
+        OrderRequest request = OrderRequestFactory.orderRequestWithMultipleItems(List.of(item1, item2), null, OrderTestConstants.SHIPPING_ADDRESS);
 
         Order savedOrder = Order.builder()
                 .id(testOrderId)

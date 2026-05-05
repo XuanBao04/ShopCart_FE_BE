@@ -1,5 +1,7 @@
 package com.shopcart.auth.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.auth.dto.request.LoginRequest;
 import com.shopcart.auth.dto.request.RegisterRequest;
 import com.shopcart.auth.dto.response.AuthResponse;
@@ -28,20 +30,20 @@ public class AuthServiceImpl implements IAuthService {
     public AuthResponse login(LoginRequest request) {
         User user = userRepository.findByUsername(request.getUsername())
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found with username: " + request.getUsername()));
+                        MessageConstant.Auth.USER_NOT_FOUND + request.getUsername()));
 
         if (!passwordEncoder.matches(request.getPassword(), user.getPassword())) {
-            throw new InvalidInputException("Invalid password");
+            throw new InvalidInputException(MessageConstant.Auth.INVALID_PASSWORD);
         }
 
-        return toAuthResponse(user, "Login successful");
+        return toAuthResponse(user, MessageConstant.Auth.LOGIN_SUCCESS);
     }
 
     @Override
     public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByUsername(request.getUsername())) {
             throw new BusinessLogicException(
-                    "Username already exists: " + request.getUsername());
+                    MessageConstant.Auth.USERNAME_EXISTS + request.getUsername());
         }
 
         User user = User.builder()
@@ -54,16 +56,16 @@ public class AuthServiceImpl implements IAuthService {
 
         userRepository.save(user);
 
-        return toAuthResponse(user, "Registration successful");
+        return toAuthResponse(user, MessageConstant.Auth.REGISTER_SUCCESS);
     }
 
     @Override
     public AuthResponse getCurrentUser(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException(
-                        "User not found with username: " + username));
+                        MessageConstant.Auth.USER_NOT_FOUND + username));
 
-        return toAuthResponse(user, "User info retrieved");
+        return toAuthResponse(user, MessageConstant.Auth.USER_INFO_RETRIEVED);
     }
 
     /**

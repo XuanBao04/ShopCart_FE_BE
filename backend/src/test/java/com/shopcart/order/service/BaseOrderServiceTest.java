@@ -13,9 +13,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-/**
- * Shared Mockito wiring and order test fixtures for OrderServiceImpl tests.
- */
+
 @ExtendWith(MockitoExtension.class)
 public abstract class BaseOrderServiceTest {
 

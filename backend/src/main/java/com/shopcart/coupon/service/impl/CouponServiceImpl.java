@@ -1,5 +1,7 @@
 package com.shopcart.coupon.service.impl;
 
+import com.shopcart.constant.MessageConstant;
+
 import com.shopcart.coupon.entity.Coupon;
 import com.shopcart.common.exception.BusinessLogicException;
 import com.shopcart.common.exception.ResourceNotFoundException;
@@ -36,7 +38,7 @@ public class CouponServiceImpl implements ICouponService {
         validateOrderAmount(orderAmount);
 
         Coupon coupon = couponRepository.findById(couponCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found: " + couponCode));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Coupon.NOT_FOUND + couponCode));
 
         validateCouponState(coupon);
         validateMinimumOrderAmount(coupon, orderAmount);
@@ -86,7 +88,7 @@ public class CouponServiceImpl implements ICouponService {
         validateCouponCodeNotBlank(couponCode);
         
         return couponRepository.findById(couponCode)
-                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found: " + couponCode));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Coupon.NOT_FOUND + couponCode));
     }
 
     @Override
@@ -125,7 +127,7 @@ public class CouponServiceImpl implements ICouponService {
         validateCouponCodeNotBlank(code);
 
         Coupon existing = couponRepository.findById(code)
-                .orElseThrow(() -> new ResourceNotFoundException("Coupon not found: " + code));
+                .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Coupon.NOT_FOUND + code));
 
         // Update discount percent
         if (coupon.getDiscountPercent() != null) {
@@ -160,7 +162,7 @@ public class CouponServiceImpl implements ICouponService {
         validateCouponCodeNotBlank(code);
 
         if (!couponRepository.existsById(code)) {
-            throw new ResourceNotFoundException("Coupon not found: " + code);
+            throw new ResourceNotFoundException(MessageConstant.Coupon.NOT_FOUND + code);
         }
 
         couponRepository.deleteById(code);
@@ -174,7 +176,7 @@ public class CouponServiceImpl implements ICouponService {
      */
     private void validateCouponCodeNotBlank(String couponCode) {
         if (couponCode == null || couponCode.trim().isEmpty()) {
-            throw new BusinessLogicException("Coupon code cannot be null or empty");
+            throw new BusinessLogicException(MessageConstant.Coupon.CODE_REQUIRED);
         }
     }
 
@@ -191,7 +193,7 @@ public class CouponServiceImpl implements ICouponService {
     private void validateDiscountPercent(Integer percent) {
         if (percent == null || percent < MIN_DISCOUNT_PERCENT || percent > MAX_DISCOUNT_PERCENT) {
             throw new BusinessLogicException(
-                String.format("Discount percent must be between %d and %d", MIN_DISCOUNT_PERCENT, MAX_DISCOUNT_PERCENT)
+                String.format(MessageConstant.Coupon.DISCOUNT_RANGE, MIN_DISCOUNT_PERCENT, MAX_DISCOUNT_PERCENT)
             );
         }
     }
@@ -201,7 +203,7 @@ public class CouponServiceImpl implements ICouponService {
      */
     private void validateOrderAmount(Long orderAmount) {
         if (orderAmount == null || orderAmount <= 0) {
-            throw new BusinessLogicException("Order amount must be positive");
+            throw new BusinessLogicException(MessageConstant.Coupon.INVALID_ORDER_AMOUNT);
         }
     }
 
@@ -210,7 +212,7 @@ public class CouponServiceImpl implements ICouponService {
      */
     private void validateMinimumOrderAmount(Long minAmount) {
         if (minAmount != null && minAmount < 0) {
-            throw new BusinessLogicException("Minimum order amount cannot be negative");
+            throw new BusinessLogicException(MessageConstant.Coupon.MIN_ORDER_AMOUNT_NEGATIVE);
         }
     }
 
@@ -220,7 +222,7 @@ public class CouponServiceImpl implements ICouponService {
     private void validateMinimumOrderAmount(Coupon coupon, Long orderAmount) {
         if (orderAmount < coupon.getMinimumOrderAmount()) {
             throw new BusinessLogicException(
-                String.format("Minimum order amount %d required for this coupon. Current: %d",
+                String.format(MessageConstant.Coupon.MIN_ORDER_REQUIRED,
                     coupon.getMinimumOrderAmount(), orderAmount)
             );
         }
@@ -231,11 +233,11 @@ public class CouponServiceImpl implements ICouponService {
      */
     private void validateCouponState(Coupon coupon) {
         if (!isCouponActive(coupon)) {
-            throw new BusinessLogicException("Coupon is no longer active: " + coupon.getCode());
+            throw new BusinessLogicException(MessageConstant.Coupon.INACTIVE + coupon.getCode());
         }
 
         if (isCouponExpired(coupon)) {
-            throw new BusinessLogicException("Coupon has expired: " + coupon.getCode());
+            throw new BusinessLogicException(MessageConstant.Coupon.EXPIRED + coupon.getCode());
         }
     }
 
@@ -261,7 +263,7 @@ public class CouponServiceImpl implements ICouponService {
      */
     private void validateExpiryDate(LocalDateTime expiryDate) {
         if (expiryDate != null && expiryDate.isBefore(getCurrentTime())) {
-            throw new BusinessLogicException("Expiry date cannot be in the past");
+            throw new BusinessLogicException(MessageConstant.Coupon.FUTURE_EXPIRY);
         }
     }
 
