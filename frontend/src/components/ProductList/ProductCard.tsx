@@ -51,9 +51,10 @@ const ProductCard = ({ product }: ProductCardProps) => {
       });
       setQuantity(1);
       alert("Đã thêm sản phẩm vào giỏ hàng!");
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
-      alert(error.message || "Có lỗi xảy ra khi thêm vào giỏ hàng.");
+      const message = error instanceof Error ? error.message : "Có lỗi xảy ra khi thêm vào giỏ hàng.";
+      alert(message);
     } finally {
       setIsAdding(false);
     }

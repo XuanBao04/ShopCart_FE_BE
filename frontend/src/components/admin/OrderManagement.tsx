@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { orderService } from "../../services/api/orderService";
 import { OrderResponse } from "../../types/order";
 import { formatPrice } from "../../utils/priceCalculation";

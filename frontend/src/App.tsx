@@ -1,22 +1,21 @@
 // import "./App.css";
-import { useEffect } from "react";
+import { ReactElement, useEffect } from "react";
 import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
 import HeaderLayout from "./components/HeaderLayout/HeaderLayout";
 import ProductList from "./components/ProductList/ProductList";
 import Cart from "./components/Cart/Cart";
 import LoginPage from "./pages/login/LoginPage";
 import Order from "./components/Order/Order";
-import Inventory from "./components/Inventory/Inventory";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { CartProvider } from "./context/CartContext";
 
-function RequireAuth({ children }: { children: JSX.Element }) {
+function RequireAuth({ children }: { children: ReactElement }) {
   const navigate = useNavigate();
   const userId = localStorage.getItem("userId");
 
   useEffect(() => {
     if (!userId) {
-      const shouldGoToLogin = confirm("Vui lòng dang nh?p d? ti?p t?c.");
+      const shouldGoToLogin = confirm("Vui lï¿½ng dang nh?p d? ti?p t?c.");
       if (shouldGoToLogin) {
         navigate("/login", { replace: true });
       } else {
@@ -55,7 +54,6 @@ function App() {
                 </RequireAuth>
               }
             />
-            <Route path="inventory" element={<Inventory />} />
           </Route>
         </Routes>
       </CartProvider>

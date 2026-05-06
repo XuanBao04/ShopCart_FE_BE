@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCart } from "../../hooks/useCart";
-import { formatPrice } from "../../utils/priceCalculation";
+// import { formatPrice } from "../../utils/priceCalculation";
 import CartItem from "./CartItem";
 import CouponInput from "./CouponInput";
 import PriceBreakdown from "./PriceBreakdown";
@@ -11,6 +11,14 @@ import { ShippingAddress } from "../../types/order";
 
 const SHIPPING_FEE = 29900;
 
+type OrderPreview = {
+  subtotal: number;
+  discountAmount: number;
+  shippingFee: number;
+  totalPrice: number;
+  couponCode: string | null;
+};
+
 const Cart = () => {
   const userId = localStorage.getItem("userId") || "";
   const { cart, isLoading, error, fetchCart, removeItem, updateItem, clear } =
@@ -18,7 +26,9 @@ const Cart = () => {
 
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [orderPreview, setOrderPreview] = useState<any>(null);
+  const [orderPreview, setOrderPreview] = useState<OrderPreview | null>(
+    null
+  );
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     shippingAddress: "",
     city: "",
@@ -73,7 +83,7 @@ const Cart = () => {
           quantity: item.quantity,
           price: item.price,
         })),
-        couponCode: couponCode || undefined,
+        couponCode: couponCode ?? undefined,
         ...shippingAddress,
       };
 
@@ -82,8 +92,10 @@ const Cart = () => {
       // Clear cart and redirect
       await clear();
       window.location.href = "/authenticated/orders";
-    } catch (err: any) {
-      alert(`Đã xảy ra lỗi khi tạo đơn hàng: ${err.message}`);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Không xác định được lỗi.";
+      alert(`Đã xảy ra lỗi khi tạo đơn hàng: ${message}`);
     }
   };
 
@@ -159,7 +171,7 @@ const Cart = () => {
             <PriceBreakdown
               subtotal={orderPreview.subtotal}
               discountAmount={orderPreview.discountAmount}
-              couponCode={orderPreview.couponCode}
+              couponCode={orderPreview.couponCode ?? undefined}
               shippingFee={orderPreview.shippingFee}
               totalPrice={orderPreview.totalPrice}
             />
@@ -187,5 +199,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-

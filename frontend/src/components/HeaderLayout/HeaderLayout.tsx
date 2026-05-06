@@ -1,22 +1,19 @@
 import { useState, useEffect } from "react";
 import { Outlet, useNavigate } from "react-router-dom";
-import { FaShoppingCart, FaClipboardList, FaShieldAlt } from "react-icons/fa";
+import { FaShoppingCart, FaClipboardList } from "react-icons/fa";
 import apiClient from "../../services/api/apiClient";
 import { useCart } from "../../hooks/useCart";
 
 export default function HeaderLayout() {
   const [userId, setUserId] = useState<string | null>(null);
-  const [role, setRole] = useState<string | null>(null);
   const navigate = useNavigate();
   const { cart } = useCart();
   const isLoggedIn = Boolean(userId);
 
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
-    const storedRole = localStorage.getItem("role");
     if (storedUserId) {
       setUserId(storedUserId);
-      setRole(storedRole);
     }
   }, []);
 
@@ -41,7 +38,6 @@ export default function HeaderLayout() {
     localStorage.removeItem("role");
     localStorage.removeItem("username");
     setUserId(null);
-    setRole(null);
     navigate("/login");
   };
 

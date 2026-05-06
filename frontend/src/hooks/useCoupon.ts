@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { couponService } from "../services/api/couponService";
-import { OrderRequest, OrderPreviewResponse } from "../types/order";
+// import { OrderRequest, OrderPreviewResponse } from "../types/order";
 
 export const useCoupon = () => {
   const [couponCode, setCouponCode] = useState<string | null>(null);
@@ -50,7 +50,7 @@ export const useCoupon = () => {
           setIsValidating(false);
           return false;
         }
-      } catch (err: any) {
+      } catch (err: unknown) {
         const errorMessage = err instanceof Error ? err.message : "Lỗi khi kiểm tra mã giảm giá";
         setError(errorMessage);
         setCouponCode(null);

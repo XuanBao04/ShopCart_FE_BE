@@ -39,30 +39,6 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
     }
   };
 
-  const validateAddress = (): boolean => {
-    const newErrors: Partial<ShippingAddress> = {};
-
-    if (!address.shippingAddress.trim()) {
-      newErrors.shippingAddress = "Địa chỉ giao hàng không được để trống";
-    }
-    if (!address.city.trim()) {
-      newErrors.city = "Thành phố/Tỉnh không được để trống";
-    }
-    if (!address.district.trim()) {
-      newErrors.district = "Quận/Huyện không được để trống";
-    }
-    if (!address.ward.trim()) {
-      newErrors.ward = "Phường/Xã không được để trống";
-    }
-    if (!address.phoneNumber.trim()) {
-      newErrors.phoneNumber = "Số điện thoại không được để trống";
-    } else if (!/^\d{10}$/.test(address.phoneNumber.trim())) {
-      newErrors.phoneNumber = "Số điện thoại phải là 10 chữ số";
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
 
   return (
     <div className="border rounded-lg p-4 bg-white">
