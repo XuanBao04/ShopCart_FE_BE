@@ -1,6 +1,5 @@
 package com.shopcart.cart.controller;
 
-import com.shopcart.cart.controller.CartController;
 import com.shopcart.cart.dto.request.CartItemRequest;
 import com.shopcart.cart.dto.response.CartResponse;
 import com.shopcart.common.exception.BusinessLogicException;
@@ -40,12 +39,10 @@ class CartControllerLayerTest {
     private static final String API_ENDPOINT = "/api/cart/{userId}/add";
     private static final String USER_ID = "user123";
 
-
     @Test
     @DisplayName("TC01: Thêm sản phẩm vào giỏ thành công  - 201 CREATED")
     @WithMockUser(username = "user123", roles = "USER")
     void testAddToCart_success() throws Exception {
-        // Arrange
         CartItemRequest request = CartItemRequest.builder()
                 .productId("PRD-001")
                 .quantity(2)
@@ -60,7 +57,6 @@ class CartControllerLayerTest {
         when(cartService.addToCart(eq(USER_ID), any(CartItemRequest.class)))
                 .thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(post(API_ENDPOINT, USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -71,39 +67,32 @@ class CartControllerLayerTest {
                 .andExpect(jsonPath("$.totalItems").value(2))
                 .andExpect(jsonPath("$.totalPrice").value(100000L));
 
-        // Verify service 
         verify(cartService, times(1)).addToCart(eq(USER_ID), any(CartItemRequest.class));
         verifyNoMoreInteractions(cartService);
     }
 
-    
     @Test
     @DisplayName("TC02: Thêm sản phẩm với số lượng không hợp lệ - 400 BAD REQUEST")
     @WithMockUser(username = "user123", roles = "USER")
     void testAddToCart_invalidQuantity() throws Exception {
-        // Arrange
         CartItemRequest request = CartItemRequest.builder()
                 .productId("PRD-001")
                 .quantity(0)  
                 .build();
 
-        // Act & Assert
         mockMvc.perform(post(API_ENDPOINT, USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());
 
-        // Verify service 
         verify(cartService, never()).addToCart(any(String.class), any(CartItemRequest.class));
     }
 
-   
     @Test
     @DisplayName("TC03: Thêm sản phẩm không tồn tại - 404 NOT FOUND")
     @WithMockUser(username = "user123", roles = "USER")
     void testAddToCart_productNotFound() throws Exception {
-        // Arrange
         CartItemRequest request = CartItemRequest.builder()
                 .productId("PRD-NOTFOUND")
                 .quantity(1)
@@ -112,7 +101,6 @@ class CartControllerLayerTest {
         when(cartService.addToCart(eq(USER_ID), any(CartItemRequest.class)))
                 .thenThrow(new ResourceNotFoundException("Product not found"));
 
-        // Act & Assert
         mockMvc.perform(post(API_ENDPOINT, USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -121,16 +109,13 @@ class CartControllerLayerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").exists());
 
-        // Verify service 
         verify(cartService, times(1)).addToCart(eq(USER_ID), any(CartItemRequest.class));
     }
-
    
     @Test
     @DisplayName("TC04: Thêm sản phẩm vượt quá số lượng tồn - 409 CONFLICT")
     @WithMockUser(username = "user123", roles = "USER")
     void testAddToCart_outOfStock() throws Exception {
-        // Arrange
         CartItemRequest request = CartItemRequest.builder()
                 .productId("PRD-001")
                 .quantity(100)  // Quantity exceeds available stock
@@ -139,7 +124,6 @@ class CartControllerLayerTest {
         when(cartService.addToCart(eq(USER_ID), any(CartItemRequest.class)))
                 .thenThrow(new BusinessLogicException("Product is out of stock"));
 
-        // Act & Assert
         mockMvc.perform(post(API_ENDPOINT, USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
@@ -148,28 +132,23 @@ class CartControllerLayerTest {
                 .andExpect(content().contentType(MediaType.APPLICATION_JSON))
                 .andExpect(jsonPath("$.message").exists());
 
-        // Verify service was called
         verify(cartService, times(1)).addToCart(eq(USER_ID), any(CartItemRequest.class));
     }
-
    
     @Test
     @DisplayName("TC05: Thêm sản phẩm khi chưa đăng nhập - 401 UNAUTHORIZED")
     void testAddToCart_unauthorized() throws Exception {
-        // Arrange
         CartItemRequest request = CartItemRequest.builder()
                 .productId("PRD-001")
                 .quantity(1)
                 .build();
 
-        // Act & Assert (No @WithMockUser)
         mockMvc.perform(post(API_ENDPOINT, USER_ID)
                 .with(csrf())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isUnauthorized());
 
-        // Verify service 
         verify(cartService, never()).addToCart(any(String.class), any(CartItemRequest.class));
     }
 }
