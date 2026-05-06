@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 @DataJpaTest
 @ActiveProfiles("test")
 @Import(JpaConfig.class)
@@ -33,9 +32,7 @@ class CartRepositoryDataJpaTest {
 
     @BeforeEach
     void setUp() {
-        
     }
-
     @Test
     @DisplayName("Nên tìm thấy CartItem theo UserId và ProductId")
     void findByUserIdAndProductId_Success() {
@@ -45,9 +42,7 @@ class CartRepositoryDataJpaTest {
                 .quantity(2)
                 .build();
         entityManager.persistAndFlush(item);
-
         Optional<CartItem> found = cartRepository.findByUserIdAndProductId(userId, productId);
-
         assertThat(found).isPresent();
         assertThat(found.get().getQuantity()).isEqualTo(2);
     }
@@ -60,10 +55,8 @@ class CartRepositoryDataJpaTest {
         entityManager.persist(item1);
         entityManager.persist(item2);
         entityManager.flush();
-
         cartRepository.deleteByUserId(userId);
-        entityManager.clear(); // Clear persistence context to see effects
-
+        entityManager.clear();
         List<CartItem> remaining = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
         assertThat(remaining).isEmpty();
     }
@@ -73,14 +66,10 @@ class CartRepositoryDataJpaTest {
     void findByUserIdOrderByCreatedAtDesc_Success() throws InterruptedException {
         CartItem item1 = CartItem.builder().userId(userId).productId("p1").quantity(1).build();
         entityManager.persistAndFlush(item1);
-        
-        Thread.sleep(10); // Đảm bảo thời gian tạo khác nhau
-
+        Thread.sleep(10);
         CartItem item2 = CartItem.builder().userId(userId).productId("p2").quantity(2).build();
         entityManager.persistAndFlush(item2);
-
         List<CartItem> items = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
-
         assertThat(items).hasSize(2);
         assertThat(items.get(0).getProductId()).isEqualTo("p2"); 
         assertThat(items.get(1).getProductId()).isEqualTo("p1");
@@ -94,10 +83,8 @@ class CartRepositoryDataJpaTest {
                 .productId(productId)
                 .quantity(1)
                 .build();
-        
         CartItem saved = cartRepository.save(item);
         entityManager.flush();
-
         assertThat(saved.getCreatedAt()).isNotNull();
     }
 }

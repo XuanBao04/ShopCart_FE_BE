@@ -7,9 +7,7 @@ import com.shopcart.common.exception.BusinessLogicException;
 import com.shopcart.common.exception.ResourceNotFoundException;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -31,11 +29,9 @@ class CartAddItemExceptionTest extends BaseCartServiceTest {
                 .thenReturn(Optional.empty());
         when(inventoryService.hasEnoughStock(request.getProductId(), request.getQuantity()))
                 .thenReturn(false);
-
         BusinessLogicException exception = assertThrows(BusinessLogicException.class, () -> {
             cartService.addToCart(userId, request);
         });
-
         String expectedMessage = "Insufficient stock for product: " + request.getProductId();
         assertEquals(expectedMessage, exception.getMessage());
         verify(cartRepository, never()).save(any(CartItem.class));
@@ -47,11 +43,9 @@ class CartAddItemExceptionTest extends BaseCartServiceTest {
     void addToCart_ProductNotFound_ThrowsException() {
         when(productService.getProductById(request.getProductId()))
                 .thenThrow(new ResourceNotFoundException("Product not found"));
-
         assertThrows(ResourceNotFoundException.class, () -> {
             cartService.addToCart(userId, request);
         });
-
         verify(cartRepository, never()).findByUserIdAndProductId(anyString(), anyString());
         verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
