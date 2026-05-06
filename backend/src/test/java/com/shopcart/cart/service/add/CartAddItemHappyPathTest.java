@@ -7,10 +7,8 @@ import com.shopcart.product.entity.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-
 import java.util.List;
 import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.mockito.Mockito.times;
@@ -28,11 +26,8 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
                 .thenReturn(Optional.empty());
         when(inventoryService.hasEnoughStock(request.getProductId(), request.getQuantity()))
                 .thenReturn(true);
-
         mockBuildCartResponseHelper(List.of(new CartItem()));
-
         CartResponse response = cartService.addToCart(userId, request);
-
         ArgumentCaptor<CartItem> cartItemCaptor = ArgumentCaptor.forClass(CartItem.class);
         verify(cartRepository, times(1)).save(cartItemCaptor.capture());
         CartItem savedCartItem = cartItemCaptor.getValue();
@@ -52,7 +47,6 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
                 .productId(request.getProductId())
                 .quantity(existingQuantity)
                 .build();
-
         when(productService.getProductById(request.getProductId())).thenReturn(new Product());
         when(cartRepository.findByUserIdAndProductId(userId, request.getProductId()))
                 .thenReturn(Optional.of(existingCartItem));
