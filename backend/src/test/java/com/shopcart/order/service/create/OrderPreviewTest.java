@@ -1,15 +1,20 @@
 package com.shopcart.order.service.create;
 
+import com.shopcart.inventory.entity.Inventory;
 import com.shopcart.order.dto.request.OrderItemRequest;
 import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderPreviewResponse;
 import com.shopcart.order.factory.OrderRequestFactory;
 import com.shopcart.order.factory.OrderTestConstants;
 import com.shopcart.order.service.BaseOrderServiceTest;
+import com.shopcart.product.entity.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.never;
@@ -28,8 +33,11 @@ class OrderPreviewTest extends BaseOrderServiceTest {
         OrderItemRequest item = request.getOrderItems().get(0);
         long subtotal = item.getPrice() * item.getQuantity();
 
-        when(productService.getProductById(item.getProductId())).thenReturn(null);
-        when(inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())).thenReturn(true);
+        Product product = Product.builder().id(item.getProductId()).price(item.getPrice()).build();
+        Inventory inventory = Inventory.builder().productId(item.getProductId()).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
 
         OrderPreviewResponse response = orderService.previewOrder(request);
 
@@ -46,8 +54,11 @@ class OrderPreviewTest extends BaseOrderServiceTest {
         OrderItemRequest item = request.getOrderItems().get(0);
         long subtotal = item.getPrice() * item.getQuantity();
 
-        when(productService.getProductById(item.getProductId())).thenReturn(null);
-        when(inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())).thenReturn(true);
+        Product product = Product.builder().id(item.getProductId()).price(item.getPrice()).build();
+        Inventory inventory = Inventory.builder().productId(item.getProductId()).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(couponService.calculateDiscount("DISCOUNT20", subtotal)).thenReturn(20_000L);
 
         OrderPreviewResponse response = orderService.previewOrder(request);
@@ -64,8 +75,11 @@ class OrderPreviewTest extends BaseOrderServiceTest {
 
         OrderItemRequest item = request.getOrderItems().get(0);
 
-        when(productService.getProductById(item.getProductId())).thenReturn(null);
-        when(inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())).thenReturn(true);
+        Product product = Product.builder().id(item.getProductId()).price(item.getPrice()).build();
+        Inventory inventory = Inventory.builder().productId(item.getProductId()).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
 
         OrderPreviewResponse response = orderService.previewOrder(request);
 

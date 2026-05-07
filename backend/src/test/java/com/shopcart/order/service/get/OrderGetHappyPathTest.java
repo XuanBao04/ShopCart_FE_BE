@@ -27,7 +27,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
 
         OrderResponse expectedResponse = OrderResponseFactory.defaultOrderResponse();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderMapper.toOrderResponse(order)).thenReturn(expectedResponse);
 
         OrderResponse response = orderService.getOrderById(testOrderId);
@@ -43,7 +43,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
         List<Order> orders = List.of(order1);
         OrderResponse response1 = OrderResponseFactory.defaultOrderResponse();
 
-        when(orderRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(orders);
+        when(orderRepository.findByUserIdOrderByCreatedAtDescWithItems(testUserId)).thenReturn(orders);
         when(orderMapper.toOrderResponse(order1)).thenReturn(response1);
 
         List<OrderResponse> responses = orderService.getUserOrders(testUserId);
@@ -54,7 +54,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("Nên trả về danh sách trống khi người dùng chưa có đơn hàng")
     void getUserOrdersEmpty() {
-        when(orderRepository.findByUserIdOrderByCreatedAtDesc(testUserId)).thenReturn(new ArrayList<>());
+        when(orderRepository.findByUserIdOrderByCreatedAtDescWithItems(testUserId)).thenReturn(new ArrayList<>());
         List<OrderResponse> responses = orderService.getUserOrders(testUserId);
         assertThat(responses).isEmpty();
     }
@@ -63,7 +63,7 @@ class OrderGetHappyPathTest extends BaseOrderServiceTest {
     @DisplayName("Nên trả về tất cả đơn hàng trong hệ thống")
     void getAllOrdersSuccess() {
         Order order1 = Order.builder().id("order-1").build();
-        when(orderRepository.findAll()).thenReturn(List.of(order1));
+        when(orderRepository.findAllWithItems()).thenReturn(List.of(order1));
         when(orderMapper.toOrderResponse(order1)).thenReturn(OrderResponseFactory.defaultOrderResponse());
         
         List<OrderResponse> responses = orderService.getAllOrders();

@@ -17,7 +17,7 @@ class OrderGetExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("Nên ném lỗi ResourceNotFoundException khi không tìm thấy đơn hàng theo ID")
     void getOrderByIdNotFound() {
-        when(orderRepository.findById("INVALID_ID")).thenReturn(Optional.empty());
+        when(orderRepository.findByIdWithItems("INVALID_ID")).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,

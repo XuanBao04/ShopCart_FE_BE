@@ -28,7 +28,7 @@ class OrderCancelExceptionTest extends BaseOrderServiceTest {
     @DisplayName("TC3: Ném lỗi khi hủy đơn ở trạng thái SHIPPED")
     void cancelOrder_WhenStatusIsShipped_ShouldThrowException() {
         Order order = OrderEntityFactory.order(testOrderId, testUserId, OrderStatus.SHIPPED, List.of());
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
 
         BusinessLogicException exception = assertThrows(
                 BusinessLogicException.class,
@@ -49,7 +49,7 @@ class OrderCancelExceptionTest extends BaseOrderServiceTest {
                 .status(OrderStatus.DELIVERED)
                 .build();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+        when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.of(mockOrder));
 
         BusinessLogicException exception = assertThrows(BusinessLogicException.class, () -> {
             orderService.cancelOrder(orderId);
@@ -67,7 +67,7 @@ class OrderCancelExceptionTest extends BaseOrderServiceTest {
                 .status(OrderStatus.CANCELLED)
                 .build();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+        when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.of(mockOrder));
 
         BusinessLogicException exception = assertThrows(BusinessLogicException.class, () -> {
             orderService.cancelOrder(orderId);
@@ -81,7 +81,7 @@ class OrderCancelExceptionTest extends BaseOrderServiceTest {
     void cancelOrder_WhenOrderNotFound_ShouldThrowException() {
         String orderId = "NON_EXISTENT_ORDER";
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.empty());
+        when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, () -> {
             orderService.cancelOrder(orderId);

@@ -26,7 +26,7 @@ class OrderCancelHappyPathTest extends BaseOrderServiceTest {
         OrderItem item = OrderEntityFactory.orderItem("product-1", 2, 100_000L);
         Order order = OrderEntityFactory.order(testOrderId, testUserId, OrderStatus.PENDING, List.of(item));
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(order);
 
         orderService.cancelOrder(testOrderId);
@@ -50,7 +50,7 @@ class OrderCancelHappyPathTest extends BaseOrderServiceTest {
                 .orderItems(List.of(item1, item2, item3))
                 .build();
 
-        when(orderRepository.findById(orderId)).thenReturn(Optional.of(mockOrder));
+        when(orderRepository.findByIdWithItems(orderId)).thenReturn(Optional.of(mockOrder));
         when(orderRepository.save(any(Order.class))).thenAnswer(i -> i.getArgument(0));
 
         orderService.cancelOrder(orderId);

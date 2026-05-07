@@ -1,5 +1,6 @@
 package com.shopcart.order.service.create;
 
+import com.shopcart.inventory.entity.Inventory;
 import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderResponse;
 import com.shopcart.order.entity.Order;
@@ -9,6 +10,9 @@ import com.shopcart.common.exception.ResourceNotFoundException;
 import com.shopcart.order.factory.OrderEntityFactory;
 import com.shopcart.order.factory.OrderRequestFactory;
 import com.shopcart.order.service.BaseOrderServiceTest;
+import com.shopcart.product.entity.Product;
+
+import java.util.List;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
@@ -32,8 +36,11 @@ class OrderCreateEdgeCaseTest extends BaseOrderServiceTest {
     void createOrderWithInvalidCoupon() {
         OrderRequest request = OrderRequestFactory.orderRequestWithItemsAndCoupon(testProductId, 1, 100_000L, "INVALID_CODE");
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 1)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(couponService.calculateDiscount("INVALID_CODE", 100_000L))
                 .thenThrow(new ResourceNotFoundException("Coupon not found"));
 
@@ -56,8 +63,11 @@ class OrderCreateEdgeCaseTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 1)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toOrderResponse(savedOrder)).thenReturn(OrderResponse.builder().id(testOrderId).build());
 
@@ -77,8 +87,11 @@ class OrderCreateEdgeCaseTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 1)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toOrderResponse(savedOrder)).thenReturn(OrderResponse.builder().id(testOrderId).build());
 
@@ -99,8 +112,11 @@ class OrderCreateEdgeCaseTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 2)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(50_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toOrderResponse(savedOrder)).thenReturn(OrderResponse.builder().id(testOrderId).build());
 
@@ -131,8 +147,11 @@ class OrderCreateEdgeCaseTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, Integer.MAX_VALUE)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(price).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(Integer.MAX_VALUE).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toOrderResponse(savedOrder)).thenReturn(OrderResponse.builder().id(testOrderId).build());
 
