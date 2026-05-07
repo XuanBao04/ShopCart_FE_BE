@@ -1,6 +1,12 @@
 // import "./App.css";
 import { ReactElement, useEffect } from "react";
-import { BrowserRouter, Routes, Route, Navigate, useNavigate } from "react-router-dom";
+import {
+  BrowserRouter,
+  Routes,
+  Route,
+  Navigate,
+  useNavigate,
+} from "react-router-dom";
 import HeaderLayout from "./components/HeaderLayout/HeaderLayout";
 import ProductList from "./components/ProductList/ProductList";
 import Cart from "./components/Cart/Cart";
@@ -8,6 +14,8 @@ import LoginPage from "./pages/login/LoginPage";
 import Order from "./components/Order/Order";
 import AdminDashboard from "./pages/admin/AdminDashboard";
 import { CartProvider } from "./context/CartContext";
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 function RequireAuth({ children }: { children: ReactElement }) {
   const navigate = useNavigate();
@@ -56,6 +64,18 @@ function App() {
             />
           </Route>
         </Routes>
+        <ToastContainer
+          position="top-right"
+          autoClose={3000}
+          hideProgressBar={false}
+          newestOnTop={false}
+          closeOnClick
+          rtl={false}
+          pauseOnFocusLoss
+          draggable
+          pauseOnHover
+          theme="light"
+        />
       </CartProvider>
     </BrowserRouter>
   );
