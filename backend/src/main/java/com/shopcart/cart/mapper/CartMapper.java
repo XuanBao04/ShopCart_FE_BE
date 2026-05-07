@@ -3,29 +3,27 @@ package com.shopcart.cart.mapper;
 import com.shopcart.cart.dto.response.CartResponse;
 import com.shopcart.cart.dto.response.CartItemResponse;
 import com.shopcart.cart.entity.CartItem;
+import com.shopcart.constant.MessageConstant;
+import com.shopcart.common.exception.ResourceNotFoundException;
 import com.shopcart.product.entity.Product;
-import com.shopcart.product.service.IProductService;
-import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 
 @Component
-@RequiredArgsConstructor
 public class CartMapper {
 
-    private final IProductService productService;
-
    
-    public CartResponse toCartResponse(String userId, List<CartItem> items) {
+    public CartResponse toCartResponse(String userId, List<CartItem> items, Map<String, Product> productsById) {
         if (items == null) {
             items = java.util.Collections.emptyList();
         }
 
         List<CartItemResponse> itemResponses = items.stream()
-                .map(this::toCartItemResponse)
+                .map(item -> toCartItemResponse(item, productsById))
                 .collect(Collectors.toList());
 
         Long totalPrice = itemResponses.stream()
@@ -41,8 +39,12 @@ public class CartMapper {
     }
 
     
-    public CartItemResponse toCartItemResponse(CartItem item) {
-        Product product = productService.getProductById(item.getProductId());
+    public CartItemResponse toCartItemResponse(CartItem item, Map<String, Product> productsById) {
+        Product product = productsById.get(item.getProductId());
+        if (product == null) {
+            throw new ResourceNotFoundException(MessageConstant.Product.NOT_FOUND + item.getProductId());
+        }
+
         Long price = product.getPrice();
         Long totalPrice = price * item.getQuantity();
 

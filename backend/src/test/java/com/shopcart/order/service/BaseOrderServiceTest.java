@@ -1,10 +1,12 @@
 package com.shopcart.order.service;
 
+import com.shopcart.inventory.repository.InventoryRepository;
 import com.shopcart.order.mapper.OrderMapper;
 import com.shopcart.order.repository.OrderRepository;
 import com.shopcart.cart.service.ICartService;
 import com.shopcart.coupon.service.ICouponService;
 import com.shopcart.inventory.service.IInventoryService;
+import com.shopcart.product.repository.ProductRepository;
 import com.shopcart.product.service.IProductService;
 import com.shopcart.order.service.impl.OrderServiceImpl;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +36,12 @@ public abstract class BaseOrderServiceTest {
 
     @Mock
     protected ICouponService couponService;
+
+    @Mock
+    protected ProductRepository productRepository;
+
+    @Mock
+    protected InventoryRepository inventoryRepository;
 
     @InjectMocks
     protected OrderServiceImpl orderService;

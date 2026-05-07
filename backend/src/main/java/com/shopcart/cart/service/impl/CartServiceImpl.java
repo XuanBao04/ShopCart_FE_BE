@@ -11,11 +11,18 @@ import com.shopcart.cart.mapper.CartMapper;
 import com.shopcart.cart.repository.CartRepository;
 import com.shopcart.cart.service.ICartService;
 import com.shopcart.inventory.service.IInventoryService;
+import com.shopcart.product.entity.Product;
+import com.shopcart.product.repository.ProductRepository;
 import com.shopcart.product.service.IProductService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Service xử lý các thao tác liên quan đến giỏ hàng (Cart).
@@ -28,6 +35,7 @@ public class CartServiceImpl implements ICartService {
     private final CartMapper cartMapper;
     private final IProductService productService;
     private final IInventoryService inventoryService;
+    private final ProductRepository productRepository;
 
     @Override
     public CartResponse getCart(String userId) {
@@ -119,7 +127,17 @@ public class CartServiceImpl implements ICartService {
      * Lấy toàn bộ cart items của user và build thành CartResponse.
      */
     private CartResponse buildCartResponse(String userId) {
-        return cartMapper.toCartResponse(userId, cartRepository.findByUserIdOrderByCreatedAtDesc(userId));
+        List<CartItem> cartItems = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        Set<String> productIds = cartItems.stream()
+            .map(CartItem::getProductId)
+            .collect(Collectors.toSet());
+
+        List<String> productIdList = new ArrayList<>(productIds);
+
+        Map<String, Product> productsById = productRepository.findAllById(productIdList).stream()
+            .collect(Collectors.toMap(Product::getId, product -> product));
+
+        return cartMapper.toCartResponse(userId, cartItems, productsById);
     }
 }
 
