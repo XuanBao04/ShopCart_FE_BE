@@ -35,7 +35,7 @@ class CartAddItemExceptionTest extends BaseCartServiceTest {
         String expectedMessage = "Insufficient stock for product: " + request.getProductId();
         assertEquals(expectedMessage, exception.getMessage());
         verify(cartRepository, never()).save(any(CartItem.class));
-        verify(cartMapper, never()).toCartResponse(anyString(), anyList());
+        verify(cartMapper, never()).toCartResponse(anyString(), anyList(), any());
     }
 
     @DisplayName("TC4: Thêm sản phẩm không tồn tại vào giỏ")

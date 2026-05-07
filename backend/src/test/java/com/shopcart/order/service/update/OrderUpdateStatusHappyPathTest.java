@@ -40,7 +40,7 @@ class OrderUpdateStatusHappyPathTest extends BaseOrderServiceTest {
                 .status(OrderStatus.CONFIRMED)
                 .build();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(confirmedOrder);
         when(orderMapper.toOrderResponse(confirmedOrder))
                 .thenReturn(OrderResponseFactory.orderResponse(testOrderId));
@@ -65,7 +65,7 @@ class OrderUpdateStatusHappyPathTest extends BaseOrderServiceTest {
                 .status(OrderStatus.SHIPPED)
                 .build();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any(Order.class))).thenReturn(shippingOrder);
         when(orderMapper.toOrderResponse(shippingOrder))
                 .thenReturn(OrderResponseFactory.orderResponse(testOrderId));
@@ -86,7 +86,7 @@ class OrderUpdateStatusHappyPathTest extends BaseOrderServiceTest {
                 .orderItems(List.of(dummyItem))
                 .build();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any())).thenReturn(order);
 
         orderService.updateOrderStatus(testOrderId, "CONFIRMED");
@@ -112,7 +112,7 @@ class OrderUpdateStatusHappyPathTest extends BaseOrderServiceTest {
                 .status(OrderStatus.CONFIRMED)
                 .build();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
         when(orderRepository.save(any())).thenReturn(confirmedOrder);
         when(orderMapper.toOrderResponse(any()))
                 .thenReturn(OrderResponse.builder().id(testOrderId).build());
