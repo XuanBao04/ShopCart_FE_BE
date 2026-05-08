@@ -123,4 +123,80 @@ class OrderUpdateStatusHappyPathTest extends BaseOrderServiceTest {
         verify(inventoryService).confirmStock("p2", 3);
         verify(inventoryService).confirmStock("p3", 1);
     }
+
+    @Test
+    @DisplayName("TC8: Giải phóng hàng khỏi kho khi chuyển từ PROCESSING sang SHIPPED")
+    void shipStockWhenStatusToShipped() {
+        OrderItem item1 = OrderEntityFactory.orderItem("product-1", 2, 100_000L);
+
+        Order order = Order.builder()
+                .id(testOrderId)
+                .status(OrderStatus.PROCESSING)
+                .orderItems(List.of(item1))
+                .build();
+
+        Order shippedOrder = Order.builder()
+                .id(testOrderId)
+                .status(OrderStatus.SHIPPED)
+                .build();
+
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.save(any(Order.class))).thenReturn(shippedOrder);
+        when(orderMapper.toOrderResponse(shippedOrder))
+                .thenReturn(OrderResponseFactory.orderResponse(testOrderId));
+
+        orderService.updateOrderStatus(testOrderId, "SHIPPED");
+
+        verify(inventoryService).shipStock("product-1", 2);
+        verify(orderRepository).save(argThat(o -> o.getStatus() == OrderStatus.SHIPPED));
+    }
+
+    @Test
+    @DisplayName("TC9: Giải phóng hàng cho nhiều dòng hàng khi chuyển sang SHIPPED")
+    void shipStockForMultipleItems() {
+        OrderItem item1 = OrderItem.builder().productId("p1").quantity(2).build();
+        OrderItem item2 = OrderItem.builder().productId("p2").quantity(3).build();
+        OrderItem item3 = OrderItem.builder().productId("p3").quantity(1).build();
+
+        Order order = Order.builder()
+                .id(testOrderId)
+                .status(OrderStatus.PROCESSING)
+                .orderItems(List.of(item1, item2, item3))
+                .build();
+
+        Order shippedOrder = Order.builder()
+                .id(testOrderId)
+                .status(OrderStatus.SHIPPED)
+                .build();
+
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.save(any())).thenReturn(shippedOrder);
+        when(orderMapper.toOrderResponse(any()))
+                .thenReturn(OrderResponse.builder().id(testOrderId).build());
+
+        orderService.updateOrderStatus(testOrderId, "SHIPPED");
+
+        verify(inventoryService).shipStock("p1", 2);
+        verify(inventoryService).shipStock("p2", 3);
+        verify(inventoryService).shipStock("p3", 1);
+    }
+
+    @Test
+    @DisplayName("TC10: Không giải phóng hàng khi đơn không PROCESSING nhưng chuyển sang SHIPPED")
+    void updateOrderStatus_ToShipped_WhenOrderIsNotProcessing_ShouldNotShipStock() {
+        OrderItem dummyItem = OrderEntityFactory.orderItem("PROD_TEST", 1, 100_000L);
+
+        Order order = Order.builder()
+                .id(testOrderId)
+                .status(OrderStatus.PENDING)
+                .orderItems(List.of(dummyItem))
+                .build();
+
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.save(any())).thenReturn(order);
+
+        orderService.updateOrderStatus(testOrderId, "SHIPPED");
+
+        verify(inventoryService, never()).shipStock(anyString(), anyInt());
+    }
 }

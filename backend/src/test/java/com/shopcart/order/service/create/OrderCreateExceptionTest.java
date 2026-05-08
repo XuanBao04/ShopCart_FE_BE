@@ -23,6 +23,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -104,7 +105,7 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
                 .hasMessageContaining("Stock reservation failed");
 
         verify(orderRepository, never()).save(any(Order.class));
-        verify(cartService, never()).clearCart(testUserId);
+        verify(cartService, times(1)).clearCart(testUserId);
     }
 
     @Test

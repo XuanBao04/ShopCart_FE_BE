@@ -24,10 +24,14 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
         when(productService.getProductById(request.getProductId())).thenReturn(new Product());
         when(cartRepository.findByUserIdAndProductId(userId, request.getProductId()))
                 .thenReturn(Optional.empty());
-        when(inventoryService.hasEnoughStock(request.getProductId(), request.getQuantity()))
-                .thenReturn(true);
+        
         mockBuildCartResponseHelper(List.of(new CartItem()));
+        
         CartResponse response = cartService.addToCart(userId, request);
+        
+        // Verify reserveStock was called
+        verify(inventoryService, times(1)).reserveStock(request.getProductId(), request.getQuantity());
+        
         ArgumentCaptor<CartItem> cartItemCaptor = ArgumentCaptor.forClass(CartItem.class);
         verify(cartRepository, times(1)).save(cartItemCaptor.capture());
         CartItem savedCartItem = cartItemCaptor.getValue();
@@ -47,13 +51,18 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
                 .productId(request.getProductId())
                 .quantity(existingQuantity)
                 .build();
+                
         when(productService.getProductById(request.getProductId())).thenReturn(new Product());
         when(cartRepository.findByUserIdAndProductId(userId, request.getProductId()))
                 .thenReturn(Optional.of(existingCartItem));
-        when(inventoryService.hasEnoughStock(request.getProductId(), expectedNewQuantity))
-                .thenReturn(true);
+                
         mockBuildCartResponseHelper(List.of(new CartItem()));
+        
         CartResponse response = cartService.addToCart(userId, request);
+        
+        // Verify reserveStock was called with ONLY the new quantity
+        verify(inventoryService, times(1)).reserveStock(request.getProductId(), request.getQuantity());
+        
         ArgumentCaptor<CartItem> cartItemCaptor = ArgumentCaptor.forClass(CartItem.class);
         verify(cartRepository, times(1)).save(cartItemCaptor.capture());
         CartItem savedCartItem = cartItemCaptor.getValue();

@@ -15,4 +15,5 @@ public class InventoryResponse {
     private Integer quantity;
     private Integer reservedQuantity;
     private Integer soldQuantity;
+    private Integer availableQuantity;
 }

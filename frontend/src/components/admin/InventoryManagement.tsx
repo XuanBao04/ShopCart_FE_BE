@@ -9,7 +9,10 @@ import { toast } from "react-toastify";
 
 interface InventoryWithProduct extends Product {
   inventory?: InventoryItem;
-  stock?: number;
+  availableQuantity: number;
+  reservedQuantity: number;
+  soldQuantity: number;
+  physicalQuantity: number;
 }
 
 const InventoryManagement = () => {
@@ -32,11 +35,23 @@ const InventoryManagement = () => {
       const productsWithInventory = await Promise.all(
         allProducts.map(async (product) => {
           try {
-            const stock = await productService.getAvailableStock(product.id);
-            return { ...product, stock };
+            const inv = await inventoryService.getInventoryDetails(product.id);
+            return {
+              ...product,
+              availableQuantity: inv.availableQuantity,
+              reservedQuantity: inv.reservedQuantity,
+              soldQuantity: inv.soldQuantity,
+              physicalQuantity: inv.quantity,
+              inventory: inv
+            };
           } catch {
-            // If inventory not found, set stock to 0
-            return { ...product, stock: 0 };
+            return {
+              ...product,
+              availableQuantity: 0,
+              reservedQuantity: 0,
+              soldQuantity: 0,
+              physicalQuantity: 0
+            };
           }
         })
       );
@@ -64,7 +79,11 @@ const InventoryManagement = () => {
       
       // Update local state
       setProducts(products.map(p => 
-        p.id === productId ? { ...p, stock: editQuantity } : p
+        p.id === productId ? { 
+          ...p, 
+          physicalQuantity: editQuantity,
+          availableQuantity: editQuantity - (p.reservedQuantity || 0)
+        } : p
       ));
       
       setEditingId(null);
@@ -151,9 +170,9 @@ const InventoryManagement = () => {
             </p>
           </div>
           <div className="bg-orange-50 p-4 rounded">
-            <p className="text-gray-600 text-sm">Tổng tồn kho</p>
+            <p className="text-gray-600 text-sm">Tổng tồn kho (Thực tế)</p>
             <p className="text-2xl font-bold text-orange-600">
-              {products.reduce((sum, p) => sum + (p.stock || 0), 0)}
+              {products.reduce((sum, p) => sum + (p.physicalQuantity || 0), 0)}
             </p>
           </div>
         </div>
@@ -175,7 +194,10 @@ const InventoryManagement = () => {
                   <th className="text-left py-3 px-4">ID Sản phẩm</th>
                   <th className="text-left py-3 px-4">Tên sản phẩm</th>
                   <th className="text-right py-3 px-4">Giá</th>
-                  <th className="text-center py-3 px-4">Tồn kho</th>
+                  <th className="text-center py-3 px-4">Khả dụng</th>
+                  <th className="text-center py-3 px-4">Đang giữ</th>
+                  <th className="text-center py-3 px-4">Thực tế</th>
+                  <th className="text-center py-3 px-4">Đã bán</th>
                   <th className="text-center py-3 px-4">Trạng thái</th>
                   <th className="text-center py-3 px-4">Hành động</th>
                 </tr>
@@ -186,6 +208,12 @@ const InventoryManagement = () => {
                     <td className="py-3 px-4 font-mono text-sm">{product.id}</td>
                     <td className="py-3 px-4">{product.name}</td>
                     <td className="py-3 px-4 text-right">{formatPrice(product.price)}</td>
+                    <td className="py-3 px-4 text-center font-semibold text-green-600">
+                      {product.availableQuantity}
+                    </td>
+                    <td className="py-3 px-4 text-center text-orange-600">
+                      {product.reservedQuantity}
+                    </td>
                     <td className="py-3 px-4 text-center">
                       {editingId === product.id ? (
                         <input
@@ -197,11 +225,14 @@ const InventoryManagement = () => {
                         />
                       ) : (
                         <span className={`font-semibold ${
-                          (product.stock || 0) <= 10 ? "text-red-600" : "text-green-600"
+                          (product.physicalQuantity || 0) <= 10 ? "text-red-600" : "text-gray-800"
                         }`}>
-                          {product.stock || 0}
+                          {product.physicalQuantity}
                         </span>
                       )}
+                    </td>
+                    <td className="py-3 px-4 text-center text-blue-600 font-medium">
+                      {product.soldQuantity}
                     </td>
                     <td className="py-3 px-4 text-center">
                       <span className={`inline-block px-3 py-1 rounded text-sm font-medium ${
@@ -232,9 +263,9 @@ const InventoryManagement = () => {
                         </div>
                       ) : (
                         <button
-                          onClick={() => handleEditStart(product.id, product.stock || 0)}
+                          onClick={() => handleEditStart(product.id, product.physicalQuantity || 0)}
                           className="text-blue-600 hover:text-blue-800 p-2"
-                          title="Chỉnh sửa"
+                          title="Chỉnh sửa số lượng thực tế"
                         >
                           <FaEdit />
                         </button>

@@ -48,6 +48,9 @@ public class CartServiceImpl implements ICartService {
         // Kiểm tra sản phẩm có tồn tại không
         productService.getProductById(request.getProductId());
 
+        // Reserve stock trước khi cập nhật giỏ hàng (sẽ ném exception nếu không đủ hàng)
+        inventoryService.reserveStock(request.getProductId(), request.getQuantity());
+
         // Lấy cart item hoặc tạo mới với quantity = 0 nếu chưa tồn tại
         CartItem cartItem = cartRepository
                 .findByUserIdAndProductId(userId, request.getProductId())
@@ -57,16 +60,8 @@ public class CartServiceImpl implements ICartService {
                         .quantity(0)
                         .build());
 
-        // Tính toán số lượng mới
-        int newQuantity = cartItem.getQuantity() + request.getQuantity();
-
-        // Kiểm tra tồn kho một lần duy nhất cho số lượng mới
-        if (!inventoryService.hasEnoughStock(request.getProductId(), newQuantity)) {
-            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + request.getProductId());
-        }
-
-        // Cập nhật số lượng và thời gian tạo để áp dụng cho cả trường hợp mới và cộng dồn
-        cartItem.setQuantity(newQuantity);
+        // Cập nhật số lượng và thời gian tạo
+        cartItem.setQuantity(cartItem.getQuantity() + request.getQuantity());
         cartItem.setCreatedAt(LocalDateTime.now());
 
         cartRepository.save(cartItem);
@@ -77,7 +72,10 @@ public class CartServiceImpl implements ICartService {
     @Transactional
     public CartResponse removeFromCart(String userId, Long cartItemId) {
         // Tìm và xác thực cart item thuộc về user
-       CartItem cartItem = findCartItemByUser(userId, cartItemId);
+        CartItem cartItem = findCartItemByUser(userId, cartItemId);
+
+        // Giải phóng kho khi xóa khỏi giỏ
+        inventoryService.releaseStock(cartItem.getProductId(), cartItem.getQuantity());
 
         cartRepository.delete(cartItem);
         return buildCartResponse(userId);
@@ -88,9 +86,15 @@ public class CartServiceImpl implements ICartService {
     public CartResponse updateQuantity(String userId, Long cartItemId, Integer quantity) {
         // Tìm và xác thực cart item thuộc về user
         CartItem cartItem = findCartItemByUser(userId, cartItemId);
+        
+        int oldQuantity = cartItem.getQuantity();
+        int diff = quantity - oldQuantity;
 
-        if (!inventoryService.hasEnoughStock(cartItem.getProductId(), quantity)) {
-            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + cartItem.getProductId());
+        // Điều chỉnh số lượng giữ trong kho
+        if (diff > 0) {
+            inventoryService.reserveStock(cartItem.getProductId(), diff);
+        } else if (diff < 0) {
+            inventoryService.releaseStock(cartItem.getProductId(), Math.abs(diff));
         }
 
         cartItem.setQuantity(quantity);
@@ -101,6 +105,11 @@ public class CartServiceImpl implements ICartService {
     @Override
     @Transactional
     public void clearCart(String userId) {
+        // Giải phóng kho cho tất cả các mặt hàng trong giỏ trước khi xóa
+        List<CartItem> cartItems = cartRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        for (CartItem item : cartItems) {
+            inventoryService.releaseStock(item.getProductId(), item.getQuantity());
+        }
         cartRepository.deleteByUserId(userId);
     }
 

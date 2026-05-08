@@ -56,7 +56,11 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponse createOrder(OrderRequest request,String userId ) {
-        // Validate và kiểm tra tồn kho
+        // 1. Giải phóng kho đang giữ từ giỏ hàng trước khi đặt hàng
+        // Điều này tránh việc bị cộng dồn số lượng giữ kho (giỏ hàng giữ + đơn hàng mới giữ)
+        cartService.clearCart(userId);
+
+        // 2. Validate và kiểm tra tồn kho (lúc này kho đã được giải phóng từ giỏ hàng)
         validateOrderItems(request);
 
         // Tính giá
@@ -113,9 +117,6 @@ public class OrderServiceImpl implements IOrderService {
         }
 
         Order savedOrder = orderRepository.save(order);
-
-        // Xóa giỏ hàng sau khi đặt hàng thành công
-        cartService.clearCart(userId);
 
         return orderMapper.toOrderResponse(savedOrder);
     }
@@ -185,6 +186,15 @@ public class OrderServiceImpl implements IOrderService {
         if (newStatus == OrderStatus.CONFIRMED && order.getStatus() == OrderStatus.PENDING) {
             for (OrderItem item : order.getOrderItems()) {
                 inventoryService.confirmStock(item.getProductId(), item.getQuantity());
+            }
+        }
+
+        // Admin gửi hàng → giải phóng hàng khỏi kho
+        // Logic: REDUCE quantity, REDUCE reservedQuantity, INCREASE soldQuantity
+        // Result: availableStock remains unchanged
+        if (newStatus == OrderStatus.SHIPPED && order.getStatus() == OrderStatus.PROCESSING) {
+            for (OrderItem item : order.getOrderItems()) {
+                inventoryService.shipStock(item.getProductId(), item.getQuantity());
             }
         }
 

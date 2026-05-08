@@ -136,6 +136,15 @@ public class DataInitializer implements CommandLineRunner {
         }
     }
 
+    private void updateInventory(String productId, int qtyDelta, int reservedDelta, int soldDelta) {
+        inventoryRepository.findByProductId(productId).ifPresent(inventory -> {
+            inventory.setQuantity(inventory.getQuantity() + qtyDelta);
+            inventory.setReservedQuantity(inventory.getReservedQuantity() + reservedDelta);
+            inventory.setSoldQuantity(inventory.getSoldQuantity() + soldDelta);
+            inventoryRepository.save(inventory);
+        });
+    }
+
     private void createDefaultCoupons() {
         if (couponRepository.count() > 0) {
             return;
@@ -160,7 +169,13 @@ public class DataInitializer implements CommandLineRunner {
                 CartItem.builder().userId(customerId).productId("P008").quantity(2).build()
         );
         cartRepository.saveAll(cartItems);
-        log.info("Seeded {} cart items", cartItems.size());
+        
+        // Cập nhật reservation trong kho cho cart items
+        for (CartItem item : cartItems) {
+            updateInventory(item.getProductId(), 0, item.getQuantity(), 0);
+        }
+        
+        log.info("Seeded {} cart items and updated inventory reservations", cartItems.size());
     }
 
     private void createDefaultOrders(User customer) {
@@ -200,7 +215,19 @@ public class DataInitializer implements CommandLineRunner {
         order2.setTotalPrice(calculateTotal(order2));
 
         orderRepository.saveAll(List.of(order1, order2));
-        log.info("Seeded {} orders with order items", 2);
+        
+        // Cập nhật kho theo trạng thái đơn hàng
+        // Order 1 (DELIVERED): Giảm thực tế, tăng đã bán
+        for (OrderItem item : order1.getOrderItems()) {
+            updateInventory(item.getProductId(), -item.getQuantity(), 0, item.getQuantity());
+        }
+        
+        // Order 2 (PENDING): Tăng đang giữ
+        for (OrderItem item : order2.getOrderItems()) {
+            updateInventory(item.getProductId(), 0, item.getQuantity(), 0);
+        }
+
+        log.info("Seeded {} orders and updated inventory accordingly", 2);
     }
 
     private long calculateTotal(Order order) {

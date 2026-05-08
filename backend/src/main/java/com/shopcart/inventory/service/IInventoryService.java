@@ -1,9 +1,18 @@
 package com.shopcart.inventory.service;
 
+import com.shopcart.inventory.dto.response.InventoryResponse;
+
 /**
  * Service interface for Inventory management
  */
 public interface IInventoryService {
+
+    /**
+     * Get full inventory details for a product
+     * @param productId the product ID
+     * @return inventory details
+     */
+    InventoryResponse getInventoryDetails(String productId);
 
     /**
      * Get available stock for a product
@@ -47,4 +56,14 @@ public interface IInventoryService {
      * @param quantity quantity to confirm as sold
      */
     void confirmStock(String productId, Integer quantity);
+
+    /**
+     * Ship stock from warehouse (when order status changes to SHIPPED)
+     * Logic: REDUCE quantity, REDUCE reservedQuantity, INCREASE soldQuantity
+     * Result: availableStock remains unchanged
+     * 
+     * @param productId the product ID
+     * @param quantity quantity to ship
+     */
+    void shipStock(String productId, Integer quantity);
 }

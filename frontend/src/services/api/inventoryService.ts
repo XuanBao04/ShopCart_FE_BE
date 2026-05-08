@@ -16,6 +16,18 @@ export const inventoryService = {
   },
 
   /**
+   * Get full inventory details for a product
+   * @param productId the product ID
+   * @return inventory details
+   */
+  async getInventoryDetails(productId: string): Promise<InventoryItem> {
+    const response = await apiClient.get<InventoryItem>(
+      `${INVENTORY_API}/${productId}/details`,
+    );
+    return response.data;
+  },
+
+  /**
    * Update an inventory item
    * @param productId the product ID
    * @param quantity the quantity to update

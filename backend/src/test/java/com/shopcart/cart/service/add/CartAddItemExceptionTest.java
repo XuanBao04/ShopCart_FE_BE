@@ -14,6 +14,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -25,14 +26,16 @@ class CartAddItemExceptionTest extends BaseCartServiceTest {
     @Test
     void addToCart_InsufficientStock_ThrowsException() {
         when(productService.getProductById(request.getProductId())).thenReturn(new Product());
-        when(cartRepository.findByUserIdAndProductId(userId, request.getProductId()))
-                .thenReturn(Optional.empty());
-        when(inventoryService.hasEnoughStock(request.getProductId(), request.getQuantity()))
-                .thenReturn(false);
+        
+        // Mock reserveStock to throw exception since it's now used instead of hasEnoughStock
+        doThrow(new BusinessLogicException(com.shopcart.constant.MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + request.getProductId()))
+                .when(inventoryService).reserveStock(request.getProductId(), request.getQuantity());
+
         BusinessLogicException exception = assertThrows(BusinessLogicException.class, () -> {
             cartService.addToCart(userId, request);
         });
-        String expectedMessage = "Insufficient stock for product: " + request.getProductId();
+        
+        String expectedMessage = com.shopcart.constant.MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + request.getProductId();
         assertEquals(expectedMessage, exception.getMessage());
         verify(cartRepository, never()).save(any(CartItem.class));
         verify(cartMapper, never()).toCartResponse(anyString(), anyList(), any());
@@ -43,11 +46,13 @@ class CartAddItemExceptionTest extends BaseCartServiceTest {
     void addToCart_ProductNotFound_ThrowsException() {
         when(productService.getProductById(request.getProductId()))
                 .thenThrow(new ResourceNotFoundException("Product not found"));
+        
         assertThrows(ResourceNotFoundException.class, () -> {
             cartService.addToCart(userId, request);
         });
+        
         verify(cartRepository, never()).findByUserIdAndProductId(anyString(), anyString());
-        verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
+        verify(inventoryService, never()).reserveStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
 }

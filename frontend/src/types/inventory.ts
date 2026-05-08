@@ -3,5 +3,8 @@
 export interface InventoryItem {
   id: string;
   productId: string;
-  quantity: number;
+  quantity: number; // Thực tế
+  reservedQuantity: number; // Đang giữ
+  soldQuantity: number; // Đã bán
+  availableQuantity: number; // Đặt khả dụng
 }
