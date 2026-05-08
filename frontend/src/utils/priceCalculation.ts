@@ -43,7 +43,8 @@ export function calculateOrderPrice(
   let discount = 0;
   if (coupon) {
     if (coupon.type === 'percent') {
-      discount = Math.round((subtotal * coupon.value) / 100);
+      const clampedPercent = Math.max(0, Math.min(100, coupon.value));
+      discount = Math.min(Math.round((subtotal * clampedPercent) / 100), subtotal);
     } else if (coupon.type === 'fixed') {
       discount = Math.min(coupon.value, subtotal);
     }
@@ -118,13 +119,4 @@ export function formatPrice(price: number): string {
  */
 export function parsePrice(priceString: string): number {
   return parseInt(priceString.replace(/\D/g, ''), 10) || 0;
-}
-
-/**
- * Calculate cart total
- */
-export function calculateCartTotal(
-  items: Array<{ price: number; quantity: number }>
-): number {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
 }

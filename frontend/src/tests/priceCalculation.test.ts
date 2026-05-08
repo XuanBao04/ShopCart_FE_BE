@@ -8,8 +8,8 @@ import {
   calculateTotal,
   formatPrice,
   parsePrice,
-  calculateCartTotal,
 } from '@utils/priceCalculation';
+import { calculateCartTotal } from '@utils/cartValidation';
 
 // ─── a) calculateOrderPrice() ────────────────────────────────────────────────
 
@@ -79,6 +79,22 @@ describe('calculateOrderPrice()', () => {
       expect(result.subtotal).toBe(1_200_000);
       expect(result.discount).toBe(600_000);
       expect(result.total).toBe(600_000);
+    });
+
+    test('TC06b: Coupon percent > 100 → bị clamp về 100%, total không âm', () => {
+      const items = [{ price: 100_000, quantity: 2 }];
+      const coupon = { type: 'percent' as const, value: 150 };
+      const result = calculateOrderPrice(items, coupon, 0);
+      expect(result.discount).toBe(result.subtotal);
+      expect(result.total).toBe(0);
+    });
+
+    test('TC06c: Coupon percent âm → bị clamp về 0%, không giảm giá', () => {
+      const items = [{ price: 100_000, quantity: 2 }];
+      const coupon = { type: 'percent' as const, value: -10 };
+      const result = calculateOrderPrice(items, coupon, 0);
+      expect(result.discount).toBe(0);
+      expect(result.total).toBe(result.subtotal);
     });
   });
 
