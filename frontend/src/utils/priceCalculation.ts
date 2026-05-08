@@ -1,3 +1,75 @@
+export interface OrderItem {
+  price: number;
+  quantity: number;
+}
+
+export interface Coupon {
+  type: 'percent' | 'fixed';
+  value: number;
+}
+
+export interface OrderPriceResult {
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+}
+
+export interface CartItemForInventory {
+  productId: string;
+  quantity: number;
+}
+
+export interface InventoryStock {
+  productId: string;
+  quantity: number;
+}
+
+export interface InventoryAvailabilityResult {
+  available: boolean;
+  unavailableItems: string[];
+}
+
+export function calculateOrderPrice(
+  items: OrderItem[],
+  coupon: Coupon | null,
+  shippingFee: number = 0
+): OrderPriceResult {
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  let discount = 0;
+  if (coupon) {
+    if (coupon.type === 'percent') {
+      discount = Math.round((subtotal * coupon.value) / 100);
+    } else if (coupon.type === 'fixed') {
+      discount = Math.min(coupon.value, subtotal);
+    }
+  }
+
+  return {
+    subtotal,
+    discount,
+    shipping: shippingFee,
+    total: subtotal + shippingFee - discount,
+  };
+}
+
+export function checkInventoryAvailability(
+  cartItems: CartItemForInventory[],
+  inventory: InventoryStock[]
+): InventoryAvailabilityResult {
+  const stockMap = new Map(inventory.map((item) => [item.productId, item.quantity]));
+
+  const unavailableItems = cartItems
+    .filter((cartItem) => cartItem.quantity > (stockMap.get(cartItem.productId) ?? 0))
+    .map((cartItem) => cartItem.productId);
+
+  return { available: unavailableItems.length === 0, unavailableItems };
+}
+
 /**
  * Calculate subtotal (price * quantity)
  */
