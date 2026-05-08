@@ -41,12 +41,13 @@ export function calculateOrderPrice(
   );
 
   let discount = 0;
-  if (coupon) {
+  if (coupon && Number.isFinite(coupon.value)) {
     if (coupon.type === 'percent') {
       const clampedPercent = Math.max(0, Math.min(100, coupon.value));
       discount = Math.min(Math.round((subtotal * clampedPercent) / 100), subtotal);
     } else if (coupon.type === 'fixed') {
-      discount = Math.min(coupon.value, subtotal);
+      const clampedFixed = Math.max(0, coupon.value);
+      discount = Math.min(clampedFixed, subtotal);
     }
   }
 
@@ -64,9 +65,14 @@ export function checkInventoryAvailability(
 ): InventoryAvailabilityResult {
   const stockMap = new Map(inventory.map((item) => [item.productId, item.quantity]));
 
-  const unavailableItems = cartItems
-    .filter((cartItem) => cartItem.quantity > (stockMap.get(cartItem.productId) ?? 0))
-    .map((cartItem) => cartItem.productId);
+  const requestedMap = new Map<string, number>();
+  for (const cartItem of cartItems) {
+    requestedMap.set(cartItem.productId, (requestedMap.get(cartItem.productId) ?? 0) + cartItem.quantity);
+  }
+
+  const unavailableItems = Array.from(requestedMap.entries())
+    .filter(([productId, totalQty]) => totalQty > (stockMap.get(productId) ?? 0))
+    .map(([productId]) => productId);
 
   return { available: unavailableItems.length === 0, unavailableItems };
 }

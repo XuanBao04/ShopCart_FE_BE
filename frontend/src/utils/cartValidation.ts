@@ -37,6 +37,10 @@ export function validateCartItem(item: CartItemInput): ValidationResult {
     return { isValid: false, error: 'Số lượng phải lớn hơn 0' };
   }
 
+  if (!Number.isFinite(stock) || !Number.isInteger(stock) || stock < 0) {
+    return { isValid: false, error: 'Tồn kho phải là số nguyên không âm hợp lệ' };
+  }
+
   if (quantity > stock) {
     return { isValid: false, error: 'Số lượng vượt quá tồn kho' };
   }

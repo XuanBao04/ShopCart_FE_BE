@@ -96,6 +96,14 @@ describe('calculateOrderPrice()', () => {
       expect(result.discount).toBe(0);
       expect(result.total).toBe(result.subtotal);
     });
+
+    test('TC06d: Coupon value = NaN → bỏ qua coupon, discount = 0', () => {
+      const items = [{ price: 100_000, quantity: 2 }];
+      const coupon = { type: 'percent' as const, value: NaN };
+      const result = calculateOrderPrice(items, coupon, 0);
+      expect(result.discount).toBe(0);
+      expect(result.total).toBe(result.subtotal);
+    });
   });
 
   // Áp dụng coupon giảm số tiền cố định
@@ -126,6 +134,22 @@ describe('calculateOrderPrice()', () => {
       expect(result.subtotal).toBe(50_000);
       expect(result.discount).toBe(50_000);
       expect(result.total).toBe(0);
+    });
+
+    test('TC09b: Coupon fixed value âm → discount = 0, không tăng total', () => {
+      const items = [{ price: 200_000, quantity: 1 }];
+      const coupon = { type: 'fixed' as const, value: -50_000 };
+      const result = calculateOrderPrice(items, coupon, 0);
+      expect(result.discount).toBe(0);
+      expect(result.total).toBe(result.subtotal);
+    });
+
+    test('TC09c: Coupon fixed value = NaN → bỏ qua coupon, discount = 0', () => {
+      const items = [{ price: 200_000, quantity: 1 }];
+      const coupon = { type: 'fixed' as const, value: NaN };
+      const result = calculateOrderPrice(items, coupon, 0);
+      expect(result.discount).toBe(0);
+      expect(result.total).toBe(result.subtotal);
     });
   });
 
@@ -274,6 +298,29 @@ describe('checkInventoryAvailability()', () => {
       const result = checkInventoryAvailability(cartItems, inventory);
       expect(result.available).toBe(false);
       expect(result.unavailableItems).toEqual(['P003']);
+    });
+
+    test('TC22: Cùng productId xuất hiện 2 lần → cộng dồn quantity, không duplicate trong kết quả', () => {
+      const cartItems = [
+        { productId: 'P001', quantity: 6 },
+        { productId: 'P001', quantity: 6 },
+      ];
+      const inventory = [{ productId: 'P001', quantity: 10 }];
+      const result = checkInventoryAvailability(cartItems, inventory);
+      expect(result.available).toBe(false);
+      expect(result.unavailableItems).toEqual(['P001']);
+      expect(result.unavailableItems).toHaveLength(1);
+    });
+
+    test('TC23: Cùng productId nhiều lần nhưng tổng quantity vừa đủ → available = true', () => {
+      const cartItems = [
+        { productId: 'P001', quantity: 3 },
+        { productId: 'P001', quantity: 4 },
+      ];
+      const inventory = [{ productId: 'P001', quantity: 10 }];
+      const result = checkInventoryAvailability(cartItems, inventory);
+      expect(result.available).toBe(true);
+      expect(result.unavailableItems).toHaveLength(0);
     });
   });
 });
