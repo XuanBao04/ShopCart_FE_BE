@@ -77,7 +77,7 @@ public class InventoryServiceImpl implements IInventoryService {
         validateProductId(productId);
         validateQuantity(quantity);
         
-        Inventory inventory = findInventoryOrThrow(productId);
+        Inventory inventory = findInventoryWithLockOrThrow(productId);
         
         int availableStock = inventory.getQuantity() - getSafeReservedQuantity(inventory);
         if (availableStock < quantity) {
@@ -127,6 +127,15 @@ public class InventoryServiceImpl implements IInventoryService {
      */
     private Inventory findInventoryOrThrow(String productId) {
         return inventoryRepository.findByProductId(productId)
+                .orElseThrow(() -> new ResourceNotFoundException(
+                    MessageConstant.Inventory.NOT_FOUND + productId));
+    }
+
+    /**
+     * Find inventory with Pessimistic Lock or throw ResourceNotFoundException
+     */
+    private Inventory findInventoryWithLockOrThrow(String productId) {
+        return inventoryRepository.findByProductIdWithLock(productId)
                 .orElseThrow(() -> new ResourceNotFoundException(
                     MessageConstant.Inventory.NOT_FOUND + productId));
     }
