@@ -52,11 +52,8 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
                 .thenReturn(Optional.of(existingCartItem));
         when(inventoryService.hasEnoughStock(request.getProductId(), expectedNewQuantity))
                 .thenReturn(true);
-
         mockBuildCartResponseHelper(List.of(new CartItem()));
-
         CartResponse response = cartService.addToCart(userId, request);
-
         ArgumentCaptor<CartItem> cartItemCaptor = ArgumentCaptor.forClass(CartItem.class);
         verify(cartRepository, times(1)).save(cartItemCaptor.capture());
         CartItem savedCartItem = cartItemCaptor.getValue();

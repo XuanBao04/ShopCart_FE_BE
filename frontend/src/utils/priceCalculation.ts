@@ -1,3 +1,77 @@
+import type { CartItemRequest } from '../types/cart';
+import type { InventoryItem } from '../types/inventory';
+
+export interface PricedLineItem {
+  price: number;
+  quantity: number;
+}
+
+export interface AppliedCoupon {
+  type: 'percent' | 'fixed';
+  value: number;
+}
+
+export interface OrderPriceResult {
+  subtotal: number;
+  discount: number;
+  shipping: number;
+  total: number;
+}
+
+export interface InventoryAvailabilityResult {
+  available: boolean;
+  unavailableItems: string[];
+}
+
+export function calculateOrderPrice(
+  items: PricedLineItem[],
+  coupon: AppliedCoupon | null,
+  shippingFee: number = 0
+): OrderPriceResult {
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  const validShipping = Number.isFinite(shippingFee) ? Math.max(0, shippingFee) : 0;
+
+  let discount = 0;
+  if (coupon && Number.isFinite(coupon.value)) {
+    if (coupon.type === 'percent') {
+      const clampedPercent = Math.max(0, Math.min(100, coupon.value));
+      discount = Math.min(Math.round((subtotal * clampedPercent) / 100), subtotal);
+    } else if (coupon.type === 'fixed') {
+      const clampedFixed = Math.max(0, coupon.value);
+      discount = Math.min(clampedFixed, subtotal);
+    }
+  }
+
+  return {
+    subtotal,
+    discount,
+    shipping: validShipping,
+    total: subtotal + validShipping - discount,
+  };
+}
+
+export function checkInventoryAvailability(
+  cartItems: CartItemRequest[],
+  inventory: Pick<InventoryItem, 'productId' | 'quantity'>[]
+): InventoryAvailabilityResult {
+  const stockMap = new Map(inventory.map((item) => [item.productId, item.quantity]));
+
+  const requestedMap = new Map<string, number>();
+  for (const cartItem of cartItems) {
+    requestedMap.set(cartItem.productId, (requestedMap.get(cartItem.productId) ?? 0) + cartItem.quantity);
+  }
+
+  const unavailableItems = Array.from(requestedMap.entries())
+    .filter(([productId, totalQty]) => totalQty > (stockMap.get(productId) ?? 0))
+    .map(([productId]) => productId);
+
+  return { available: unavailableItems.length === 0, unavailableItems };
+}
+
 /**
  * Calculate subtotal (price * quantity)
  */
@@ -46,13 +120,4 @@ export function formatPrice(price: number): string {
  */
 export function parsePrice(priceString: string): number {
   return parseInt(priceString.replace(/\D/g, ''), 10) || 0;
-}
-
-/**
- * Calculate cart total
- */
-export function calculateCartTotal(
-  items: Array<{ price: number; quantity: number }>
-): number {
-  return items.reduce((total, item) => total + item.price * item.quantity, 0);
 }
