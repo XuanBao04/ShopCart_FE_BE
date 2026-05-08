@@ -43,4 +43,24 @@ export const inventoryService = {
     );
     return response.data;
   },
+
+  /**
+   * Check if a product has enough stock for the requested quantity.
+   * This helper is used by checkout flow before creating an order.
+   * @param productId the product ID
+   * @param requiredQuantity quantity requested by customer
+   * @return true if inventory is enough, otherwise false
+   */
+  async checkStock(
+    productId: string,
+    requiredQuantity: number,
+  ): Promise<boolean> {
+    const inventoryItems = await this.getInventoryItems(productId);
+    const totalAvailable = inventoryItems.reduce(
+      (sum, item) => sum + item.quantity,
+      0,
+    );
+
+    return totalAvailable >= requiredQuantity;
+  },
 };

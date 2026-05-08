@@ -6,6 +6,7 @@ import CouponInput from "./CouponInput";
 import PriceBreakdown from "./PriceBreakdown";
 import AddressForm from "./AddressForm";
 import { orderService } from "../../services/api/orderService";
+import { inventoryService } from "../../services/api/inventoryService";
 import { Navigate } from "react-router-dom";
 import { ShippingAddress } from "../../types/order";
 import { toast } from "react-toastify";
@@ -87,6 +88,20 @@ const Cart = () => {
         couponCode: couponCode ?? undefined,
         ...shippingAddress,
       };
+
+      // Validate stock for every cart item before creating order.
+      const stockChecks = await Promise.all(
+        cart.items.map((item) =>
+          inventoryService.checkStock(item.productId, item.quantity),
+        ),
+      );
+
+      if (stockChecks.some((isAvailable) => !isAvailable)) {
+        toast.error(
+          "Một hoặc nhiều sản phẩm không còn đủ tồn kho. Vui lòng cập nhật giỏ hàng.",
+        );
+        return;
+      }
 
       await orderService.createOrder(orderRequest);
 
