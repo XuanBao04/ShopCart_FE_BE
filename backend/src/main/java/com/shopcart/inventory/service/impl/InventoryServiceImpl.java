@@ -2,6 +2,7 @@ package com.shopcart.inventory.service.impl;
 
 import com.shopcart.constant.MessageConstant;
 
+import com.shopcart.inventory.dto.response.InventoryResponse;
 import com.shopcart.inventory.entity.Inventory;
 import com.shopcart.common.exception.ResourceNotFoundException;
 import com.shopcart.common.exception.BusinessLogicException;
@@ -31,6 +32,21 @@ public class InventoryServiceImpl implements IInventoryService {
     }
 
     // ======================== Inventory Retrieval ========================
+    
+    @Override
+    public InventoryResponse getInventoryDetails(String productId) {
+        validateProductId(productId);
+        Inventory inventory = findInventoryOrThrow(productId);
+        
+        return InventoryResponse.builder()
+                .id(inventory.getId())
+                .productId(inventory.getProductId())
+                .quantity(inventory.getQuantity())
+                .reservedQuantity(getSafeReservedQuantity(inventory))
+                .soldQuantity(getSafeSoldQuantity(inventory))
+                .availableQuantity(calculateAvailableStock(inventory))
+                .build();
+    }
 
     @Override
     public Integer getStock(String productId) {
@@ -61,7 +77,7 @@ public class InventoryServiceImpl implements IInventoryService {
         
         Inventory inventory = findInventoryOrThrow(productId);
         
-        int newQuantity = inventory.getQuantity() + quantity;
+        int newQuantity = quantity;
         int newAvailable = newQuantity - getSafeReservedQuantity(inventory);
         if (newAvailable < 0) {
             throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK + productId);
@@ -74,18 +90,19 @@ public class InventoryServiceImpl implements IInventoryService {
     @Override
     @Transactional
     public void reserveStock(String productId, Integer quantity) {
-        validateProductId(productId);
-        validateQuantity(quantity);
-        
-        Inventory inventory = findInventoryWithLockOrThrow(productId);
-        
-        int availableStock = inventory.getQuantity() - getSafeReservedQuantity(inventory);
-        if (availableStock < quantity) {
-            throw new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + productId);
-        }
-        
-        inventory.setReservedQuantity(getSafeReservedQuantity(inventory) + quantity);
-        inventoryRepository.save(inventory);
+
+    validateProductId(productId);
+    validateQuantity(quantity);
+
+    int updated = inventoryRepository
+            .reserveStockAtomic(productId, quantity);
+
+    if (updated == 0) {
+        throw new BusinessLogicException(
+                MessageConstant.Inventory
+                        .INSUFFICIENT_STOCK_RESERVE + productId
+        );
+    }
     }
 
     @Override
@@ -118,6 +135,21 @@ public class InventoryServiceImpl implements IInventoryService {
         inventory.setSoldQuantity(getSafeSoldQuantity(inventory) + quantity);
         
         inventoryRepository.save(inventory);
+    }
+
+    @Override
+    @Transactional
+    public void shipStock(String productId, Integer quantity) {
+        validateProductId(productId);
+        validateQuantity(quantity);
+
+        int updated = inventoryRepository.shipStockAtomic(productId, quantity);
+
+        if (updated == 0) {
+            throw new BusinessLogicException(
+                    MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + productId
+            );
+        }
     }
 
     // ======================== Private Helper Methods ========================

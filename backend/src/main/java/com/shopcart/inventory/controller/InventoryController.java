@@ -1,6 +1,7 @@
 package com.shopcart.inventory.controller;
 
 import com.shopcart.inventory.dto.request.UpdateStockRequest;
+import com.shopcart.inventory.dto.response.InventoryResponse;
 import com.shopcart.inventory.service.IInventoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +22,12 @@ public class InventoryController {
     public ResponseEntity<Integer> getStock(@PathVariable String productId) {
         Integer stock = inventoryService.getStock(productId);
         return ResponseEntity.ok(stock);
+    }
+
+    @GetMapping("/{productId}/details")
+    public ResponseEntity<InventoryResponse> getInventoryDetails(@PathVariable String productId) {
+        InventoryResponse details = inventoryService.getInventoryDetails(productId);
+        return ResponseEntity.ok(details);
     }
 
     @PatchMapping("/{productId}")

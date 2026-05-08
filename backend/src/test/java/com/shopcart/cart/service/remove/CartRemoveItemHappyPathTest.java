@@ -32,6 +32,9 @@ class CartRemoveItemHappyPathTest extends BaseCartServiceTest {
 
         CartResponse response = cartService.removeFromCart(userId, cartItemId);
 
+        // Verify releaseStock was called
+        verify(inventoryService, times(1)).releaseStock(validCartItem.getProductId(), validCartItem.getQuantity());
+        
         verify(cartRepository, times(1)).delete(validCartItem);
         assertNotNull(response);
     }

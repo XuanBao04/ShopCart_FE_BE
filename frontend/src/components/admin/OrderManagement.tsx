@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { orderService } from "../../services/api/orderService";
+import { inventoryService } from "../../services/api/inventoryService";
 import { OrderResponse } from "../../types/order";
 import { formatPrice } from "../../utils/priceCalculation";
 import { FaSync, FaChevronDown, FaCheck, FaTimes } from "react-icons/fa";
@@ -43,10 +44,27 @@ const OrderManagement = () => {
     try {
       const updatedOrder = await orderService.updateOrderStatus(orderId, newStatus);
       
-      // Update local state
+      // Update local state with new order
       setOrders(orders.map(o => o.id === orderId ? updatedOrder : o));
       
-      // Show success message (optional)
+      // Refresh inventory data for all products in the order after successful status update
+      // This ensures UI shows the latest soldQuantity and availableStock
+      if (newStatus === "SHIPPED" && updatedOrder.items) {
+        try {
+          // Refresh inventory for all products in this order
+          await Promise.all(
+            updatedOrder.items.map(item =>
+              inventoryService.getInventoryDetails(item.productId)
+            )
+          );
+          // Inventory data is now fresh; component consuming this data will show updated values
+        } catch (err) {
+          console.warn("Failed to refresh inventory data:", err);
+          // Don't fail the operation if inventory refresh fails - it's secondary
+        }
+      }
+      
+      // Show success message
       toast.success("Cập nhật trạng thái đơn hàng thành công!");
     } catch (err) {
       toast.error("Lỗi cập nhật trạng thái: " + (err as Error).message);

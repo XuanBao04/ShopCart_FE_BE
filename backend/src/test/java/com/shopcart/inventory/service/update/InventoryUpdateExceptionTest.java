@@ -17,15 +17,17 @@ import static org.mockito.Mockito.when;
 class InventoryUpdateExceptionTest extends BaseInventoryServiceTest {
 
     @Test
-    @DisplayName("Nên ném lỗi BusinessLogicException khi không đủ hàng để giữ")
+    @DisplayName("Nên ném lỗi BusinessLogicException khi không đủ hàng để giữ (Atomic)")
     void testReserveStock_Insufficient() {
         String productId = "PROD-1";
-        Inventory inventory = InventoryTestFactory.inventory(productId, 100, 80); // 20 available
-        when(inventoryRepository.findByProductId(productId)).thenReturn(Optional.of(inventory));
+        int quantityToReserve = 30;
+
+        // Mock atomic update returning 0 (failed to reserve)
+        when(inventoryRepository.reserveStockAtomic(productId, quantityToReserve)).thenReturn(0);
 
         BusinessLogicException exception = assertThrows(
                 BusinessLogicException.class,
-                () -> inventoryService.reserveStock(productId, 30)
+                () -> inventoryService.reserveStock(productId, quantityToReserve)
         );
 
         assertEquals("Insufficient stock to reserve for product: " + productId, exception.getMessage());

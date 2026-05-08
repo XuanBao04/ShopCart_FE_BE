@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -28,21 +29,26 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
     void updateQuantity_InsufficientStock_ThrowsException() {
         Long cartItemId = 999L;
         Integer newQuantity = 10;
+        int oldQuantity = 2;
+        int diff = newQuantity - oldQuantity;
+
         CartItem validCartItem = CartItem.builder()
                 .userId(userId)
                 .productId("PROD-001")
-                .quantity(2)
+                .quantity(oldQuantity)
                 .build();
 
         when(cartRepository.findById(cartItemId)).thenReturn(Optional.of(validCartItem));
-        when(inventoryService.hasEnoughStock(validCartItem.getProductId(), newQuantity))
-                .thenReturn(false);
+        
+        // Mock reserveStock to throw exception
+        doThrow(new BusinessLogicException(MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + validCartItem.getProductId()))
+                .when(inventoryService).reserveStock(validCartItem.getProductId(), diff);
 
         BusinessLogicException exception = assertThrows(BusinessLogicException.class, () -> {
             cartService.updateQuantity(userId, cartItemId, newQuantity);
         });
 
-        assertEquals(MessageConstant.Inventory.INSUFFICIENT_STOCK + validCartItem.getProductId(), exception.getMessage());
+        assertEquals(MessageConstant.Inventory.INSUFFICIENT_STOCK_RESERVE + validCartItem.getProductId(), exception.getMessage());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
 
@@ -58,7 +64,7 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
         });
 
         assertEquals(MessageConstant.Cart.NOT_FOUND + cartItemId, exception.getMessage());
-        verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
+        verify(inventoryService, never()).reserveStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
 
@@ -81,7 +87,7 @@ class CartUpdateItemExceptionTest extends BaseCartServiceTest {
         });
 
         assertEquals(MessageConstant.Cart.WRONG_USER + userId, exception.getMessage());
-        verify(inventoryService, never()).hasEnoughStock(anyString(), anyInt());
+        verify(inventoryService, never()).reserveStock(anyString(), anyInt());
         verify(cartRepository, never()).save(any(CartItem.class));
     }
 }
