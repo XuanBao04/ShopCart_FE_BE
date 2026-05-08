@@ -33,6 +33,8 @@ export function calculateOrderPrice(
     0
   );
 
+  const validShipping = Number.isFinite(shippingFee) ? Math.max(0, shippingFee) : 0;
+
   let discount = 0;
   if (coupon && Number.isFinite(coupon.value)) {
     if (coupon.type === 'percent') {
@@ -47,8 +49,8 @@ export function calculateOrderPrice(
   return {
     subtotal,
     discount,
-    shipping: shippingFee,
-    total: subtotal + shippingFee - discount,
+    shipping: validShipping,
+    total: subtotal + validShipping - discount,
   };
 }
 

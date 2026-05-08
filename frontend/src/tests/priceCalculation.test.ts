@@ -175,6 +175,27 @@ describe('calculateOrderPrice()', () => {
       expect(result.shipping).toBe(0);
       expect(result.total).toBe(100_000);
     });
+
+    test('TC12b: shippingFee = NaN → được clamp về 0, total không phải NaN', () => {
+      const items = [{ price: 100_000, quantity: 1 }];
+      const result = calculateOrderPrice(items, null, NaN);
+      expect(result.shipping).toBe(0);
+      expect(result.total).toBe(100_000);
+    });
+
+    test('TC12c: shippingFee âm → được clamp về 0, total không giảm', () => {
+      const items = [{ price: 100_000, quantity: 1 }];
+      const result = calculateOrderPrice(items, null, -20_000);
+      expect(result.shipping).toBe(0);
+      expect(result.total).toBe(100_000);
+    });
+
+    test('TC12d: shippingFee = Infinity → được clamp về 0', () => {
+      const items = [{ price: 100_000, quantity: 1 }];
+      const result = calculateOrderPrice(items, null, Infinity);
+      expect(result.shipping).toBe(0);
+      expect(result.total).toBe(100_000);
+    });
   });
 
   // Tổng cuối cùng (subtotal + shipping - discount)
