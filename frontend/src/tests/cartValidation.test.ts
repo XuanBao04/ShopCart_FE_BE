@@ -1,8 +1,6 @@
 import { describe, test, expect } from 'vitest';
-import {
-  validateCartItem,
-  calculateCartTotal,
-} from '@utils/cartValidation';
+import { validateCartItem, calculateCartTotal } from '@utils/cartValidation';
+import { ERROR_MESSAGES } from '@utils/constants';
 
 // ─── a) validateCartItem() ────────────────────────────────────────────────────
 
@@ -12,13 +10,13 @@ describe('validateCartItem()', () => {
     test('TC01: quantity = null → trả về lỗi "Số lượng không được để trống"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: null, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng không được để trống');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_REQUIRED);
     });
 
     test('TC02: quantity = undefined → trả về lỗi "Số lượng không được để trống"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: undefined, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng không được để trống');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_REQUIRED);
     });
   });
 
@@ -27,19 +25,19 @@ describe('validateCartItem()', () => {
     test('TC02b: quantity = NaN → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: NaN, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_INTEGER);
     });
 
     test('TC02c: quantity = 1.5 → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 1.5, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_INTEGER);
     });
 
     test('TC02d: quantity = Infinity → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: Infinity, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_INTEGER);
     });
   });
 
@@ -48,19 +46,19 @@ describe('validateCartItem()', () => {
     test('TC03: quantity = 0 → trả về lỗi "Số lượng phải lớn hơn 0"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 0, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải lớn hơn 0');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_POSITIVE);
     });
 
     test('TC04: quantity = -1 → trả về lỗi "Số lượng phải lớn hơn 0"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: -1, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải lớn hơn 0');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_POSITIVE);
     });
 
     test('TC05: quantity = -100 → trả về lỗi "Số lượng phải lớn hơn 0"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: -100, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng phải lớn hơn 0');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_MUST_BE_POSITIVE);
     });
   });
 
@@ -69,25 +67,25 @@ describe('validateCartItem()', () => {
     test('TC05b: stock = NaN → trả về lỗi "Tồn kho phải là số nguyên không âm hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 1, stock: NaN });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Tồn kho phải là số nguyên không âm hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.INVALID_STOCK);
     });
 
     test('TC05c: stock = -1 → trả về lỗi "Tồn kho phải là số nguyên không âm hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 1, stock: -1 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Tồn kho phải là số nguyên không âm hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.INVALID_STOCK);
     });
 
     test('TC05d: stock = 1.5 → trả về lỗi "Tồn kho phải là số nguyên không âm hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 1, stock: 1.5 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Tồn kho phải là số nguyên không âm hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.INVALID_STOCK);
     });
 
     test('TC05e: stock = Infinity → trả về lỗi "Tồn kho phải là số nguyên không âm hợp lệ"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 1, stock: Infinity });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Tồn kho phải là số nguyên không âm hợp lệ');
+      expect(result.error).toBe(ERROR_MESSAGES.INVALID_STOCK);
     });
   });
 
@@ -96,13 +94,13 @@ describe('validateCartItem()', () => {
     test('TC06: quantity = 11 > stock = 10 → trả về lỗi "Số lượng vượt quá tồn kho"', () => {
       const result = validateCartItem({ productId: 'P001', quantity: 11, stock: 10 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng vượt quá tồn kho');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_EXCEEDS_STOCK);
     });
 
     test('TC07: quantity = 100 > stock = 5 → trả về lỗi "Số lượng vượt quá tồn kho"', () => {
       const result = validateCartItem({ productId: 'P002', quantity: 100, stock: 5 });
       expect(result.isValid).toBe(false);
-      expect(result.error).toBe('Số lượng vượt quá tồn kho');
+      expect(result.error).toBe(ERROR_MESSAGES.QUANTITY_EXCEEDS_STOCK);
     });
   });
 

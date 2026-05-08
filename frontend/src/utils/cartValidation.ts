@@ -1,20 +1,18 @@
+import type { CartItemRequest, CartItemResponse } from '../types/cart';
 import { calculateDiscount } from './priceCalculation';
+import { ERROR_MESSAGES } from './constants';
 
-export interface CartItemInput {
-  productId: string;
+export type CartItemInput = Pick<CartItemRequest, 'productId'> & {
   quantity: number | null | undefined;
   stock: number;
-}
+};
 
 export interface ValidationResult {
   isValid: boolean;
   error: string | null;
 }
 
-export interface CartItemForTotal {
-  price: number;
-  quantity: number;
-}
+export type CartItemForTotal = Pick<CartItemResponse, 'price' | 'quantity'>;
 
 const VALID_DISCOUNT_CODES: Record<string, number> = {
   SALE10: 10,
@@ -26,23 +24,23 @@ export function validateCartItem(item: CartItemInput): ValidationResult {
   const { quantity, stock } = item;
 
   if (quantity === null || quantity === undefined) {
-    return { isValid: false, error: 'Số lượng không được để trống' };
+    return { isValid: false, error: ERROR_MESSAGES.QUANTITY_REQUIRED };
   }
 
   if (!Number.isFinite(quantity) || !Number.isInteger(quantity)) {
-    return { isValid: false, error: 'Số lượng phải là số nguyên hợp lệ' };
+    return { isValid: false, error: ERROR_MESSAGES.QUANTITY_MUST_BE_INTEGER };
   }
 
   if (quantity <= 0) {
-    return { isValid: false, error: 'Số lượng phải lớn hơn 0' };
+    return { isValid: false, error: ERROR_MESSAGES.QUANTITY_MUST_BE_POSITIVE };
   }
 
   if (!Number.isFinite(stock) || !Number.isInteger(stock) || stock < 0) {
-    return { isValid: false, error: 'Tồn kho phải là số nguyên không âm hợp lệ' };
+    return { isValid: false, error: ERROR_MESSAGES.INVALID_STOCK };
   }
 
   if (quantity > stock) {
-    return { isValid: false, error: 'Số lượng vượt quá tồn kho' };
+    return { isValid: false, error: ERROR_MESSAGES.QUANTITY_EXCEEDS_STOCK };
   }
 
   return { isValid: true, error: null };

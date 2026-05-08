@@ -1,9 +1,12 @@
-export interface OrderItem {
+import type { CartItemRequest } from '../types/cart';
+import type { InventoryItem } from '../types/inventory';
+
+export interface PricedLineItem {
   price: number;
   quantity: number;
 }
 
-export interface Coupon {
+export interface AppliedCoupon {
   type: 'percent' | 'fixed';
   value: number;
 }
@@ -15,24 +18,14 @@ export interface OrderPriceResult {
   total: number;
 }
 
-export interface CartItemForInventory {
-  productId: string;
-  quantity: number;
-}
-
-export interface InventoryStock {
-  productId: string;
-  quantity: number;
-}
-
 export interface InventoryAvailabilityResult {
   available: boolean;
   unavailableItems: string[];
 }
 
 export function calculateOrderPrice(
-  items: OrderItem[],
-  coupon: Coupon | null,
+  items: PricedLineItem[],
+  coupon: AppliedCoupon | null,
   shippingFee: number = 0
 ): OrderPriceResult {
   const subtotal = items.reduce(
@@ -60,8 +53,8 @@ export function calculateOrderPrice(
 }
 
 export function checkInventoryAvailability(
-  cartItems: CartItemForInventory[],
-  inventory: InventoryStock[]
+  cartItems: CartItemRequest[],
+  inventory: Pick<InventoryItem, 'productId' | 'quantity'>[]
 ): InventoryAvailabilityResult {
   const stockMap = new Map(inventory.map((item) => [item.productId, item.quantity]));
 
