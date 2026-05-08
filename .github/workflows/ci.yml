@@ -2,9 +2,9 @@ name: ShopCart Test Pipeline
 
 on:
   push:
-    branches: [ "main", "bao/backend", "thanh/frontend" ]
+    branches: [ "main","bao/backend","thanh/frontend", "wolf"]
   pull_request:
-    branches: [ "main", "bao/backend", "thanh/frontend" ]
+    branches: [ "main", "bao/backend", "thanh/frontend", "wolf"]
   workflow_dispatch:
 
 jobs:
