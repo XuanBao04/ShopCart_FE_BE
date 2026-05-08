@@ -7,6 +7,7 @@ import { useCart } from "@hooks/useCart";
 import { orderService } from "@services/api/orderService";
 import { couponService } from "@services/api/couponService";
 import { productService } from "@services/api/productService";
+import { inventoryService } from "@services/api/inventoryService";
 import { toast } from "react-toastify";
 import type { CartContextType } from "../../context/CartContext";
 import type { CartItemRequest } from "../../types/cart";
@@ -35,6 +36,12 @@ vi.mock("@services/api/productService", () => ({
   },
 }));
 
+vi.mock("@services/api/inventoryService", () => ({
+  inventoryService: {
+    checkStock: vi.fn(),
+  },
+}));
+
 vi.mock("react-toastify", () => ({
   toast: {
     error: vi.fn(),
@@ -54,6 +61,7 @@ const mockedUseCart = vi.mocked(useCart);
 const mockedOrderService = vi.mocked(orderService);
 const mockedCouponService = vi.mocked(couponService);
 const mockedProductService = vi.mocked(productService);
+const mockedInventoryService = vi.mocked(inventoryService);
 const mockedToast = vi.mocked(toast);
 
 const baseCartContext = (): CartContextType => ({
@@ -108,6 +116,7 @@ describe("Cart Integration Testing", () => {
       status: "ACTIVE",
     });
     mockedProductService.getAvailableStock.mockResolvedValue(10);
+    mockedInventoryService.checkStock.mockResolvedValue(true);
 
     mockedCouponService.validateCoupon.mockResolvedValue(false);
     mockedCouponService.calculateDiscount.mockResolvedValue(0);
