@@ -16,8 +16,11 @@ import com.shopcart.order.mapper.OrderMapper;
 import com.shopcart.order.repository.OrderRepository;
 import com.shopcart.cart.service.ICartService;
 import com.shopcart.order.service.IOrderService;
+import com.shopcart.inventory.entity.Inventory;
+import com.shopcart.inventory.repository.InventoryRepository;
 import com.shopcart.inventory.service.IInventoryService;
-import com.shopcart.product.service.IProductService;
+import com.shopcart.product.entity.Product;
+import com.shopcart.product.repository.ProductRepository;
 import com.shopcart.coupon.service.ICouponService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -25,8 +28,13 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 /**
  * Service implementation for Order operations
@@ -38,9 +46,10 @@ public class OrderServiceImpl implements IOrderService {
     private final OrderRepository orderRepository;
     private final OrderMapper orderMapper;
     private final IInventoryService inventoryService;
-    private final IProductService productService;
     private final ICartService cartService;
     private final ICouponService couponService;
+    private final ProductRepository productRepository;
+    private final InventoryRepository inventoryRepository;
 
     private static final long SHIPPING_FEE = 29_900L;
 
@@ -111,23 +120,26 @@ public class OrderServiceImpl implements IOrderService {
         return orderMapper.toOrderResponse(savedOrder);
     }
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> getAllOrders(){
-        List<Order> orders = orderRepository.findAll();
+        List<Order> orders = orderRepository.findAllWithItems();
         return orders.stream()
                 .map(orderMapper::toOrderResponse)
                 .toList();
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponse getOrderById(String orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
         return orderMapper.toOrderResponse(order);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<OrderResponse> getUserOrders(String userId) {
-        List<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDesc(userId);
+        List<Order> orders = orderRepository.findByUserIdOrderByCreatedAtDescWithItems(userId);
         return orders.stream()
                 .map(orderMapper::toOrderResponse)
                 .toList();
@@ -136,7 +148,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponse cancelOrder(String orderId) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
 
         if (!order.getStatus().equals(OrderStatus.PENDING)) {
@@ -159,7 +171,7 @@ public class OrderServiceImpl implements IOrderService {
     @Override
     @Transactional
     public OrderResponse updateOrderStatus(String orderId, String status) {
-        Order order = orderRepository.findById(orderId)
+        Order order = orderRepository.findByIdWithItems(orderId)
                 .orElseThrow(() -> new ResourceNotFoundException(MessageConstant.Order.NOT_FOUND + orderId));
 
         OrderStatus newStatus;
@@ -227,17 +239,55 @@ public class OrderServiceImpl implements IOrderService {
 
     
     private void validateOrderItems(OrderRequest request) {
-        if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
-            throw new BusinessLogicException(MessageConstant.Order.EMPTY_ITEMS);
+    if (request.getOrderItems() == null || request.getOrderItems().isEmpty()) {
+        throw new BusinessLogicException(MessageConstant.Order.EMPTY_ITEMS);
+    }
+
+    // 1. Tổng hợp số lượng yêu cầu theo ID sản phẩm
+    Map<String, Integer> requiredQtyByProductId = request.getOrderItems().stream()
+            .collect(Collectors.groupingBy(
+                    OrderItemRequest::getProductId,
+                    Collectors.summingInt(OrderItemRequest::getQuantity)
+            ));
+
+    Set<String> productIds = requiredQtyByProductId.keySet();
+
+    // 2. Xác thực rằng tất cả các sản phẩm được yêu cầu đều tồn tại trong database
+    List<Product> products = productRepository.findAllById(productIds);
+    if (products.size() != productIds.size()) {
+        Set<String> existingProductIds = products.stream()
+                .map(Product::getId)
+                .collect(Collectors.toSet());
+
+        // Tìm ID bị thiếu đầu tiên để trả về thông báo lỗi hữu ích
+        String missingProductId = productIds.stream()
+                .filter(id -> !existingProductIds.contains(id))
+                .findFirst()
+                .orElse("Unknown");
+
+        throw new ResourceNotFoundException(MessageConstant.Product.NOT_FOUND + missingProductId);
+    }
+
+    // 3. Lấy thông tin tồn kho và ánh xạ chúng theo ID sản phẩm
+    Map<String, Inventory> inventoryByProductId = inventoryRepository.findByProductIdIn(productIds).stream()
+            .collect(Collectors.toMap(Inventory::getProductId, inventory -> inventory));
+
+    // 4. Xác thực xem có đủ hàng tồn kho cho từng sản phẩm được yêu cầu hay không
+    requiredQtyByProductId.forEach((productId, requiredQuantity) -> {
+        Inventory inventory = inventoryByProductId.get(productId);
+        
+        if (inventory == null) {
+            throw new BusinessLogicException(MessageConstant.Product.INSUFFICIENT_STOCK + productId);
         }
 
-        for (OrderItemRequest item : request.getOrderItems()) {
-            productService.getProductById(item.getProductId());
-            if (!inventoryService.hasEnoughStock(item.getProductId(), item.getQuantity())) {
-                throw new BusinessLogicException(MessageConstant.Product.INSUFFICIENT_STOCK + item.getProductId());
-            }
+        int reserved = inventory.getReservedQuantity() == null ? 0 : inventory.getReservedQuantity();
+        int available = inventory.getQuantity() - reserved;
+        
+        if (available < requiredQuantity) {
+            throw new BusinessLogicException(MessageConstant.Product.INSUFFICIENT_STOCK + productId);
         }
-    }
+    });
+}
 
     /*
      * Tính tổng tiền hàng (chưa bao gồm phí ship).

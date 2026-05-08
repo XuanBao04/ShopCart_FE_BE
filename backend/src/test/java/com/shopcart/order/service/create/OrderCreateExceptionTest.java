@@ -1,5 +1,6 @@
 package com.shopcart.order.service.create;
 
+import com.shopcart.inventory.entity.Inventory;
 import com.shopcart.order.dto.request.OrderItemRequest;
 import com.shopcart.order.dto.request.OrderRequest;
 import com.shopcart.order.dto.response.OrderResponse;
@@ -7,8 +8,9 @@ import com.shopcart.order.entity.Order;
 import com.shopcart.common.enums.OrderStatus;
 import com.shopcart.common.exception.BusinessLogicException;
 import com.shopcart.common.exception.ResourceNotFoundException;
-import com.shopcart.order.factory.OrderRequestFactory;  
+import com.shopcart.order.factory.OrderRequestFactory;
 import com.shopcart.order.service.BaseOrderServiceTest;
+import com.shopcart.product.entity.Product;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;      
@@ -57,8 +59,11 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     void throwExceptionWhenInsufficientStock() {
         OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 100, 100_000L);
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 100)).thenReturn(false);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(50).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
 
         assertThatThrownBy(() -> orderService.createOrder(request, testUserId))
                 .isInstanceOf(BusinessLogicException.class)
@@ -72,11 +77,11 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     void throwExceptionWhenProductNotFound() {
         OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 1, 100_000L);
 
-        when(productService.getProductById(testProductId))
-                .thenThrow(new ResourceNotFoundException("Product not found"));
+        when(productRepository.findAllById(any())).thenReturn(List.of());
 
         assertThatThrownBy(() -> orderService.createOrder(request, testUserId))
-                .isInstanceOf(ResourceNotFoundException.class);
+                .isInstanceOf(ResourceNotFoundException.class)
+                .hasMessageContaining("Product not found");
 
         verify(orderRepository, never()).save(any());
     }
@@ -86,8 +91,11 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
     void createOrder_WhenReserveStockFails_ShouldThrowException() {
         OrderRequest request = OrderRequestFactory.orderRequestWithItems(testProductId, 5, 100_000L);
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 5)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         doThrow(new BusinessLogicException("Stock reservation failed"))
                 .when(inventoryService).reserveStock(testProductId, 5);
 
@@ -110,8 +118,11 @@ class OrderCreateExceptionTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(productService.getProductById(testProductId)).thenReturn(null);
-        when(inventoryService.hasEnoughStock(testProductId, 1)).thenReturn(true);
+        Product product = Product.builder().id(testProductId).price(100_000L).build();
+        Inventory inventory = Inventory.builder().productId(testProductId).quantity(100).reservedQuantity(0).build();
+
+        when(productRepository.findAllById(any())).thenReturn(List.of(product));
+        when(inventoryRepository.findByProductIdIn(any())).thenReturn(List.of(inventory));
         when(couponService.calculateDiscount("SUPER_DISCOUNT", 100_000L)).thenReturn(150_000L);
         when(orderRepository.save(any(Order.class))).thenReturn(savedOrder);
         when(orderMapper.toOrderResponse(savedOrder)).thenReturn(OrderResponse.builder().id(testOrderId).build());

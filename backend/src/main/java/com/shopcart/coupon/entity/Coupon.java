@@ -1,15 +1,20 @@
 package com.shopcart.coupon.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 import java.time.LocalDateTime;
 
-@Entity
-@Table(name = "coupons")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@Entity
+@Table(name = "coupons")
 public class Coupon {
     @Id
     @Column(name = "coupon_code", length = 50)

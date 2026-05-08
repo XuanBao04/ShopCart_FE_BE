@@ -1,13 +1,13 @@
 import React, { useEffect, useState } from "react";
 import { loginService } from "@/services/api/loginService";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
-  
+
   useEffect(() => {
     const storedUserId = localStorage.getItem("userId");
     if (storedUserId) {
@@ -18,19 +18,25 @@ const LoginPage = () => {
   const handleLogin = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (!username || !password) {
-      setError("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+    if (!username && !password) {
+      toast.error("Vui lòng nhập đầy đủ thông tin đăng nhập.");
+      return;
+    } else if (username.trim() && !password.trim()) {
+      toast.error("Mật khẩu không được để trống.");
+      return;
+    } else if (!username.trim() && password.trim()) {
+      toast.error("Tên đăng nhập không được để trống.");
       return;
     }
 
     try {
-      const response = await loginService(username, password);
+      const response = await loginService(username.trim(), password.trim());
       if (response) {
         // console.log(response);
         localStorage.setItem("userId", response.userId.toString());
         localStorage.setItem("role", response.role);
         localStorage.setItem("username", response.username);
-        
+
         // Redirect based on role
         if (response.role === "ADMIN") {
           navigate("/admin/dashboard", { replace: true });
@@ -39,22 +45,15 @@ const LoginPage = () => {
         }
       }
     } catch (error) {
-      setError((error as Error).message);
+      toast.error("Đăng nhập thất bại. Vui lòng kiểm tra lại thông tin.");
+      console.error("Login error:", error);
     }
-
-    setError(null);
   };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md">
         <h1 className="text-2xl font-bold mb-6 text-center">Đăng nhập</h1>
-
-        {error && (
-          <div className="bg-red-100 text-red-700 p-4 rounded mb-4">
-            {error}
-          </div>
-        )}
 
         <form onSubmit={handleLogin} className="space-y-4">
           <div>

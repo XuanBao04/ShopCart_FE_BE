@@ -1,10 +1,11 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { productService } from "../../services/api/productService";
 import { inventoryService } from "../../services/api/inventoryService";
 import { Product } from "../../types/product";
 import { InventoryItem } from "../../types/inventory";
 import { formatPrice } from "../../utils/priceCalculation";
 import { FaSync, FaEdit, FaCheck, FaTimes } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 interface InventoryWithProduct extends Product {
   inventory?: InventoryItem;
@@ -68,8 +69,9 @@ const InventoryManagement = () => {
       
       setEditingId(null);
       // Show success message (optional - implement toast if needed)
+      toast.success("Cập nhật tồn kho thành công!");
     } catch (err) {
-      alert("Lỗi cập nhật tồn kho: " + (err as Error).message);
+      toast.error("Lỗi cập nhật tồn kho: " + (err as Error).message);
     }
   };
 

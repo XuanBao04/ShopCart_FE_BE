@@ -4,6 +4,7 @@ import { useCart } from "../../hooks/useCart";
 import { formatPrice } from "../../utils/priceCalculation";
 import { productService } from "../../services/api/productService";
 import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
 interface ProductCardProps {
   product: Product;
@@ -50,10 +51,11 @@ const ProductCard = ({ product }: ProductCardProps) => {
         quantity,
       });
       setQuantity(1);
-      alert("Đã thêm sản phẩm vào giỏ hàng!");
-    } catch (error: any) {
+      toast.success("Đã thêm sản phẩm vào giỏ hàng!");
+    } catch (error: unknown) {
       console.error("Error adding to cart:", error);
-      alert(error.message || "Có lỗi xảy ra khi thêm vào giỏ hàng.");
+      const message = error instanceof Error ? error.message : "Có lỗi xảy ra khi thêm vào giỏ hàng.";
+      toast.error(message);
     } finally {
       setIsAdding(false);
     }

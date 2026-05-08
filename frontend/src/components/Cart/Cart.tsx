@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useCart } from "../../hooks/useCart";
-import { formatPrice } from "../../utils/priceCalculation";
+// import { formatPrice } from "../../utils/priceCalculation";
 import CartItem from "./CartItem";
 import CouponInput from "./CouponInput";
 import PriceBreakdown from "./PriceBreakdown";
@@ -8,8 +8,17 @@ import AddressForm from "./AddressForm";
 import { orderService } from "../../services/api/orderService";
 import { Navigate } from "react-router-dom";
 import { ShippingAddress } from "../../types/order";
+import { toast } from "react-toastify";
 
 const SHIPPING_FEE = 29900;
+
+type OrderPreview = {
+  subtotal: number;
+  discountAmount: number;
+  shippingFee: number;
+  totalPrice: number;
+  couponCode: string | null;
+};
 
 const Cart = () => {
   const userId = localStorage.getItem("userId") || "";
@@ -18,7 +27,9 @@ const Cart = () => {
 
   const [couponCode, setCouponCode] = useState<string | null>(null);
   const [discountAmount, setDiscountAmount] = useState(0);
-  const [orderPreview, setOrderPreview] = useState<any>(null);
+  const [orderPreview, setOrderPreview] = useState<OrderPreview | null>(
+    null
+  );
   const [shippingAddress, setShippingAddress] = useState<ShippingAddress>({
     shippingAddress: "",
     city: "",
@@ -49,7 +60,7 @@ const Cart = () => {
   const handleRedirectToOrders = async () => {
     try {
       if (!cart || cart.items.length === 0) {
-        alert("Giỏ hàng trống. Vui lòng thêm sản phẩm vào giỏ hàng.");
+        toast.error("Giỏ hàng trống. Vui lòng thêm sản phẩm vào giỏ hàng.");
         return <Navigate to="/authenticated/products" />;
       }
 
@@ -61,7 +72,7 @@ const Cart = () => {
         !shippingAddress.ward ||
         !shippingAddress.phoneNumber
       ) {
-        alert("Vui lòng điền đầy đủ thông tin giao hàng.");
+        toast.error("Vui lòng điền đầy đủ thông tin giao hàng.");
         return;
       }
 
@@ -73,7 +84,7 @@ const Cart = () => {
           quantity: item.quantity,
           price: item.price,
         })),
-        couponCode: couponCode || undefined,
+        couponCode: couponCode ?? undefined,
         ...shippingAddress,
       };
 
@@ -82,8 +93,10 @@ const Cart = () => {
       // Clear cart and redirect
       await clear();
       window.location.href = "/authenticated/orders";
-    } catch (err: any) {
-      alert(`Đã xảy ra lỗi khi tạo đơn hàng: ${err.message}`);
+    } catch (err: unknown) {
+      const message =
+        err instanceof Error ? err.message : "Không xác định được lỗi.";
+      toast.error(`Đã xảy ra lỗi khi tạo đơn hàng: ${message}`);
     }
   };
 
@@ -159,7 +172,7 @@ const Cart = () => {
             <PriceBreakdown
               subtotal={orderPreview.subtotal}
               discountAmount={orderPreview.discountAmount}
-              couponCode={orderPreview.couponCode}
+              couponCode={orderPreview.couponCode ?? undefined}
               shippingFee={orderPreview.shippingFee}
               totalPrice={orderPreview.totalPrice}
             />
@@ -187,5 +200,3 @@ const Cart = () => {
 };
 
 export default Cart;
-
-

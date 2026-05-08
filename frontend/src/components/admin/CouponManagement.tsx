@@ -3,6 +3,7 @@ import { couponService } from "../../services/api/couponService";
 import { CouponResponse, CouponRequest, UpdateCouponRequest } from "../../types/coupon";
 import { formatPrice } from "../../utils/priceCalculation";
 import { FaSync, FaEdit, FaTrash, FaCheck, FaTimes, FaPlus } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 interface CreateFormData {
   code: string;
@@ -64,11 +65,11 @@ const CouponManagement = () => {
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!createForm.code.trim()) {
-      alert("Mã giảm giá không được để trống");
+      toast.error("Mã giảm giá không được để trống");
       return;
     }
     if (parseInt(createForm.discountPercent) <= 0 || parseInt(createForm.discountPercent) > 100) {
-      alert("Phần trăm giảm giá phải từ 1-100");
+      toast.error("Phần trăm giảm giá phải từ 1-100");
       return;
     }
 
@@ -92,7 +93,7 @@ const CouponManagement = () => {
         expiryDate: "",
       });
     } catch (err) {
-      alert("Lỗi tạo mã giảm giá: " + (err as Error).message);
+      toast.error("Lỗi tạo mã giảm giá: " + (err as Error).message);
     }
   };
 
@@ -108,7 +109,7 @@ const CouponManagement = () => {
 
   const handleEditSubmit = async (code: string) => {
     if (parseInt(editForm.discountPercent) <= 0 || parseInt(editForm.discountPercent) > 100) {
-      alert("Phần trăm giảm giá phải từ 1-100");
+      toast.error("Phần trăm giảm giá phải từ 1-100");
       return;
     }
 
@@ -124,7 +125,7 @@ const CouponManagement = () => {
       await fetchCoupons();
       setEditingCode(null);
     } catch (err) {
-      alert("Lỗi cập nhật mã giảm giá: " + (err as Error).message);
+      toast.error("Lỗi cập nhật mã giảm giá: " + (err as Error).message);
     }
   };
 
@@ -134,7 +135,7 @@ const CouponManagement = () => {
         await couponService.deleteCoupon(code);
         await fetchCoupons();
       } catch (err) {
-        alert("Lỗi xóa mã giảm giá: " + (err as Error).message);
+        toast.error("Lỗi xóa mã giảm giá: " + (err as Error).message);
       }
     }
   };

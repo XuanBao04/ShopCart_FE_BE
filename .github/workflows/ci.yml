@@ -1,42 +1,161 @@
-name: ShopCart CI/CD Pipeline
+name: ShopCart Test Pipeline
 
 on:
   push:
-    branches: [ "main","bao/backend","thanh/frontend", "wolf" ]
+    branches: [ "main","bao/backend","thanh/frontend", "wolf"]
+  pull_request:
+    branches: [ "main", "bao/backend", "thanh/frontend", "wolf"]
+  workflow_dispatch:
 
 jobs:
   backend-tests:
-    name: Backend Unit Tests
+    name: Backend Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Lấy mã nguồn
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Cài đặt Java 21
+      - name: Set up Java 21
         uses: actions/setup-java@v4
         with:
           java-version: '21'
           distribution: 'temurin'
+          cache: maven
 
-      - name: Chạy Backend Tests
+      - name: Run backend tests
+        working-directory: backend
+        run: mvn --batch-mode clean test
+
+      - name: Collect backend test reports
+        if: always()
         run: |
-          cd backend
-          mvn clean test
+          mkdir -p test-artifacts/backend
+          echo "Backend test reports" > test-artifacts/backend/README.txt
+          if [ -d backend/target/surefire-reports ]; then
+            cp -R backend/target/surefire-reports test-artifacts/backend/
+          fi
+          if [ -d backend/target/site/jacoco ]; then
+            cp -R backend/target/site/jacoco test-artifacts/backend/
+          fi
+
+      - name: Upload backend test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-reports
+          path: test-artifacts/backend/
+          if-no-files-found: error
+          retention-days: 14
 
   frontend-tests:
-    name: Frontend Unit Tests
+    name: Frontend Tests
     runs-on: ubuntu-latest
     steps:
-      - name: Lấy mã nguồn
+      - name: Checkout source
         uses: actions/checkout@v4
 
-      - name: Cài đặt Node.js 22
+      - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
           node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
 
-      - name: Cài đặt thư viện và Chạy Frontend Tests
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests with coverage
+        working-directory: frontend
+        run: npm run test:coverage -- --run
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+
+      - name: Collect frontend test reports
+        if: always()
         run: |
-          cd frontend
-          npm install
-          npm run test
+          mkdir -p test-artifacts/frontend
+          echo "Frontend test reports" > test-artifacts/frontend/README.txt
+          if [ -d frontend/coverage ]; then
+            cp -R frontend/coverage test-artifacts/frontend/
+          fi
+
+      - name: Upload frontend test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-reports
+          path: test-artifacts/frontend/
+          if-no-files-found: error
+          retention-days: 14
+
+  playwright-tests:
+    name: Playwright Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Install Playwright browsers
+        working-directory: frontend
+        run: npx playwright install --with-deps
+
+      - name: Run Playwright tests
+        working-directory: frontend
+        run: |
+          if [ -d e2e ] && find e2e -type f \( -name "*.spec.ts" -o -name "*.test.ts" -o -name "*.spec.tsx" -o -name "*.test.tsx" \) | grep -q .; then
+            npm run e2e
+          else
+            echo "No Playwright tests found in frontend/e2e, skipping."
+          fi
+
+      - name: Collect Playwright test reports
+        if: always()
+        run: |
+          mkdir -p test-artifacts/playwright
+          echo "Playwright test reports" > test-artifacts/playwright/README.txt
+          if [ -d frontend/playwright-report ]; then
+            cp -R frontend/playwright-report test-artifacts/playwright/
+          fi
+          if [ -d frontend/test-results ]; then
+            cp -R frontend/test-results test-artifacts/playwright/
+          fi
+
+      - name: Upload Playwright test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-test-reports
+          path: test-artifacts/playwright/
+          if-no-files-found: error
+          retention-days: 14
+
+  docker-build:
+    name: Docker Build
+    runs-on: ubuntu-latest
+    needs:
+      - backend-tests
+      - frontend-tests
+      - playwright-tests
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Build backend Docker image
+        run: docker build -f backend/Dockerfile -t shopcart-backend:test backend
+
+      - name: Build frontend Docker image
+        run: docker build -f frontend/Dockerfile -t shopcart-frontend:test frontend

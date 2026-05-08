@@ -1,5 +1,6 @@
 import React, { createContext, useState, useCallback, useEffect } from 'react';
 import { cartService } from '../services/api/cartService';
+import { AxiosError } from 'axios';
 import { CartResponse, CartItemRequest } from '../types/cart';
 
 export interface CartContextType {
@@ -44,7 +45,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const addItem = useCallback(async (item: CartItemRequest) => {
     const userId = getCurrentUserId();
     if (!userId) {
-      throw new Error("Vui lòng dang nh?p d? thêm s?n ph?m vào gi? hàng.");
+      throw new Error("Vui lï¿½ng dang nh?p d? thï¿½m s?n ph?m vï¿½o gi? hï¿½ng.");
     }
 
     try {
@@ -52,7 +53,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCart(response);
       setError(null);
     } catch (err) {
-      const errorMessage = (err as any).response?.data?.message || (err as Error).message;
+      const errorMessage = (err as AxiosError<{message: string}>).response?.data?.message || (err as Error).message;
       setError(errorMessage);
       throw new Error(errorMessage);
     }
@@ -61,7 +62,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const removeItem = useCallback(async (cartItemId: number) => {
     const userId = getCurrentUserId();
     if (!userId) {
-      throw new Error("Vui lòng dang nh?p d? thao tác gi? hàng.");
+      throw new Error("Vui lï¿½ng dang nh?p d? thao tï¿½c gi? hï¿½ng.");
     }
 
     try {
@@ -76,7 +77,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateItem = useCallback(async (cartItemId: number, quantity: number) => {
     const userId = getCurrentUserId();
     if (!userId) {
-      throw new Error("Vui lòng dang nh?p d? thao tác gi? hàng.");
+      throw new Error("Vui lï¿½ng dang nh?p d? thao tï¿½c gi? hï¿½ng.");
     }
 
     try {
@@ -84,7 +85,7 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       setCart(response);
       setError(null);
     } catch (err) {
-      const errorMessage = (err as any).response?.data?.message || (err as Error).message;
+      const errorMessage = (err as AxiosError<{message: string}>).response?.data?.message || (err as Error).message;
       setError(errorMessage);
       throw new Error(errorMessage);
     }

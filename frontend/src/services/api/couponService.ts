@@ -31,7 +31,7 @@ export const couponService = {
         `${COUPON_API}/${code}/validate`
       );
       return response.data;
-    } catch (error) {
+    } catch {
       return false;
     }
   },
@@ -45,7 +45,7 @@ export const couponService = {
         `${COUPON_API}/${code}/discount?orderAmount=${orderAmount}`
       );
       return response.data;
-    } catch (error) {
+    } catch {
       return 0;
     }
   },
@@ -92,4 +92,3 @@ export const couponService = {
     return response.data;
   },
 };
-

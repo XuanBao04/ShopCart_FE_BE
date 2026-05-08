@@ -78,7 +78,7 @@ public class SecurityConfig {
                                                 .requestMatchers("/api/inventory/**").permitAll()
                                                 .requestMatchers("/api/cart/**").authenticated()
                                                 .requestMatchers("/api/orders/**").authenticated()
-                                               
+                                            
                                                 .requestMatchers("/h2-console/**").permitAll()
 
                                      

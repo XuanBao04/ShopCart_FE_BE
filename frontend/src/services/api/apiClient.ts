@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosError } from "axios";
+import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from "axios";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
 
@@ -31,11 +31,11 @@ const fetchCsrfToken = async (): Promise<string | null> => {
 
 // Ensure CSRF cookie is present before mutating requests
 apiClient.interceptors.request.use(
-  async (config) => {
+  async (config: InternalAxiosRequestConfig) => {
     // Add auth token if needed
     const token = localStorage.getItem("authToken");
     if (token) {
-      (config.headers as any).Authorization = `Bearer ${token}`;
+      config.headers.Authorization = `Bearer ${token}`;
     }
 
     const method = (config.method || "get").toString().toUpperCase();
@@ -45,13 +45,13 @@ apiClient.interceptors.request.use(
       if (!csrfToken) {
         try {
           csrfToken = await fetchCsrfToken();
-        } catch (err) {
+        } catch {
           // ignore - request will likely fail later with CSRF error
         }
       }
 
       if (csrfToken) {
-        (config.headers as any)["X-XSRF-TOKEN"] = csrfToken;
+        config.headers["X-XSRF-TOKEN"] = csrfToken;
       }
     }
 

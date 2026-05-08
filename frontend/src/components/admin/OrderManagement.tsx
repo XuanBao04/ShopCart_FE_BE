@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { orderService } from "../../services/api/orderService";
 import { OrderResponse } from "../../types/order";
 import { formatPrice } from "../../utils/priceCalculation";
 import { FaSync, FaChevronDown, FaCheck, FaTimes } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const ORDER_STATUSES = [
   { value: "PENDING", label: "Chờ xác nhận", color: "bg-yellow-100 text-yellow-800" },
@@ -46,8 +47,9 @@ const OrderManagement = () => {
       setOrders(orders.map(o => o.id === orderId ? updatedOrder : o));
       
       // Show success message (optional)
+      toast.success("Cập nhật trạng thái đơn hàng thành công!");
     } catch (err) {
-      alert("Lỗi cập nhật trạng thái: " + (err as Error).message);
+      toast.error("Lỗi cập nhật trạng thái: " + (err as Error).message);
     } finally {
       setUpdatingOrderId(null);
     }

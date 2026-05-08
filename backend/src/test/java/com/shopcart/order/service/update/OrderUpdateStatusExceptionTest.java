@@ -28,7 +28,7 @@ class OrderUpdateStatusExceptionTest extends BaseOrderServiceTest {
                 .status(OrderStatus.PENDING)
                 .build();
 
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.of(order));
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.of(order));
 
         assertThatThrownBy(() -> orderService.updateOrderStatus(testOrderId, "INVALID_STATUS"))
                 .isInstanceOf(BusinessLogicException.class)
@@ -40,7 +40,7 @@ class OrderUpdateStatusExceptionTest extends BaseOrderServiceTest {
     @Test
     @DisplayName("TC5: Ném lỗi khi không tìm thấy đơn trong quá trình cập nhật trạng thái")
     void throwExceptionWhenOrderNotFoundDuringUpdate() {
-        when(orderRepository.findById(testOrderId)).thenReturn(Optional.empty());
+        when(orderRepository.findByIdWithItems(testOrderId)).thenReturn(Optional.empty());
 
         assertThatThrownBy(() -> orderService.updateOrderStatus(testOrderId, "CONFIRMED"))
                 .isInstanceOf(ResourceNotFoundException.class);
