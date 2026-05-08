@@ -22,6 +22,27 @@ describe('validateCartItem()', () => {
     });
   });
 
+  // Quantity không phải số nguyên hợp lệ
+  describe('Quantity không phải số nguyên hợp lệ', () => {
+    test('TC02b: quantity = NaN → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
+      const result = validateCartItem({ productId: 'P001', quantity: NaN, stock: 10 });
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+    });
+
+    test('TC02c: quantity = 1.5 → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
+      const result = validateCartItem({ productId: 'P001', quantity: 1.5, stock: 10 });
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+    });
+
+    test('TC02d: quantity = Infinity → trả về lỗi "Số lượng phải là số nguyên hợp lệ"', () => {
+      const result = validateCartItem({ productId: 'P001', quantity: Infinity, stock: 10 });
+      expect(result.isValid).toBe(false);
+      expect(result.error).toBe('Số lượng phải là số nguyên hợp lệ');
+    });
+  });
+
   // Quantity âm hoặc bằng 0
   describe('Quantity âm hoặc bằng 0', () => {
     test('TC03: quantity = 0 → trả về lỗi "Số lượng phải lớn hơn 0"', () => {

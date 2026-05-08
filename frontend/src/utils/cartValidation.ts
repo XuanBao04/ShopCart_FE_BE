@@ -1,3 +1,5 @@
+import { calculateDiscount } from './priceCalculation';
+
 export interface CartItemInput {
   productId: string;
   quantity: number | null | undefined;
@@ -27,6 +29,10 @@ export function validateCartItem(item: CartItemInput): ValidationResult {
     return { isValid: false, error: 'Số lượng không được để trống' };
   }
 
+  if (!Number.isFinite(quantity) || !Number.isInteger(quantity)) {
+    return { isValid: false, error: 'Số lượng phải là số nguyên hợp lệ' };
+  }
+
   if (quantity <= 0) {
     return { isValid: false, error: 'Số lượng phải lớn hơn 0' };
   }
@@ -49,12 +55,12 @@ export function calculateCartTotal(
     0
   );
 
-  if (discountCode) {
+  if (
+    discountCode &&
+    Object.prototype.hasOwnProperty.call(VALID_DISCOUNT_CODES, discountCode)
+  ) {
     const discountPercent = VALID_DISCOUNT_CODES[discountCode];
-    if (discountPercent) {
-      const discount = Math.round((subtotal * discountPercent) / 100);
-      return subtotal - discount;
-    }
+    return subtotal - calculateDiscount(subtotal, discountPercent);
   }
 
   return subtotal;
