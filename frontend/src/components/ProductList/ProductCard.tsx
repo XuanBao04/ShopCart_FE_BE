@@ -62,15 +62,15 @@ const ProductCard = ({ product }: ProductCardProps) => {
   };
 
   return (
-    <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition">
+    <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition" data-testid="product-card">
       <div className="bg-gray-200 h-48 flex items-center justify-center">
         <span className="text-gray-500">Id sản phẩm {product.id}</span>
       </div>
       <div className="p-4">
-        <h2 className="font-bold text-lg mb-2">{product.name}</h2>
+        <h2 className="font-bold text-lg mb-2" data-testid="product-name">{product.name}</h2>
         <p className="text-gray-600 text-sm mb-4">{product.description}</p>
         <div className="flex justify-between items-center mb-4">
-          <span className="text-xl font-bold text-blue-600">
+          <span className="text-xl font-bold text-blue-600" data-testid="product-price">
             {formatPrice(product.price)}
           </span>
           <span
@@ -95,11 +95,13 @@ const ProductCard = ({ product }: ProductCardProps) => {
             }}
             className="w-16 px-2 py-1 border rounded"
             disabled={product.status !== "ACTIVE" || displayStock === 0}
+            data-testid="quantity-input"
           />
           <button
             onClick={handleAddToCart}
             disabled={isAdding || product.status !== "ACTIVE" || displayStock === 0}
             className="flex-1 bg-blue-600 text-white py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
+            data-testid="add-to-cart-btn"
           >
             {isAdding ? "Đang thêm..." : "Thêm vào giỏ hàng"}
           </button>

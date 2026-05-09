@@ -42,7 +42,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
   };
 
   return (
-    <div className="flex items-center gap-4 py-4 border-b last:border-b-0">
+    <div className="flex items-center gap-4 py-4 border-b last:border-b-0" data-testid="cart-item">
       <div className="flex-1">
         <h3 className="font-bold">{productName}</h3>
         <p className="text-gray-600">Mã sản phẩm: {item.productId}</p>

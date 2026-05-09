@@ -62,11 +62,12 @@ export default function HeaderLayout() {
                 }
               }}
               className="relative bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600 flex items-center gap-2"
+              data-testid="cart-icon"
             >
               <FaShoppingCart />
               Giỏ hàng
               {cart && cart.totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full" data-testid="cart-badge">
                   {cart.totalItems}
                 </span>
               )}

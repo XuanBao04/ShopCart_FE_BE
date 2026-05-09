@@ -62,6 +62,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-blue-500"
             }`}
+            data-testid="shipping-address-input"
           />
           {errors.shippingAddress && (
             <p className="text-red-500 text-sm mt-1">{errors.shippingAddress}</p>
@@ -85,6 +86,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
                 ? "border-red-500 focus:ring-red-500"
                 : "border-gray-300 focus:ring-blue-500"
             }`}
+            data-testid="city-input"
           />
           {errors.city && (
             <p className="text-red-500 text-sm mt-1">{errors.city}</p>
@@ -109,6 +111,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
+              data-testid="district-input"
             />
             {errors.district && (
               <p className="text-red-500 text-sm mt-1">{errors.district}</p>
@@ -132,6 +135,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
+              data-testid="ward-input"
             />
             {errors.ward && (
               <p className="text-red-500 text-sm mt-1">{errors.ward}</p>
@@ -153,6 +157,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
               onChange={handleChange}
               placeholder="Ví dụ: 700000"
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              data-testid="postal-code-input"
             />
           </div>
 
@@ -174,6 +179,7 @@ export default function AddressForm({ onAddressChange }: AddressFormProps) {
                   ? "border-red-500 focus:ring-red-500"
                   : "border-gray-300 focus:ring-blue-500"
               }`}
+              data-testid="phone-number-input"
             />
             {errors.phoneNumber && (
               <p className="text-red-500 text-sm mt-1">{errors.phoneNumber}</p>

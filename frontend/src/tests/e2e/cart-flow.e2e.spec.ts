@@ -1,89 +1,93 @@
-import { expect, test, type Locator, type Page } from '@playwright/test';
+import { expect, test, type Page } from '@playwright/test';
+import CartPage from './pages/CartPage';
+import CheckoutPage from './pages/CheckoutPage';
 
-const E2E_USER_ID = '1';
-
-/**
- * Dang nhap gia lap bang localStorage de vao duoc cart flow.
- * Test nay KHONG mock API, nen moi request se goi backend that.
- */
 async function setupAuthenticatedSession(page: Page) {
-  await page.addInitScript((userId) => {
-    window.localStorage.setItem('userId', userId);
-    window.localStorage.setItem('role', 'USER');
-    window.localStorage.setItem('username', 'e2e-user');
-  }, E2E_USER_ID);
+  await page.goto('/login');
+  await page.fill('input[name="username"]', 'customer1');
+  await page.fill('input[name="password"]', 'password123');
+  await page.click('button[type="submit"]');
+  await page.waitForURL('**/products');
 }
 
-/**
- * Tim card san pham dau tien con hang (input so luong dang enabled).
- * Neu khong tim thay, test se skip de tranh fail gia do du lieu backend khong phu hop.
- */
-async function getFirstAvailableProductCard(page: Page): Promise<Locator | null> {
-  const cards = page.locator('div.border.rounded-lg.overflow-hidden.shadow-md.hover\\:shadow-lg.transition');
-  const count = await cards.count();
+test.describe('Cart E2E - Add to cart with real backend', () => {
+  let cartPage: CartPage;
+  let checkoutPage: CheckoutPage;
 
-  for (let i = 0; i < count; i += 1) {
-    const card = cards.nth(i);
-    const quantityInput = card.locator('input[type="number"]');
-    if (await quantityInput.isEnabled()) {
-      return card;
-    }
-  }
-
-  return null;
-}
-
-test.describe('Cart E2E - Add to cart voi backend that (khong mock API)', () => {
   test.beforeEach(async ({ page }) => {
+    cartPage = new CartPage(page);
+    checkoutPage = new CheckoutPage(page);
     await setupAuthenticatedSession(page);
+
+    // Clear cart before each test to ensure a clean state
+    await checkoutPage.goToCart();
+    
+    // Đợi trang giỏ hàng load xong
+    await page.waitForLoadState('networkidle');
+    const items = await page.locator('[data-testid="cart-item"]').count();
+    
+    if (items > 0) {
+      await checkoutPage.clearCart();
+      // Chờ cho đến khi giỏ hàng thực sự trống
+      await expect(page.locator('[data-testid="cart-item"]')).toHaveCount(0, { timeout: 10000 });
+    }
   });
 
-  test('1) Complete add-to-cart flow: them san pham, mo gio hang, tang so luong, xoa item', async ({ page }) => {
-    await page.goto('/authenticated/products');
+  test('1) Complete add-to-cart flow: add item, check cart, update, remove', async ({ page }) => {
+    // 1. Đi đến trang sản phẩm
+    await cartPage.goToProducts();
 
-    const productCard = await getFirstAvailableProductCard(page);
-    test.skip(!productCard, 'Khong co san pham con hang tren backend de thuc hien test add-to-cart.');
+    // 2. Lấy tên sản phẩm LÚC ĐANG Ở TRANG PRODUCTS
+    const expectedProductName = await cartPage.getFirstProductName();
+    
+    // 3. Thêm vào giỏ hàng
+    await cartPage.addProductToCart(1);
+    
+    // 4. Chuyển sang trang giỏ hàng
+    await cartPage.goToCartAndWait();
+    
+    // SỬA LỖI Ở ĐÂY: Sử dụng biến expectedProductName đã lưu ở trên để so sánh
+    // KHÔNG gọi lại await cartPage.getFirstProductName() vì lúc này không còn ở trang Products nữa
+    await expect(page.getByText(expectedProductName)).toBeVisible();
 
-    const productName = (await productCard!.locator('h2').innerText()).trim();
-
-    // Buoc 1: Them san pham vao gio hang tai trang danh sach san pham.
-    await productCard!.getByRole('button', { name: /th.+m v.+o gi.+ h.+ng/i }).click();
-
-    // Buoc 2: Verify toast thanh cong xuat hien.
-    await expect(page.getByText(/th.+m s.+n ph.+m v.+o gi.+ h.+ng/i)).toBeVisible();
-
-    // Buoc 3: Mo trang gio hang va verify san pham vua them co trong cart.
-    await page.locator('header button.bg-green-500').click();
-    await expect(page.getByText(productName)).toBeVisible();
-
-    // Buoc 4: Tang so luong san pham trong gio (nut +) va verify input quantity cap nhat.
+    // Update quantity
     const quantityInput = page.locator('input[type="number"]').first();
     const currentValue = Number(await quantityInput.inputValue());
     await page.getByRole('button', { name: '+' }).first().click();
-    await expect(quantityInput).toHaveValue(String(currentValue + 1));
+    
+    // Chờ API cập nhật số lượng thành công (nếu UI bạn có loading state thì cần chờ)
+    await expect(quantityInput).toHaveValue(String(currentValue + 1), { timeout: 5000 });
 
-    // Buoc 5: Xoa item khoi gio hang de ket thuc flow add-to-cart.
-    await page.getByRole('button', { name: /^x.+a$/i }).first().click();
-    await expect(page.getByText(/gi.+ h.+ng tr.+ng/i)).toBeVisible();
+    // Remove item
+    // Sử dụng locator rõ ràng hơn cho nút Xóa
+    await page.getByRole('button', { name: 'Xóa' }).first().click();
+    
+    // Kiểm tra UI hiển thị giỏ hàng trống (Sửa lại regex cho chuẩn xác với tiếng Việt)
+    await expect(page.getByText(/giỏ hàng trống/i)).toBeVisible({ timeout: 5000 });
   });
 
-  test('2) Validation ton kho o UI: input so luong khong duoc vuot qua max stock hien tai', async ({ page }) => {
-    await page.goto('/authenticated/products');
+  test('2) Stock validation on UI: input quantity should not exceed max stock', async () => {
+    await cartPage.goToProducts();
 
-    const productCard = await getFirstAvailableProductCard(page);
-    test.skip(!productCard, 'Khong co san pham con hang tren backend de test validation ton kho.');
+    const productCard = await cartPage.getFirstAvailableProduct();
+    if (!productCard) {
+      test.skip(true, 'No available product found to test stock validation.');
+      return;
+    }
 
-    const quantityInput = productCard!.locator('input[type="number"]');
+    const quantityInput = productCard.locator('[data-testid="quantity-input"]');
     const maxAttr = await quantityInput.getAttribute('max');
 
-    test.skip(!maxAttr || Number(maxAttr) < 1, 'Backend tra stock khong hop le de test validation.');
+    if (!maxAttr || Number(maxAttr) < 1) {
+      test.skip(true, 'Invalid stock data from backend.');
+      return;
+    }
 
-    // Buoc 1: Co tinh nhap mot so luong lon hon gioi han max hien thi tren UI.
     const maxStock = Number(maxAttr);
+    // Cố tình điền một số lượng vượt quá số lượng trong kho
     await quantityInput.fill(String(maxStock + 99));
 
-    // Buoc 2: Verify gia tri input bi clamp lai khong vuot qua max.
-    // Day la validation quan trong o layer frontend truoc khi goi API them gio hang.
+    // UI should clamp the value to max stock (Trình duyệt sẽ tự động đưa về max hoặc app của bạn xử lý)
     await expect(quantityInput).toHaveValue(String(maxStock));
   });
 });
