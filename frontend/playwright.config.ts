@@ -22,19 +22,30 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: { 
+        ...devices['Desktop Chrome'],
+        storageState: 'src/tests/e2e/.auth/user.json',
+      },
     },
 
     {
       name: 'firefox',
-      use: { ...devices['Desktop Firefox'] },
+      use: { 
+        ...devices['Desktop Firefox'],
+        storageState: 'src/tests/e2e/.auth/user.json',
+      },
     },
 
     {
       name: 'webkit',
-      use: { ...devices['Desktop Safari'] },
+      use: { 
+        ...devices['Desktop Safari'],
+        storageState: 'src/tests/e2e/.auth/user.json',
+      },
     },
   ],
+
+  globalSetup: "./src/tests/e2e/global-setup.ts",
 
   webServer: {
     command: 'npm run dev',
