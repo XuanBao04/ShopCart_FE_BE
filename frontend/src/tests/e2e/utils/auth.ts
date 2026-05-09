@@ -1,16 +1,3 @@
-/**
- * Auth: Chứa logic xác thực cho E2E tests
- * 
- * ⚠️ DEPRECATED in beforeEach: 
- *   - Global Setup (global-setup.ts) xử lý đăng nhập 1 lần duy nhất
- *   - Các test files không cần gọi setupAuthenticatedSession() nữa
- *   - Auth state được tải tự động từ .auth/user.json
- * 
- * ✅ Vẫn có thể dùng cho:
- *   - Kiểm tra invalid login scenarios
- *   - Testing multi-user workflows (tạo auth state riêng)
- *   - Manual testing khi Global Setup fail
- */
 
 import { type Page } from '@playwright/test';
 import { API_URL } from './constants';

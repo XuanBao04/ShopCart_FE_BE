@@ -97,7 +97,21 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
+        # setup backend
+      - name: Setup environment variables
+        run: cp .env.example .env
 
+      - name: Start Database and Backend via Docker
+        run: docker compose up -d db backend
+      - name: Wait for Backend to be ready
+        run: |
+          echo "Waiting for backend..."
+          timeout 90s bash -c '
+          until curl -s http://localhost:8080/actuator/health | grep "UP"; do
+            sleep 5
+          done'
+
+        # setup frontend
       - name: Set up Node.js 22
         uses: actions/setup-node@v4
         with:
@@ -113,15 +127,17 @@ jobs:
         working-directory: frontend
         run: npx playwright install --with-deps
 
+      # run test playwright
       - name: Run Playwright tests
         working-directory: frontend
         run: |
-          if [ -d e2e ] && find e2e -type f \( -name "*.spec.ts" -o -name "*.test.ts" -o -name "*.spec.tsx" -o -name "*.test.tsx" \) | grep -q .; then
+          if [ -d src/tests/e2e ] && find src/tests/e2e -type f \( -name "*.spec.ts" -o -name "*.test.ts" \) | grep -q .; then
             npm run e2e
           else
-            echo "No Playwright tests found in frontend/e2e, skipping."
+            echo "Không tìm thấy Playwright tests trong thư mục frontend/src/tests/e2e, bỏ qua."
           fi
 
+        # save report
       - name: Collect Playwright test reports
         if: always()
         run: |
