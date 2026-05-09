@@ -10,7 +10,7 @@ import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
 import { clearCartIfNotEmpty } from './utils';
 
-test.describe('Cart E2E - Add to cart with real backend', () => {
+test.describe.serial('Cart E2E - Add to cart with real backend', () => {
   let cartPage: CartPage;
   let checkoutPage: CheckoutPage;
 

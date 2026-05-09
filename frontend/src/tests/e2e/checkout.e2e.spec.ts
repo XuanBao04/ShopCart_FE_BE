@@ -17,9 +17,7 @@ import {
 } from './utils';
 
 // RẤT QUAN TRỌNG: Buộc các test trong file này phải chạy tuần tự
-test.describe.configure({ mode: 'serial' });
-
-test.describe('Checkout & Order E2E Tests - Complete Flow', () => {
+test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
   let checkoutPage: CheckoutPage;
   let cartPage: CartPage;
 
