@@ -101,17 +101,19 @@ export default function CouponInput({
             placeholder="Nhập mã giảm giá..."
             className="flex-1 px-3 py-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
             disabled={isValidating}
+            data-testid="coupon-input"
           />
           <button
             onClick={handleValidateCoupon}
             disabled={isValidating || !couponCode.trim()}
             className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+            data-testid="apply-coupon-btn"
           >
             {isValidating ? "Đang kiểm tra..." : "Áp dụng"}
           </button>
         </div>
       ) : (
-        <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded p-3">
+        <div className="flex items-center justify-between bg-green-100 border border-green-300 rounded p-3" data-testid="coupon-badge">
           <div className="flex items-center gap-2">
             <span className="text-green-700 font-semibold text-lg">✓</span>
             <span className="text-green-800">
@@ -121,6 +123,7 @@ export default function CouponInput({
           <button
             onClick={handleRemoveCoupon}
             className="text-sm text-green-600 hover:text-green-800 underline"
+            data-testid="remove-coupon-btn"
           >
             Hủy
           </button>
@@ -128,13 +131,13 @@ export default function CouponInput({
       )}
 
       {error && (
-        <div className="mt-2 text-red-600 text-sm bg-red-50 p-2 rounded">
+        <div className="mt-2 text-red-600 text-sm bg-red-50 p-2 rounded" data-testid="coupon-error">
           ⚠️ {error}
         </div>
       )}
 
       {success && !error && (
-        <div className="mt-2 text-green-600 text-sm bg-green-50 p-2 rounded">
+        <div className="mt-2 text-green-600 text-sm bg-green-50 p-2 rounded" data-testid="coupon-success">
           ✓ Mã giảm giá đã được áp dụng thành công!
         </div>
       )}

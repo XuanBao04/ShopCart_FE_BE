@@ -26,4 +26,5 @@ public class SQLiController {
     public List<Product> searchSecure(@RequestParam String name) {
         return sqliService.searchSecure(name);
     }
+    
 }

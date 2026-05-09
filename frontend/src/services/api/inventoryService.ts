@@ -4,12 +4,12 @@ const INVENTORY_API = "/inventory";
 
 export const inventoryService = {
   /**
-   * Get all inventory items for a product
+   * Get available stock for a product
    * @param productId the product ID
-   * @return list of inventory items
+   * @return available quantity
    */
-  async getInventoryItems(productId: string): Promise<InventoryItem[]> {
-    const response = await apiClient.get<InventoryItem[]>(
+  async getStock(productId: string): Promise<number> {
+    const response = await apiClient.get<number>(
       `${INVENTORY_API}/${productId}`,
     );
     return response.data;
@@ -67,12 +67,16 @@ export const inventoryService = {
     productId: string,
     requiredQuantity: number,
   ): Promise<boolean> {
-    const inventoryItems = await this.getInventoryItems(productId);
-    const totalAvailable = inventoryItems.reduce(
-      (sum, item) => sum + item.quantity,
-      0,
-    );
-
-    return totalAvailable >= requiredQuantity;
+    try {
+      const response = await apiClient.get<boolean>(
+        `${INVENTORY_API}/${productId}/check`,
+        { params: { quantity: requiredQuantity } }
+      );
+      return response.data;
+    } catch (error) {
+      // Fallback to getStock if /check endpoint is not available or fails
+      const stock = await this.getStock(productId);
+      return stock >= requiredQuantity;
+    }
   },
 };

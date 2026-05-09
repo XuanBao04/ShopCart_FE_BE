@@ -78,7 +78,7 @@ export default function Order() {
   return (
     <div className="container mx-auto p-4">
       <h1 className="text-3xl font-bold mb-8">Lịch sử đơn hàng</h1>
-      <div className="space-y-4">
+      <div className="space-y-4" data-testid="orders-list">
         {orders.map((order) => {
           const isPending = order.status === "PENDING";
           const isCancelling = cancelingOrderId === order.id;
@@ -88,6 +88,7 @@ export default function Order() {
             <div
               key={order.id}
               className="border rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow"
+              data-testid="order-item"
             >
               {/* Order Header */}
               <div
