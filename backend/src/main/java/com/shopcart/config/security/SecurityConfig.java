@@ -18,6 +18,7 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.filter.CorsFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,5 +173,11 @@ public class SecurityConfig {
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
                 source.registerCorsConfiguration("/api/**", configuration);
                 return source;
+        }
+
+        @Bean
+        public CorsFilter corsFilter() {
+                logger.info("Creating CORS filter bean");
+                return new CorsFilter(corsConfigurationSource());
         }
 }
