@@ -53,17 +53,14 @@ class OrderControllerIDORTest {
     @DisplayName("IDOR TC01: User B không nên lấy được Order của User A — 403 FORBIDDEN")
     @WithMockUser(username = USER_B_ID, roles = "USER")
     void testGetOrder_IDOR_UnauthorizedAccess() throws Exception {
-        // Arrange: User B cố gắng lấy order của User A
         when(orderService.getOrderById(ORDER_A_ID))
                 .thenThrow(new ResourceNotFoundException("Order not found or access denied"));
 
-        // Act & Assert
         mockMvc.perform(get("/api/orders/{orderId}", ORDER_A_ID))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").exists());
 
-        // Verify service was called
         verify(orderService, times(1)).getOrderById(ORDER_A_ID);
     }
 
@@ -71,18 +68,15 @@ class OrderControllerIDORTest {
     @DisplayName("IDOR TC02: User B không nên hủy Order của User A — 403 FORBIDDEN")
     @WithMockUser(username = USER_B_ID, roles = "USER")
     void testCancelOrder_IDOR_UnauthorizedAccess() throws Exception {
-        // Arrange: User B cố gắng hủy order của User A
         when(orderService.cancelOrder(ORDER_A_ID))
                 .thenThrow(new ResourceNotFoundException("Order not found or access denied"));
 
-        // Act & Assert
         mockMvc.perform(delete("/api/orders/{orderId}", ORDER_A_ID)
                         .with(csrf()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.status").value(404))
                 .andExpect(jsonPath("$.message").exists());
 
-        // Verify service was called but order was not cancelled
         verify(orderService, times(1)).cancelOrder(ORDER_A_ID);
     }
 
@@ -90,15 +84,12 @@ class OrderControllerIDORTest {
     @DisplayName("IDOR TC03: Regular USER không nên cập nhật Status của Order — 403 FORBIDDEN")
     @WithMockUser(username = USER_A_ID, roles = "USER")
     void testUpdateOrderStatus_IDOR_RoleBasedAccess() throws Exception {
-        // Arrange: USER role không có quyền cập nhật status
         String newStatus = "CONFIRMED";
 
-        // Act & Assert
         mockMvc.perform(patch("/api/orders/{orderId}/{status}", ORDER_A_ID, newStatus)
                         .with(csrf()))
                 .andExpect(status().isForbidden());
 
-        // Verify service was never called
         verify(orderService, never()).updateOrderStatus(anyString(), anyString());
     }
 
@@ -106,33 +97,27 @@ class OrderControllerIDORTest {
     @DisplayName("IDOR TC04: ADMIN có quyền cập nhật bất kỳ Order — 200 OK")
     @WithMockUser(username = "admin", roles = "ADMIN")
     void testUpdateOrderStatus_IDOR_AdminAccess() throws Exception {
-        // Arrange: ADMIN role ĐƯỢC PHÉP cập nhật status của bất kỳ order nào
         String newStatus = "CONFIRMED";
         OrderResponse updatedOrder = OrderResponseFactory.fullOrderResponse(ORDER_A_ID, "some-other-user");
         updatedOrder.setStatus(newStatus);
 
         when(orderService.updateOrderStatus(ORDER_A_ID, newStatus)).thenReturn(updatedOrder);
 
-        // Act & Assert
         mockMvc.perform(patch("/api/orders/{orderId}/{status}", ORDER_A_ID, newStatus)
                         .with(csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ORDER_A_ID))
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
-        // Verify service was called
         verify(orderService, times(1)).updateOrderStatus(ORDER_A_ID, newStatus);
     }
 
     @Test
     @DisplayName("IDOR TC05: Unauthenticated User không nên truy cập Order — 401 UNAUTHORIZED")
     void testGetOrder_Unauthenticated_Denied() throws Exception {
-        // Arrange: Không có authentication
-        // Act & Assert
         mockMvc.perform(get("/api/orders/{orderId}", ORDER_A_ID))
                 .andExpect(status().isUnauthorized());
 
-        // Verify service was never called
         verify(orderService, never()).getOrderById(anyString());
     }
 
@@ -140,18 +125,15 @@ class OrderControllerIDORTest {
     @DisplayName("IDOR TC06: User A có quyền lấy riêng Order của mình — 200 OK")
     @WithMockUser(username = USER_A_ID, roles = "USER")
     void testGetOrder_AuthorizedAccess_Success() throws Exception {
-        // Arrange: User A lấy order của chính mình
         OrderResponse response = OrderResponseFactory.fullOrderResponse(ORDER_A_ID, USER_A_ID);
 
         when(orderService.getOrderById(ORDER_A_ID)).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(get("/api/orders/{orderId}", ORDER_A_ID))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(ORDER_A_ID))
                 .andExpect(jsonPath("$.userId").value(USER_A_ID));
 
-        // Verify service was called
         verify(orderService, times(1)).getOrderById(ORDER_A_ID);
     }
 }

@@ -17,7 +17,6 @@ COPY . .
 # Build
 RUN npm run build
 
-# =====================
 
 FROM nginx:alpine
 

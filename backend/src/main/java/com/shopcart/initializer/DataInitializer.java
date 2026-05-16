@@ -85,25 +85,35 @@ public class DataInitializer implements CommandLineRunner {
     private void createDefaultProducts() {
         List<Product> products = List.of(
                 Product.builder().id("P001").name("iPhone 15 128GB").price(21990000L)
-                        .description("Smartphone Apple A16, man hinh Super Retina XDR 6.1 inch").status(ProductStatus.ACTIVE).build(),
+                        .description("Smartphone Apple A16, man hinh Super Retina XDR 6.1 inch").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/iphone_15_vpedjn.webp").build(),
                 Product.builder().id("P002").name("Samsung Galaxy S24").price(18990000L)
-                        .description("Smartphone Android cao cap, man hinh Dynamic AMOLED 2X").status(ProductStatus.ACTIVE).build(),
+                        .description("Smartphone Android cao cap, man hinh Dynamic AMOLED 2X").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/samsung_s24_c91ta6.webp").build(),
                 Product.builder().id("P003").name("Xiaomi 14").price(15990000L)
-                        .description("Smartphone Snapdragon 8 Gen 3, camera Leica").status(ProductStatus.ACTIVE).build(),
+                        .description("Smartphone Snapdragon 8 Gen 3, camera Leica").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/xiaomi_14_aiz1x3.webp").build(),
                 Product.builder().id("P004").name("MacBook Air M3 13 inch").price(28990000L)
-                        .description("Laptop mong nhe chip Apple M3, pin toi uu").status(ProductStatus.ACTIVE).build(),
+                        .description("Laptop mong nhe chip Apple M3, pin toi uu").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/macbook_air_13_gy3hye.webp").build(),
                 Product.builder().id("P005").name("Dell XPS 13").price(32990000L)
-                        .description("Ultrabook cao cap, man hinh InfinityEdge").status(ProductStatus.ACTIVE).build(),
+                        .description("Ultrabook cao cap, man hinh InfinityEdge").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497693/dell_xps_13_rbgewa.webp").build(),
                 Product.builder().id("P006").name("iPad Air 11 inch").price(16990000L)
-                        .description("May tinh bang phuc vu hoc tap va cong viec").status(ProductStatus.ACTIVE).build(),
+                        .description("May tinh bang phuc vu hoc tap va cong viec").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/ipad_air_m4_ddu4gg.webp").build(),
                 Product.builder().id("P007").name("Sony WH-1000XM5").price(7990000L)
-                        .description("Tai nghe chong on chu dong, chat am chi tiet").status(ProductStatus.ACTIVE).build(),
+                        .description("Tai nghe chong on chu dong, chat am chi tiet").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/sony_qq4ywl.webp").build(),
                 Product.builder().id("P008").name("Logitech MX Master 3S").price(2490000L)
-                        .description("Chuot khong day cho dan van phong va designer").status(ProductStatus.ACTIVE).build(),
+                        .description("Chuot khong day cho dan van phong va designer").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/logictech_chbwix.webp").build(),
                 Product.builder().id("P009").name("Keychron K8 Pro").price(2790000L)
-                        .description("Ban phim co wireless ho tro macOS va Windows").status(ProductStatus.ACTIVE).build(),
+                        .description("Ban phim co wireless ho tro macOS va Windows").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497692/keychron_k8_jw8b6c.webp").build(),
                 Product.builder().id("P010").name("Anker 737 Power Bank").price(3290000L)
-                        .description("Pin du phong dung luong lon, sac nhanh 140W").status(ProductStatus.ACTIVE).build()
+                        .description("Pin du phong dung luong lon, sac nhanh 140W").status(ProductStatus.ACTIVE)
+                        .imageUrl("https://res.cloudinary.com/baofan/image/upload/c_fill,g_auto,w_500,h_500,q_auto,f_auto/v1778497693/anker_737_fdw6oe.webp").build()
         );
 
         List<Product> missingProducts = products.stream()

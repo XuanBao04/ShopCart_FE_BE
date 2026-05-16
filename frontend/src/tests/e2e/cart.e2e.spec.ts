@@ -1,9 +1,3 @@
-/**
- * Cart Flow E2E Test Suite
- * Test các kịch bản giỏ hàng: thêm, cập nhật số lượng, xóa sản phẩm
- * 
- * Ghi chú: Đăng nhập được xử lý bởi Global Setup, không cần setupAuthenticatedSession ở đây
- */
 
 import { expect, test } from '@playwright/test';
 import CartPage from './pages/CartPage';
@@ -18,12 +12,10 @@ test.describe.serial('Cart E2E - Add to cart with real backend', () => {
     cartPage = new CartPage(page);
     checkoutPage = new CheckoutPage(page);
 
-    // Clear cart before each test to ensure a clean state
     await clearCartIfNotEmpty(page, checkoutPage);
   });
 
   test('1) Complete add-to-cart flow: add item, check cart, update, remove', async ({ page }) => {
-    // 1. Đi đến trang sản phẩm
     await cartPage.goToProducts();
 
     const expectedProductName = await cartPage.getFirstProductName();

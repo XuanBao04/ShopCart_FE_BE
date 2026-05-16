@@ -15,4 +15,5 @@ public class ProductResponse {
     private String description;
     private Long price;
     private String status;
+    private String imageUrl;
 }

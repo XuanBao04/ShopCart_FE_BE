@@ -49,17 +49,13 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC01: POST Request mà không có CSRF Token — 403 FORBIDDEN")
     @WithMockUser(username = OrderTestConstants.TEST_USER_ID, roles = "USER")
     void testCreateOrder_WithoutCSRFToken_Denied() throws Exception {
-        // Arrange
         OrderRequest request = OrderRequestFactory.defaultOrderRequest();
 
-        // Act & Assert
         mockMvc.perform(post("/api/orders/{userId}", OrderTestConstants.TEST_USER_ID)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
-                // NOT using .with(csrf()) → CSRF token không được gửi
                 .andExpect(status().isForbidden());
 
-        // Verify service was never called
         verify(orderService, never()).createOrder(any(), any());
     }
 
@@ -67,14 +63,10 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC02: DELETE Request mà không có CSRF Token — 403 FORBIDDEN")
     @WithMockUser(username = OrderTestConstants.TEST_USER_ID, roles = "USER")
     void testCancelOrder_WithoutCSRFToken_Denied() throws Exception {
-        // Arrange: Không thêm CSRF token
 
-        // Act & Assert
         mockMvc.perform(delete("/api/orders/{orderId}", OrderTestConstants.TEST_ORDER_ID))
-                // NOT using .with(csrf())
                 .andExpect(status().isForbidden());
 
-        // Verify service was never called
         verify(orderService, never()).cancelOrder(any());
     }
 
@@ -82,14 +74,10 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC03: PATCH Request mà không có CSRF Token — 403 FORBIDDEN")
     @WithMockUser(username = "admin", roles = "ADMIN")
     void testUpdateOrderStatus_WithoutCSRFToken_Denied() throws Exception {
-        // Arrange: Không thêm CSRF token
 
-        // Act & Assert
         mockMvc.perform(patch("/api/orders/{orderId}/{status}", OrderTestConstants.TEST_ORDER_ID, "CONFIRMED"))
-                // NOT using .with(csrf())
                 .andExpect(status().isForbidden());
 
-        // Verify service was never called
         verify(orderService, never()).updateOrderStatus(any(), any());
     }
 
@@ -104,7 +92,6 @@ class OrderControllerCSRFTest {
         when(orderService.createOrder(any(OrderRequest.class), eq(OrderTestConstants.TEST_USER_ID)))
                 .thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(post("/api/orders/{userId}", OrderTestConstants.TEST_USER_ID)
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf())
                         .contentType(MediaType.APPLICATION_JSON)
@@ -113,7 +100,6 @@ class OrderControllerCSRFTest {
                 .andExpect(jsonPath("$.id").value(OrderTestConstants.TEST_ORDER_ID))
                 .andExpect(jsonPath("$.userId").value(OrderTestConstants.TEST_USER_ID));
 
-        // Verify service was called
         verify(orderService, times(1)).createOrder(any(OrderRequest.class), eq(OrderTestConstants.TEST_USER_ID));
     }
 
@@ -121,20 +107,18 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC05: DELETE Request với CSRF Token hợp lệ — 200 OK")
     @WithMockUser(username = OrderTestConstants.TEST_USER_ID, roles = "USER")
     void testCancelOrder_WithValidCSRFToken_Success() throws Exception {
-        // Arrange
+
         OrderResponse cancelledOrder = OrderResponseFactory.defaultFullOrderResponse();
         cancelledOrder.setStatus("CANCELLED");
 
         when(orderService.cancelOrder(OrderTestConstants.TEST_ORDER_ID)).thenReturn(cancelledOrder);
 
-        // Act & Assert
         mockMvc.perform(delete("/api/orders/{orderId}", OrderTestConstants.TEST_ORDER_ID)
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(OrderTestConstants.TEST_ORDER_ID))
                 .andExpect(jsonPath("$.status").value("CANCELLED"));
 
-        // Verify service was called
         verify(orderService, times(1)).cancelOrder(OrderTestConstants.TEST_ORDER_ID);
     }
 
@@ -142,21 +126,18 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC06: PATCH Request với CSRF Token hợp lệ — 200 OK")
     @WithMockUser(username = "admin", roles = "ADMIN")
     void testUpdateOrderStatus_WithValidCSRFToken_Success() throws Exception {
-        // Arrange
         String newStatus = "CONFIRMED";
         OrderResponse updatedOrder = OrderResponseFactory.defaultFullOrderResponse();
         updatedOrder.setStatus(newStatus);
 
         when(orderService.updateOrderStatus(OrderTestConstants.TEST_ORDER_ID, newStatus)).thenReturn(updatedOrder);
 
-        // Act & Assert
         mockMvc.perform(patch("/api/orders/{orderId}/{status}", OrderTestConstants.TEST_ORDER_ID, newStatus)
                         .with(org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(OrderTestConstants.TEST_ORDER_ID))
                 .andExpect(jsonPath("$.status").value("CONFIRMED"));
 
-        // Verify service was called
         verify(orderService, times(1)).updateOrderStatus(OrderTestConstants.TEST_ORDER_ID, newStatus);
     }
 
@@ -164,17 +145,13 @@ class OrderControllerCSRFTest {
     @DisplayName("CSRF TC07: GET Request không cần CSRF Token — 200 OK (Safe Method)")
     @WithMockUser(username = OrderTestConstants.TEST_USER_ID, roles = "USER")
     void testGetOrder_GET_NoCSRFRequired() throws Exception {
-        // Arrange: GET request không yêu cầu CSRF token
         OrderResponse response = OrderResponseFactory.defaultFullOrderResponse();
         when(orderService.getOrderById(OrderTestConstants.TEST_ORDER_ID)).thenReturn(response);
 
-        // Act & Assert
         mockMvc.perform(get("/api/orders/{orderId}", OrderTestConstants.TEST_ORDER_ID))
-                // GET request không cần CSRF token
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(OrderTestConstants.TEST_ORDER_ID));
 
-        // Verify service was called
         verify(orderService, times(1)).getOrderById(OrderTestConstants.TEST_ORDER_ID);
     }
 }

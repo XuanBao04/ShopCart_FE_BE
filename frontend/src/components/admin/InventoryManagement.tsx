@@ -191,6 +191,7 @@ const InventoryManagement = () => {
             <table className="w-full">
               <thead>
                 <tr className="border-b-2 border-gray-200">
+                  <th className="text-left py-3 px-4">Ảnh</th>
                   <th className="text-left py-3 px-4">ID Sản phẩm</th>
                   <th className="text-left py-3 px-4">Tên sản phẩm</th>
                   <th className="text-right py-3 px-4">Giá</th>
@@ -205,6 +206,26 @@ const InventoryManagement = () => {
               <tbody>
                 {filteredProducts.map((product) => (
                   <tr key={product.id} className="border-b hover:bg-gray-50">
+                    <td className="py-3 px-4">
+                      <div className="w-12 h-12 bg-gray-200 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                        {product.imageUrl ? (
+                          <img
+                            src={product.imageUrl}
+                            alt={product.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              (e.target as HTMLImageElement).style.display = 'none';
+                              if (e.target && (e.target as any).nextElementSibling) {
+                                 (e.target as any).nextElementSibling.style.display = 'block';
+                              }
+                            }}
+                          />
+                        ) : null}
+                        <span className={`text-gray-400 text-[10px] text-center ${product.imageUrl ? 'hidden' : 'block'}`}>
+                          No Img
+                        </span>
+                      </div>
+                    </td>
                     <td className="py-3 px-4 font-mono text-sm">{product.id}</td>
                     <td className="py-3 px-4">{product.name}</td>
                     <td className="py-3 px-4 text-right">{formatPrice(product.price)}</td>

@@ -3,9 +3,9 @@ import { check, sleep, group } from 'k6';
 
 export let options = {
     stages: [
-        { duration: '30s', target: 500 },  // Tăng tốc lên 500 người dùng trong 5s
-        { duration: '30s', target: 500 }, // Duy trì 500 người dùng trong 10s (đúng ý bạn)
-        { duration: '10s', target: 0 },    // Giảm dần về 0 trong 5s
+        { duration: '30s', target: 500 },  
+        { duration: '30s', target: 500 }, 
+        { duration: '10s', target: 0 },    
     ],
 };
 
@@ -13,6 +13,7 @@ const BASE_URL = 'http://backend:8080';
 
 export default function () {
     let userId;
+    let csrfToken = '';
     // Chọn ngẫu nhiên sản phẩm từ P001 đến P010 để tránh hết hàng quá nhanh
     const productIds = ['P001', 'P002', 'P003', 'P004', 'P005', 'P006', 'P007', 'P008', 'P009', 'P010'];
     let productId = productIds[Math.floor(Math.random() * productIds.length)];
@@ -35,6 +36,12 @@ export default function () {
             // Tạo userId duy nhất cho mỗi VU để tránh tranh chấp giỏ hàng
             userId = "user-" + loginRes.json().userId + "-" + __VU;
         }
+        
+        if (loginRes.cookies['XSRF-TOKEN']) {
+            csrfToken = loginRes.cookies['XSRF-TOKEN'][0].value;
+        } else if (loginRes.headers['X-XSRF-TOKEN']) {
+            csrfToken = loginRes.headers['X-XSRF-TOKEN'];
+        }
     });
 
     if (userId) {
@@ -45,7 +52,10 @@ export default function () {
             });
 
             let cartRes = http.post(`${BASE_URL}/api/cart/${userId}/add`, cartPayload, {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': csrfToken
+                },
             });
 
             check(cartRes, {
@@ -71,7 +81,10 @@ export default function () {
             });
 
             let orderRes = http.post(`${BASE_URL}/api/orders/${userId}`, orderPayload, {
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 
+                    'Content-Type': 'application/json',
+                    'X-XSRF-TOKEN': csrfToken
+                },
             });
 
             check(orderRes, {

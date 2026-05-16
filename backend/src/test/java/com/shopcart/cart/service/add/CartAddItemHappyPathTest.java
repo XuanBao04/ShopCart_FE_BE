@@ -29,7 +29,6 @@ class CartAddItemHappyPathTest extends BaseCartServiceTest {
         
         CartResponse response = cartService.addToCart(userId, request);
         
-        // Verify reserveStock was called
         verify(inventoryService, times(1)).reserveStock(request.getProductId(), request.getQuantity());
         
         ArgumentCaptor<CartItem> cartItemCaptor = ArgumentCaptor.forClass(CartItem.class);

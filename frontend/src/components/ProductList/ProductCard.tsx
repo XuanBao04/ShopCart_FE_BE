@@ -63,8 +63,23 @@ const ProductCard = ({ product }: ProductCardProps) => {
 
   return (
     <div className="border rounded-lg overflow-hidden shadow-md hover:shadow-lg transition" data-testid="product-card">
-      <div className="bg-gray-200 h-48 flex items-center justify-center">
-        <span className="text-gray-500">Id sản phẩm {product.id}</span>
+      <div className="bg-gray-200 h-48 flex items-center justify-center overflow-hidden">
+        {product.imageUrl ? (
+          <img
+            src={product.imageUrl}
+            alt={product.name}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              if (e.target && (e.target as any).nextElementSibling) {
+                 (e.target as any).nextElementSibling.style.display = 'block';
+              }
+            }}
+          />
+        ) : null}
+        <span className={`text-gray-500 ${product.imageUrl ? 'hidden' : 'block'}`}>
+          Id sản phẩm {product.id}
+        </span>
       </div>
       <div className="p-4">
         <h2 className="font-bold text-lg mb-2" data-testid="product-name">{product.name}</h2>

@@ -9,7 +9,6 @@ spring:
     #   minimum-idle: 10    # tăng số kết nối DB tối thiểu
   jpa:
     hibernate:
-      # update: Tự động tạo/cập nhật bảng dựa trên Entity.
       ddl-auto: update
     show-sql: false
     properties:
@@ -19,10 +18,10 @@ spring:
 
 server:
   port: ${SERVER_PORT:8080}
-  # tomcat:
-  #   threads:
-  #     max: 500                   # Tăng số lượng luồng xử lý yêu cầu (mặc định là 200)
-  #     min-spare: 50                # Tăng số lượng luồng rảnh (mặc định là 10)
+  tomcat:
+    threads:
+      max: 500                   # Tăng số lượng luồng xử lý yêu cầu (mặc định là 200)
+      min-spare: 50                # Tăng số lượng luồng rảnh (mặc định là 10)
 
 management:
   endpoints:

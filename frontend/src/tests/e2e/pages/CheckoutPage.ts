@@ -3,11 +3,9 @@ import { Page, Locator, expect } from '@playwright/test';
 export class CheckoutPage {
   readonly page: Page;
 
-  // Cart Items Section
   readonly cartItemsContainer: Locator;
   readonly cartItems: Locator;
 
-  // Address Form
   readonly shippingAddressInput: Locator;
   readonly cityInput: Locator;
   readonly districtInput: Locator;
@@ -15,25 +13,21 @@ export class CheckoutPage {
   readonly postalCodeInput: Locator;
   readonly phoneNumberInput: Locator;
 
-  // Coupon Section
   readonly couponInput: Locator;
   readonly applyCouponBtn: Locator;
   readonly removeCouponBtn: Locator;
   readonly couponSuccess: Locator;
   readonly couponError: Locator;
 
-  // Price Breakdown
   readonly subtotalDisplay: Locator;
   readonly discountDisplay: Locator;
   readonly shippingFeeDisplay: Locator;
   readonly totalPriceDisplay: Locator;
   readonly couponBadge: Locator;
 
-  // Action Buttons
   readonly checkoutBtn: Locator;
   readonly clearCartBtn: Locator;
 
-  // Status/Messages
   readonly successMessage: Locator;
   readonly errorMessage: Locator;
   readonly inventoryWarning: Locator;
@@ -42,11 +36,9 @@ export class CheckoutPage {
   constructor(page: Page) {
     this.page = page;
 
-    // Cart Items Section
     this.cartItemsContainer = page.locator('[data-testid="cart-items-container"]');
     this.cartItems = page.locator('[data-testid="cart-item"]');
 
-    // Address Form
     this.shippingAddressInput = page.locator('[data-testid="shipping-address-input"]');
     this.cityInput = page.locator('[data-testid="city-input"]');
     this.districtInput = page.locator('[data-testid="district-input"]');
@@ -54,42 +46,34 @@ export class CheckoutPage {
     this.postalCodeInput = page.locator('[data-testid="postal-code-input"]');
     this.phoneNumberInput = page.locator('[data-testid="phone-number-input"]');
 
-    // Coupon Section
     this.couponInput = page.locator('[data-testid="coupon-input"]');
     this.applyCouponBtn = page.locator('[data-testid="apply-coupon-btn"]');
     this.removeCouponBtn = page.locator('[data-testid="remove-coupon-btn"]');
     this.couponSuccess = page.locator('[data-testid="coupon-success"]');
     this.couponError = page.locator('[data-testid="coupon-error"]');
 
-    // Price Breakdown
     this.subtotalDisplay = page.locator('[data-testid="subtotal-display"]');
     this.discountDisplay = page.locator('[data-testid="discount-display"]');
     this.shippingFeeDisplay = page.locator('[data-testid="shipping-fee-display"]');
     this.totalPriceDisplay = page.locator('[data-testid="total-price-display"]');
     this.couponBadge = page.locator('[data-testid="coupon-badge"]');
 
-    // Action Buttons
     this.checkoutBtn = page.locator('[data-testid="checkout-btn"]');
     this.clearCartBtn = page.locator('[data-testid="clear-cart-btn"]');
 
-    // Status/Messages
     this.successMessage = page.locator('[data-testid="success-message"]');
     this.errorMessage = page.locator('[data-testid="error-message"]');
     this.inventoryWarning = page.locator('[data-testid="inventory-warning"]');
     this.emptyCartMessage = page.locator('[data-testid="empty-cart-message"]');
   }
 
-  /**
-   * Navigate to cart page
-   */
+  
   async goToCart() {
     await this.page.goto('/authenticated/cart');
     await this.page.waitForLoadState('networkidle');
   }
 
-  /**
-   * Fill shipping address form
-   */
+
   async fillShippingAddress(
     address: string,
     city: string,
@@ -106,69 +90,50 @@ export class CheckoutPage {
     await this.phoneNumberInput.fill(phoneNumber);
   }
 
-  /**
-   * Apply coupon code
-   */
+ 
   async applyCoupon(code: string) {
     await this.couponInput.fill(code);
     await this.applyCouponBtn.click();
-    // Wait for validation response
     await this.page.waitForTimeout(1000);
   }
 
-  /**
-   * Remove applied coupon
-   */
+ 
   async removeCoupon() {
     await this.removeCouponBtn.click();
     await this.page.waitForTimeout(500);
   }
 
-  /**
-   * Get subtotal price
-   */
+ 
   async getSubtotal(): Promise<string> {
     return await this.subtotalDisplay.innerText();
   }
 
-  /**
-   * Get discount amount
-   */
+
   async getDiscountAmount(): Promise<string> {
     return await this.discountDisplay.innerText();
   }
 
-  /**
-   * Get shipping fee
-   */
+
   async getShippingFee(): Promise<string> {
     return await this.shippingFeeDisplay.innerText();
   }
 
-  /**
-   * Get total price
-   */
+
   async getTotalPrice(): Promise<string> {
     return await this.totalPriceDisplay.innerText();
   }
 
-  /**
-   * Check if coupon error message is visible
-   */
+
   async isCouponErrorVisible(): Promise<boolean> {
     return await this.couponError.isVisible();
   }
 
-  /**
-   * Check if coupon success message is visible
-   */
+
   async isCouponSuccessVisible(): Promise<boolean> {
     return await this.couponSuccess.isVisible();
   }
 
-  /**
-   * Check if inventory warning is visible
-   */
+ 
   async isInventoryWarningVisible(): Promise<boolean> {
     try {
       await this.inventoryWarning.isVisible({ timeout: 2000 });
@@ -192,7 +157,6 @@ export class CheckoutPage {
         })
       ]);
     } catch (error) {
-      // Nếu đã chuyển hướng thành công rồi thì ignore lỗi từ race (nếu có)
       if (this.page.url().includes('/authenticated/orders')) {
         return;
       }
@@ -200,24 +164,17 @@ export class CheckoutPage {
     }
   }
 
-  /**
-   * Clear cart
-   */
+
   async clearCart() {
     await this.clearCartBtn.click();
   }
 
-  /**
-   * Wait for orders list to be visible after successful redirect
-   */
   async waitForOrderRedirect() {
     // URL đã được check ở placeOrder, giờ chỉ cần đợi element render
     await this.page.locator('[data-testid="orders-list"]').first().waitFor({ state: 'visible', timeout: 15000 });
   }
 
-  /**
-   * Clear cart and verify it is empty after checkout
-   */
+
   async clearCartAndVerifyEmpty() {
     await this.page.goto('/authenticated/cart');
     await this.page.waitForLoadState('networkidle');
@@ -230,25 +187,18 @@ export class CheckoutPage {
     }
   }
 
-  /**
-   * Get number of items in cart. Waits for at least one item to appear.
-   */
+
   async getCartItemCount(): Promise<number> {
-    // Wait for cart items to render after page load
     await this.cartItems.first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
     return await this.cartItems.count();
   }
 
-  /**
-   * Get error message text
-   */
+
   async getErrorMessage(): Promise<string> {
     return await this.errorMessage.innerText();
   }
 
-  /**
-   * Check if checkout is complete (success message visible)
-   */
+
   async isCheckoutComplete(): Promise<boolean> {
     const url = this.page.url();
     if (!url.includes('/authenticated/orders')) {
@@ -258,9 +208,7 @@ export class CheckoutPage {
     return ordersVisible;
   }
 
-  /**
-   * Check if cart is empty
-   */
+
   async isCartEmpty(): Promise<boolean> {
     try {
       await this.emptyCartMessage.isVisible({ timeout: 2000 });

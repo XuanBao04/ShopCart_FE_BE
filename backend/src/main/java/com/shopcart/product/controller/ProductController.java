@@ -53,4 +53,21 @@ public class ProductController {
         return ResponseEntity.ok(deletedCount);
     }
 
+    @PostMapping
+    public ResponseEntity<Product> createProduct(@jakarta.validation.Valid @RequestBody com.shopcart.product.dto.request.ProductRequest request) {
+        Product product = productService.createProduct(request);
+        return ResponseEntity.ok(product);
+    }
+
+    @PutMapping("/{productId}")
+    public ResponseEntity<Product> updateProduct(@PathVariable String productId, @jakarta.validation.Valid @RequestBody com.shopcart.product.dto.request.ProductRequest request) {
+        Product product = productService.updateProduct(productId, request);
+        return ResponseEntity.ok(product);
+    }
+
+    @DeleteMapping("/{productId}")
+    public ResponseEntity<Void> deleteProduct(@PathVariable String productId) {
+        productService.deleteProduct(productId);
+        return ResponseEntity.noContent().build();
+    }
 }

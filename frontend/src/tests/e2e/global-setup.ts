@@ -1,8 +1,4 @@
-/**
- * Global Setup: Thực hiện đăng nhập một lần duy nhất trước tất cả tests
- * Lưu auth state (cookies/storage) để các tests khác tái sử dụng
- * Điều này giúp tiết kiệm thời gian chạy test rất đáng kể!
- */
+
 
 import { chromium, FullConfig } from '@playwright/test';
 import { checkBackendHealth, testDatabaseConnection } from './utils/systemCheck';
@@ -12,12 +8,10 @@ const AUTH_FILE = 'src/tests/e2e/.auth/user.json';
 export default async function globalSetup(config: FullConfig) {
   console.log('Starting Global Setup - Authenticating user...');
 
-  // Tạo browser instance tạm thời
   const browser = await chromium.launch();
   const page = await browser.newPage();
 
   try {
-    // 1. Kiểm tra backend health trước khi đăng nhập
     const isBackendHealthy = await checkBackendHealth(page);
     if (!isBackendHealthy) {
       throw new Error(
@@ -29,7 +23,6 @@ export default async function globalSetup(config: FullConfig) {
     }
     console.log(' Backend is healthy');
 
-    // 2. Kiểm tra database connection
     console.log('Checking database schema...');
     const isDatabaseReady = await testDatabaseConnection(page);
     if (!isDatabaseReady) {
@@ -42,17 +35,14 @@ export default async function globalSetup(config: FullConfig) {
     }
     console.log(' Database schema is ready');
 
-    // 3. Điều hướng đến trang login
     await page.goto('http://localhost:5173/login', { waitUntil: 'networkidle' });
     console.log('Navigated to login page');
 
-    // 4. Điền thông tin đăng nhập
     await page.fill('input[name="username"]', 'customer1');
     await page.fill('input[name="password"]', 'password123');
     await page.click('button[type="submit"]');
     console.log('Login form submitted');
 
-    // 5. Đợi chuyển hướng thành công
     const urlPromise = page
       .waitForURL('**/products', { timeout: 15000 })
       .then(() => 'success' as const);
@@ -81,8 +71,7 @@ export default async function globalSetup(config: FullConfig) {
 
     console.log(' Login successful!');
 
-    // 6. Lưu auth state (cookies, localStorage, sessionStorage)
-    // Điều này sẽ được tái sử dụng bởi tất cả các test files
+
     await page.context().storageState({ path: AUTH_FILE });
     console.log(` Auth state saved to: ${AUTH_FILE}`);
 
@@ -90,7 +79,6 @@ export default async function globalSetup(config: FullConfig) {
     console.error(' Global Setup failed:', error);
     throw error;
   } finally {
-    // Đóng browser
     await browser.close();
   }
 

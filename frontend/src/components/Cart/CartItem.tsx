@@ -14,6 +14,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
   const [quantity, setQuantity] = useState(item.quantity);
   const [price, setPrice] = useState(0);
   const [productName, setProductName] = useState('');
+  const [productImageUrl, setProductImageUrl] = useState<string | undefined>(undefined);
   const [availableStock, setAvailableStock] = useState<number>(0);
 
   useEffect(() => {
@@ -22,6 +23,7 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
         const product = await productService.getProductById(item.productId);
         setProductName(product.name);
         setPrice(product.price);
+        setProductImageUrl(product.imageUrl);
         
         const stock = await productService.getAvailableStock(item.productId);
         setAvailableStock(stock);
@@ -43,6 +45,24 @@ const CartItem = ({ item, onRemove, onUpdateQuantity }: CartItemProps) => {
 
   return (
     <div className="flex items-center gap-4 py-4 border-b last:border-b-0" data-testid="cart-item">
+      <div className="w-16 h-16 bg-gray-200 rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+        {productImageUrl ? (
+          <img
+            src={productImageUrl}
+            alt={productName}
+            className="w-full h-full object-cover"
+            onError={(e) => {
+              (e.target as HTMLImageElement).style.display = 'none';
+              if (e.target && (e.target as any).nextElementSibling) {
+                 (e.target as any).nextElementSibling.style.display = 'block';
+              }
+            }}
+          />
+        ) : null}
+        <span className={`text-gray-400 text-xs text-center ${productImageUrl ? 'hidden' : 'block'}`}>
+          No Image
+        </span>
+      </div>
       <div className="flex-1">
         <h3 className="font-bold">{productName}</h3>
         <p className="text-gray-600">Mã sản phẩm: {item.productId}</p>

@@ -4,6 +4,7 @@ export interface Product {
   description: string;
   price: number;
   status: 'ACTIVE' | 'INACTIVE';
+  imageUrl?: string;
 }
 
 export interface ProductResponse {
@@ -12,4 +13,5 @@ export interface ProductResponse {
   description: string;
   price: number;
   status: string;
+  imageUrl?: string;
 }

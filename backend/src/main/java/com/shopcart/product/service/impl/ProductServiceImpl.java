@@ -63,4 +63,34 @@ public class ProductServiceImpl implements IProductService {
         productRepository.deleteAll();
         return count;
     }
+
+    @Override
+    public Product createProduct(com.shopcart.product.dto.request.ProductRequest request) {
+        Product product = Product.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .description(request.getDescription())
+                .price(request.getPrice())
+                .status(com.shopcart.common.enums.ProductStatus.valueOf(request.getStatus()))
+                .imageUrl(request.getImageUrl())
+                .build();
+        return productRepository.save(product);
+    }
+
+    @Override
+    public Product updateProduct(String productId, com.shopcart.product.dto.request.ProductRequest request) {
+        Product existingProduct = getProductById(productId);
+        existingProduct.setName(request.getName());
+        existingProduct.setDescription(request.getDescription());
+        existingProduct.setPrice(request.getPrice());
+        existingProduct.setStatus(com.shopcart.common.enums.ProductStatus.valueOf(request.getStatus()));
+        existingProduct.setImageUrl(request.getImageUrl());
+        return productRepository.save(existingProduct);
+    }
+
+    @Override
+    public void deleteProduct(String productId) {
+        Product product = getProductById(productId);
+        productRepository.delete(product);
+    }
 }

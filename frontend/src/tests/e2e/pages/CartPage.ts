@@ -3,18 +3,15 @@ import { Page, Locator, expect } from '@playwright/test';
 export class CartPage {
   readonly page: Page;
 
-  // Products Page
   readonly productCard: Locator;
   readonly productName: Locator;
   readonly productPrice: Locator;
   readonly quantityInput: Locator;
   readonly addToCartBtn: Locator;
 
-  // Toast Messages
   readonly successToast: Locator;
   readonly errorToast: Locator;
 
-  // New getters for cart UI
   get cartBadge(): Locator {
     return this.page.locator('[data-testid="cart-badge"]');
   }
@@ -23,38 +20,30 @@ export class CartPage {
     return this.page.locator('[data-testid="cart-item"]');
   }
 
-  // Navigation
   readonly cartIcon: Locator;
 
   constructor(page: Page) {
     this.page = page;
 
-    // Products Page
     this.productCard = page.locator('[data-testid="product-card"]');
     this.productName = page.locator('[data-testid="product-name"]');
     this.productPrice = page.locator('[data-testid="product-price"]');
     this.quantityInput = page.locator('[data-testid="quantity-input"]');
     this.addToCartBtn = page.locator('[data-testid="add-to-cart-btn"]');
 
-    // Toast Messages
     this.successToast = page.locator('[data-testid="success-toast"]');
     this.errorToast = page.locator('[data-testid="error-toast"]');
 
-    // Navigation
     this.cartIcon = page.locator('[data-testid="cart-icon"]');
   }
 
-  /**
-   * Navigate to products page
-   */
+
   async goToProducts() {
     await this.page.goto('/authenticated/products');
     await this.page.waitForLoadState('networkidle');
   }
 
-  /**
-   * Get first available product (with stock)
-   */
+ 
   async getFirstAvailableProduct(): Promise<Locator | null> {
     const cards = this.productCard;
     await cards.first().waitFor({ state: 'visible', timeout: 10000 });
@@ -82,13 +71,10 @@ export class CartPage {
       }
     }
 
-    // Nếu không tìm thấy cái nào > 5 thì lấy cái đầu tiên khả dụng
     return cards.first();
   }
 
-  /**
-   * Add product to cart
-   */
+  
   async addProductToCart(quantity: number = 1) {
     const product = await this.getFirstAvailableProduct();
     if (!product) {
@@ -103,19 +89,14 @@ export class CartPage {
     const addBtn = product.locator('[data-testid="add-to-cart-btn"]');
     await addBtn.click();
 
-    // Phải đợi cho đến khi Toast thành công hiện lên để chắc chắn API đã phản hồi
     await expect(this.page.locator('.Toastify__toast--success')).toBeVisible({ timeout: 10000 });
     
-    // Đảm bảo Badge giỏ hàng đã xuất hiện (xác nhận State đã cập nhật)
     await expect(this.page.locator('[data-testid="cart-badge"]')).toBeVisible({ timeout: 5000 });
     
-    // Đợi một chút để mọi thứ ổn định
     await this.page.waitForTimeout(1000);
   }
 
-  /**
-   * Get product name from first available product
-   */
+  
   async getFirstProductName(): Promise<string> {
     const product = await this.getFirstAvailableProduct();
     if (!product) {
@@ -124,12 +105,7 @@ export class CartPage {
     return await product.locator('[data-testid="product-name"]').innerText();
   }
 
-  /**
-   * Navigate to cart from header
-   */
-  /**
-   * Navigate to cart and ensure at least one cart item is visible
-   */
+
   async goToCartAndWait() {
     await this.cartIcon.click();
     await this.page.waitForURL('**/cart', { timeout: 5000 });
@@ -138,7 +114,6 @@ export class CartPage {
     await this.page.locator('[data-testid="cart-item"]').first().waitFor({ state: 'visible', timeout: 10000 }).catch(() => {});
   }
 
-  // Preserve original method name for backward compatibility
   async goToCart() {
     await this.goToCartAndWait();
   }

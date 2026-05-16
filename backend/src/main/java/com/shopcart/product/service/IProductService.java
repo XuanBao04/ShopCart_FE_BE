@@ -55,4 +55,25 @@ public interface IProductService {
      * @return number of products deleted
      */
     long deleteAllProducts();
+
+    /**
+     * Create a new product
+     * @param request the product request
+     * @return created Product
+     */
+    Product createProduct(com.shopcart.product.dto.request.ProductRequest request);
+
+    /**
+     * Update an existing product
+     * @param productId the product ID
+     * @param request the product request
+     * @return updated Product
+     */
+    Product updateProduct(String productId, com.shopcart.product.dto.request.ProductRequest request);
+
+    /**
+     * Delete a product by ID
+     * @param productId the product ID
+     */
+    void deleteProduct(String productId);
 }

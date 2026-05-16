@@ -1,10 +1,4 @@
-/**
- * Checkout E2E Test Suite
- * Test các kịch bản checkout hoàn chỉnh: từ thêm sản phẩm đến đặt hàng
- *
- * QUAN TRỌNG: Các test trong file này chạy tuần tự (serial mode)
- * Vì tất cả đều dùng chung tài khoản customer1, chạy song song sẽ gây xung đột dữ liệu
- */
+
 
 import { expect, test } from '@playwright/test';
 import CheckoutPage from './pages/CheckoutPage';
@@ -16,7 +10,6 @@ import {
   TEST_ADDRESS,
 } from './utils';
 
-// RẤT QUAN TRỌNG: Buộc các test trong file này phải chạy tuần tự
 test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
   let checkoutPage: CheckoutPage;
   let cartPage: CartPage;
@@ -40,7 +33,6 @@ test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
 
     await cartPage.goToCart();
 
-    // Đợi cho đến khi giỏ hàng hiện item HOẶC hiện tin nhắn trống
     const itemPromise = page
       .locator('[data-testid="cart-item"]')
       .first()
@@ -52,7 +44,6 @@ test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
     itemPromise.catch(() => {});
     emptyPromise.catch(() => {});
 
-    // Dùng Promise.race để đợi 1 trong 2 xuất hiện, nếu sau 8s không có gì xuất hiện sẽ ném lỗi thẳng
     await Promise.race([itemPromise, emptyPromise]);
 
     if (
@@ -110,16 +101,13 @@ test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
 
     await checkoutPage.placeOrder();
 
-    // Sử dụng helper để đợi redirect và verify orders list
     await checkoutPage.waitForOrderRedirect();
 
-    // Kiểm tra trạng thái hoàn tất
     const isComplete = await checkoutPage.isCheckoutComplete();
     expect(isComplete).toBe(true);
   });
 
   test('2) Accurate price calculation: Verify subtotal, discount, and shipping fees', async () => {
-    // Đợi PriceBreakdown render xong
     await expect(checkoutPage.subtotalDisplay.first()).toBeVisible({
       timeout: 10000,
     });
@@ -145,7 +133,6 @@ test.describe.serial('Checkout & Order E2E Tests - Complete Flow', () => {
       const discount = parseVietnamPrice(discountText);
       expect(discount).toBe(0);
     } catch {
-      // Ignored if discount element is not present
     }
   });
 });

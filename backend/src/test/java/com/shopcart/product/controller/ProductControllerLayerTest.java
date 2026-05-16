@@ -82,4 +82,45 @@ class ProductControllerLayerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string("true"));
     }
+
+    @Test
+    @DisplayName("Nên tạo được sản phẩm mới")
+    void createProduct_Success() throws Exception {
+        com.shopcart.product.dto.request.ProductRequest request = com.shopcart.product.dto.request.ProductRequest.builder()
+                .id("P2").name("New Product").price(200L).status("ACTIVE").imageUrl("http://example.com/img.png").build();
+        Product p2 = Product.builder().id("P2").name("New Product").price(200L).status(ProductStatus.ACTIVE).imageUrl("http://example.com/img.png").build();
+
+        when(productService.createProduct(org.mockito.ArgumentMatchers.any())).thenReturn(p2);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/products")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value("P2"))
+                .andExpect(jsonPath("$.imageUrl").value("http://example.com/img.png"));
+    }
+
+    @Test
+    @DisplayName("Nên cập nhật được sản phẩm")
+    void updateProduct_Success() throws Exception {
+        com.shopcart.product.dto.request.ProductRequest request = com.shopcart.product.dto.request.ProductRequest.builder()
+                .id("P1").name("Updated Product").price(150L).status("ACTIVE").imageUrl("http://example.com/img2.png").build();
+        Product updatedProduct = Product.builder().id("P1").name("Updated Product").price(150L).status(ProductStatus.ACTIVE).imageUrl("http://example.com/img2.png").build();
+
+        when(productService.updateProduct(org.mockito.ArgumentMatchers.eq("P1"), org.mockito.ArgumentMatchers.any())).thenReturn(updatedProduct);
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put("/api/products/P1")
+                .contentType(org.springframework.http.MediaType.APPLICATION_JSON)
+                .content(new com.fasterxml.jackson.databind.ObjectMapper().writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.name").value("Updated Product"))
+                .andExpect(jsonPath("$.imageUrl").value("http://example.com/img2.png"));
+    }
+
+    @Test
+    @DisplayName("Nên xóa được sản phẩm theo ID")
+    void deleteProduct_Success() throws Exception {
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete("/api/products/P1"))
+                .andExpect(status().isNoContent());
+    }
 }

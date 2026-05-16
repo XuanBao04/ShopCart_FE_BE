@@ -22,9 +22,6 @@ import java.util.Map;
 
 import static org.mockito.Mockito.when;
 
-/**
- * Shared Mockito wiring and cart test fixtures for CartServiceImpl tests.
- */
 @ExtendWith(MockitoExtension.class)
 public abstract class BaseCartServiceTest {
 

@@ -15,11 +15,11 @@ public class OrderResponse {
     private String id;
     private String userId;
     private List<OrderItemResponse> items;
-    private Long subtotal;         // Sum of (price * quantity)
-    private Long discountAmount;   // Discount from coupon in VND
+    private Long subtotal;         
+    private Long discountAmount;  
     private Long shippingFee;
-    private Long totalPrice;       // subtotal - discount + shipping
-    private String couponCode;     // Applied coupon code
+    private Long totalPrice;       
+    private String couponCode;     
     private String status;
     private LocalDateTime createdAt;
     private LocalDateTime lastModifiedDate;
