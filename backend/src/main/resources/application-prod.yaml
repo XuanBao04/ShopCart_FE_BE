@@ -1,8 +1,6 @@
 spring:
   application:
     name: shopcart-api
-  profiles:
-    active: prod
   datasource:
     url: ${SPRING_DATASOURCE_URL}
     username: ${SPRING_DATASOURCE_USERNAME}
@@ -22,7 +20,7 @@ spring:
     time-zone: Asia/Ho_Chi_Minh
 
 server:
-  port: ${SERVER_PORT:8080}
+  port: ${PORT:8080}
   servlet:
     context-path: /api
 
