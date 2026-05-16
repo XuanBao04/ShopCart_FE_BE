@@ -1,18 +1,20 @@
+# Test profile - for unit/integration testing with H2 in-memory database
 spring:
   datasource:
     url: jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
     username: sa
     password:
     driver-class-name: org.h2.Driver
-
+  
   jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: create-drop  # Fresh database for each test
     show-sql: true
     properties:
       hibernate:
-        dialect: org.hibernate.dialect.H2Dialect
-
+        "[format_sql]": true
+  
   h2:
     console:
       enabled: true
@@ -20,4 +22,6 @@ spring:
 
 logging:
   level:
+    root: INFO
     org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG

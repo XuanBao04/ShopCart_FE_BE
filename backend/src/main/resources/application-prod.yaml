@@ -1,34 +1,26 @@
+# Production profile - optimized for performance and security
 spring:
-  application:
-    name: shopcart-api
-  datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/shopcart}
-    username: ${SPRING_DATASOURCE_USERNAME:admin}
-    password: ${SPRING_DATASOURCE_PASSWORD:admin123}
-    driver-class-name: ${SPRING_DATASOURCE_DRIVER:org.postgresql.Driver}
   jpa:
-    hibernate:
-      ddl-auto: update
-    show-sql: false
+    show-sql: false  # Disable SQL logging in production
     properties:
       hibernate:
-        "[format_sql]": true
-  jackson:
-    serialization:
-      write-dates-as-timestamps: false
-    time-zone: Asia/Ho_Chi_Minh
+        "[generate_statistics]": false
+        "[use_sql_comments]": false  # Reduce payload size
+  
+  tomcat:
+    threads:
+      max: 200        # Conservative thread count for production
+      min-spare: 10
 
 server:
   port: ${PORT:8080}
-  servlet:
-    context-path: /api
+  compression:
+    enabled: true
+    min-response-size: 1024
 
-management:
-  endpoints:
-    web:
-      exposure:
-        include: health,info
-  endpoint:
-    health:
-      probes:
-        enabled: true
+logging:
+  level:
+    root: WARN
+    org.springframework: WARN
+    org.hibernate: ERROR
+    com.shopcart: INFO  # Log application code at INFO level
