@@ -2,6 +2,8 @@
 spring:
   jpa:
     show-sql: false  # Disable SQL logging in production
+    hibernate:
+      ddl-auto: validate  # Production: only validate schema, don't modify database
     properties:
       hibernate:
         "[generate_statistics]": false
