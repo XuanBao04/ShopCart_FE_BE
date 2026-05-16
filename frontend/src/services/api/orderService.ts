@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 import { OrderRequest, OrderResponse, OrderPreviewResponse } from "../../types/order";
 
-const ORDER_API = "/orders";
+const ORDER_API = "/api/orders";
 
 export const orderService = {
   /**
