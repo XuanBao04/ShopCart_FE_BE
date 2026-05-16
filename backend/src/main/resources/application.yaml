@@ -22,9 +22,11 @@ spring:
     open-in-view: false
     hibernate:
       ddl-auto: update  # Default: update schema. Profiles can override
+      dialect: org.hibernate.dialect.PostgreSQLDialect
     show-sql: false     # Default: disabled. Dev profile enables for debugging
     properties:
       hibernate:
+        "[dialect]": org.hibernate.dialect.PostgreSQLDialect
         "[format_sql]": true
         "[jdbc.batch_size]": 20
         "[order_inserts]": true
