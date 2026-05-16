@@ -3,7 +3,7 @@ spring:
   jpa:
     show-sql: false  # Disable SQL logging in production
     hibernate:
-      ddl-auto: validate  # Production: only validate schema, don't modify database
+      ddl-auto: update  # Create missing sequences on first startup
     properties:
       hibernate:
         "[generate_statistics]": false
