@@ -1,6 +1,6 @@
 import apiClient from "./apiClient";
 import { InventoryItem } from "../../types/inventory";
-const INVENTORY_API = "/api/inventory";
+const INVENTORY_API = "/inventory";
 
 export const inventoryService = {
   /**

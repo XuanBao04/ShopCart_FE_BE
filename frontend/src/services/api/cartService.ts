@@ -1,7 +1,7 @@
 import apiClient from "./apiClient";
 import { CartResponse, CartItemRequest } from "../../types/cart";
 
-const CART_API = "/api/cart";
+const CART_API = "/cart";
 
 export const cartService = {
   /**

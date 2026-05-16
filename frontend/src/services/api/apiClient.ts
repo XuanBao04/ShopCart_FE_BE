@@ -22,7 +22,7 @@ const readCookie = (name: string): string | null => {
 };
 
 const fetchCsrfToken = async (): Promise<string | null> => {
-  await axios.get(`${API_URL}/csrf-token`, {
+  await apiClient.get("/csrf-token", {
     withCredentials: true,
   });
 

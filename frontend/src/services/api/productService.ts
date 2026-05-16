@@ -1,14 +1,14 @@
 import apiClient from './apiClient';
 import { Product } from '../../types/product';
 
-const PRODUCT_API = '/api/products';
+const PRODUCT_API = '/products';
 
 export const productService = {
   /**
    * Get all products
    */
   async getAllProducts(): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>('/api/products');
+    const response = await apiClient.get<Product[]>('/products');
     return response.data;
   },
 
@@ -16,7 +16,7 @@ export const productService = {
    * Get product by ID
    */
   async getProductById(productId: string): Promise<Product> {
-    const response = await apiClient.get<Product>(`/api/products/${productId}`);
+    const response = await apiClient.get<Product>(`/products/${productId}`);
     return response.data;
   },
 
@@ -24,7 +24,7 @@ export const productService = {
    * Search products by keyword
    */
   async searchProducts(keyword: string): Promise<Product[]> {
-    const response = await apiClient.get<Product[]>(`/api/products/search`, {
+    const response = await apiClient.get<Product[]>(`/products/search`, {
       params: { keyword },
     });
     return response.data;

@@ -2,8 +2,8 @@ import apiClient from "./apiClient";
 import { Coupon, OrderRequest, OrderPreviewResponse } from "../../types/order";
 import { CouponResponse, CouponRequest, UpdateCouponRequest } from "../../types/coupon";
 
-const COUPON_API = "/api/coupons";
-const ORDER_API = "/api/orders";
+const COUPON_API = "/coupons";
+const ORDER_API = "/orders";
 
 export const couponService = {
   /**

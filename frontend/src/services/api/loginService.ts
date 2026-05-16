@@ -14,7 +14,7 @@ export async function loginService(
   password: string,
 ): Promise<LoginResponse> {
   const response = await apiClient.post<LoginResponse>(
-    "/api/auth/login",
+    "/auth/login",
     {
       username,
       password,
