@@ -28,5 +28,5 @@ logging:
   level:
     root: WARN
     org.springframework: WARN
-    org.hibernate: ERROR
-    com.shopcart: INFO  # Log application code at INFO level
+    org.hibernate: WARN
+    com.shopcart: DEBUG  # Show errors and debug info from our application
