@@ -71,7 +71,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                                                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                                                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/csrf-token"))
+                                                .ignoringRequestMatchers("/h2-console/**", "/auth/**", "/csrf-token"))
 
                                 // Session management
                                 .sessionManagement(session -> session
@@ -80,16 +80,16 @@ public class SecurityConfig {
                                 // Authorization rules
                                 .authorizeHttpRequests(auth -> auth
                                                 // Allow all OPTIONS requests for CORS preflight
-                                                .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
+                                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 // Public endpoints - no authentication required
                                                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                                                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
-                                                .requestMatchers("/api/auth/logout").permitAll()
-                                                .requestMatchers("/api/csrf-token").permitAll()
-                                                .requestMatchers("/api/products/**").permitAll()
-                                                .requestMatchers("/api/inventory/**").permitAll()
-                                                .requestMatchers("/api/cart/**").authenticated()
-                                                .requestMatchers("/api/orders/**").authenticated()
+                                                .requestMatchers("/auth/login", "/auth/register").permitAll()
+                                                .requestMatchers("/auth/logout").permitAll()
+                                                .requestMatchers("/csrf-token").permitAll()
+                                                .requestMatchers("/products/**").permitAll()
+                                                .requestMatchers("/inventory/**").permitAll()
+                                                .requestMatchers("/cart/**").authenticated()
+                                                .requestMatchers("/orders/**").authenticated()
                                             
                                                 .requestMatchers("/h2-console/**").permitAll()
 
@@ -171,7 +171,7 @@ public class SecurityConfig {
                 configuration.setMaxAge(3600L);
 
                 UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-                source.registerCorsConfiguration("/api/**", configuration);
+                source.registerCorsConfiguration("/**", configuration);
                 return source;
         }
 
