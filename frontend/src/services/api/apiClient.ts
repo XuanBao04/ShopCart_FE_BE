@@ -1,6 +1,25 @@
 import axios, { AxiosInstance, AxiosError, InternalAxiosRequestConfig } from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080/api";
+/**
+ * Normalize API URL to prevent malformed URLs
+ * Handles cases like "https://https://..." or "https//..."
+ */
+const normalizeApiUrl = (url: string): string => {
+  if (!url) return "http://localhost:8080/api";
+  
+  // Remove duplicate protocol schemes
+  let normalized = url.replace(/^(https?:\/\/)+(https?:\/\/)?/, "$1");
+  normalized = normalized.replace(/^(https?):\/\/(?!\/)+/, "$1://");
+  
+  // Ensure it ends with /api if not already specified
+  if (!normalized.endsWith("/api")) {
+    normalized = normalized.replace(/\/$/, "") + "/api";
+  }
+  
+  return normalized;
+};
+
+const API_URL = normalizeApiUrl(import.meta.env.VITE_API_URL || "");
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: API_URL,
