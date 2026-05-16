@@ -1,5 +1,6 @@
 package com.shopcart.config.security;
 
+import java.util.ArrayList;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +17,8 @@ import org.springframework.security.web.csrf.CookieCsrfTokenRepository;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Arrays;
 import java.util.List;
@@ -40,6 +43,7 @@ import org.springframework.lang.NonNull;
 @EnableMethodSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
+        private static final Logger logger = LoggerFactory.getLogger(SecurityConfig.class);
 
         @Value("${cors.allowed-origins:http://localhost:5173,http://localhost:3000}")
         private String corsAllowedOrigins;
@@ -142,8 +146,19 @@ public class SecurityConfig {
 
         @Bean
         public CorsConfigurationSource corsConfigurationSource() {
+                // Parse and trim allowed origins
+                List<String> allowedOrigins = new ArrayList<>();
+                for (String origin : corsAllowedOrigins.split(",")) {
+                        String trimmedOrigin = origin.trim();
+                        if (!trimmedOrigin.isEmpty()) {
+                                allowedOrigins.add(trimmedOrigin);
+                        }
+                }
+                
+                logger.info("CORS allowed origins: {}", allowedOrigins);
+                
                 CorsConfiguration configuration = new CorsConfiguration();
-                configuration.setAllowedOrigins(Arrays.asList(corsAllowedOrigins.split(",")));
+                configuration.setAllowedOrigins(allowedOrigins);
                 configuration.setAllowedMethods(Arrays.asList(
                                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
                 configuration.setAllowedHeaders(List.of("*"));
