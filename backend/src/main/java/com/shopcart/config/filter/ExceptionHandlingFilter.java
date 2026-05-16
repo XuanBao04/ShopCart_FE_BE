@@ -10,6 +10,8 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.NoHandlerFoundException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import jakarta.servlet.FilterChain;
@@ -47,6 +49,8 @@ public class ExceptionHandlingFilter extends OncePerRequestFilter {
             handleException(request, response, HttpStatus.UNPROCESSABLE_ENTITY, "Business Logic Error", ex.getMessage());
         } catch (IllegalArgumentException ex) {
             handleException(request, response, HttpStatus.BAD_REQUEST, "Invalid Argument", ex.getMessage());
+        } catch (NoHandlerFoundException | NoResourceFoundException ex) {
+            handleException(request, response, HttpStatus.NOT_FOUND, "Not Found", ex.getMessage());
         } catch (Exception ex) {
             log.error("Unexpected exception in filter chain", ex);
             handleException(request, response, HttpStatus.INTERNAL_SERVER_ERROR, "Internal Server Error", 

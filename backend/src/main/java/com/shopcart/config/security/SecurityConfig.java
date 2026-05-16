@@ -71,7 +71,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                                                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                                                .ignoringRequestMatchers("/h2-console/**", "/auth/**", "/csrf-token"))
+                                                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/csrf-token"))
 
                                 // Session management
                                 .sessionManagement(session -> session
@@ -83,13 +83,14 @@ public class SecurityConfig {
                                                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                                                 // Public endpoints - no authentication required
                                                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
-                                                .requestMatchers("/auth/login", "/auth/register").permitAll()
-                                                .requestMatchers("/auth/logout").permitAll()
-                                                .requestMatchers("/csrf-token").permitAll()
-                                                .requestMatchers("/products/**").permitAll()
-                                                .requestMatchers("/inventory/**").permitAll()
-                                                .requestMatchers("/cart/**").authenticated()
-                                                .requestMatchers("/orders/**").authenticated()
+                                                .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
+                                                .requestMatchers("/api/auth/logout").permitAll()
+                                                .requestMatchers("/api/csrf-token").permitAll()
+                                                .requestMatchers("/api/products/**").permitAll()
+                                                .requestMatchers("/api/inventory/**").permitAll()
+                                                .requestMatchers(HttpMethod.GET, "/api/coupons/**").permitAll()
+                                                .requestMatchers("/api/cart/**").authenticated()
+                                                .requestMatchers("/api/orders/**").authenticated()
                                             
                                                 .requestMatchers("/h2-console/**").permitAll()
 
