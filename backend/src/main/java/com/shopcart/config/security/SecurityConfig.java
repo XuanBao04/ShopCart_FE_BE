@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -69,7 +70,7 @@ public class SecurityConfig {
                                 .csrf(csrf -> csrf
                                                 .csrfTokenRepository(CookieCsrfTokenRepository.withHttpOnlyFalse())
                                                 .csrfTokenRequestHandler(new SpaCsrfTokenRequestHandler())
-                                                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**"))
+                                                .ignoringRequestMatchers("/h2-console/**", "/api/auth/**", "/api/csrf-token"))
 
                                 // Session management
                                 .sessionManagement(session -> session
@@ -77,6 +78,8 @@ public class SecurityConfig {
 
                                 // Authorization rules
                                 .authorizeHttpRequests(auth -> auth
+                                                // Allow all OPTIONS requests for CORS preflight
+                                                .requestMatchers(HttpMethod.OPTIONS, "/api/**").permitAll()
                                                 // Public endpoints - no authentication required
                                                 .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                                                 .requestMatchers("/api/auth/login", "/api/auth/register").permitAll()
